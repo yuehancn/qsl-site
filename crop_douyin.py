@@ -1,11 +1,26 @@
 # -*- coding: utf-8 -*-
 """
-抖音码专用裁剪：从深色底图里提出白色圆形码，放到白底方形画布。
+抖音码裁剪（v4，最终版）—— 2026-11-15
 
-为什么单独处理：
-  抖音导出图是深青色底 + 白色圆盘码。直接按矩形裁会带上四角深色背景，
-  和其他两张白底码放在一起视觉不统一；而且圆盘贴边，扫码容错不足。
-  这里用「找白色像素包围盒」定位圆盘，四周留 10% 白边再输出。
+三次试错记录：
+  v1  按 `r > 0.94r` 刷白        -> 刷掉最外圈码点 -> 扫不出
+  v2  不刷白只缩放                -> 四角留深青背景，脏
+  v3  逐角度扫描圆盘边界          -> 边缘被切出锯齿毛刺，更糟
+
+v4 为什么对：
+  实测圆周像素统计（容差 60 判背景）：
+    r=370 -> 98.7% 非背景
+    r=380 -> 98.5% 非背景
+    r=384 -> 98.4% 非背景
+  说明**白色圆盘一直延伸到 r≈385，边缘本身是纯白，不含码点**。
+  码点最外只到 r≈380 左右，且都在白色圆盘内部。
+
+  所以正确做法极简：
+    · 半径 386 的圆形遮罩（略大于实测 385，容错）
+    · 圆内：原样保留，一个像素不动
+    · 圆外：刷纯白（那里是深青背景）
+
+  然后外扩 8% 白边，缩放到 512×512。
 """
 import os
 from PIL import Image
@@ -13,58 +28,49 @@ import numpy as np
 
 SRC = r"C:\Users\yuehancn\Desktop\新建文件夹 (10)\微信图片_20261115225755_515_49.jpg"
 DST = r"C:\Users\yuehancn\WorkBuddy\qsl-site\assets-src\douyin-code.png"
+
 OUT_SIZE = 512
-MARGIN = 0.10
+Y_LO, Y_HI = 210, 1060
+# 圆盘 bbox 770x770，半径 385；取 386 略有余量
+MASK_R = 386
 
 
 def main():
     im = Image.open(SRC).convert("RGB")
     arr = np.asarray(im).astype(int)
 
-    # 🔴 只在二维码所在的行段里找白盘（y 210-1060）。
-    #    全图搜会把底部白色说明文字（"保存图片到相册"等）也当成白盘，
-    #    实测导致包围盒高度 1649（正确约 800），裁出来完全错位。
-    y_lo, y_hi = 210, 1060
-    sub = arr[y_lo:y_hi]
-
-    # 白盘判据：三通道都高
+    sub = arr[Y_LO:Y_HI]
     white = (sub[:, :, 0] > 200) & (sub[:, :, 1] > 200) & (sub[:, :, 2] > 200)
     rows = np.where(white.sum(axis=1) > 30)[0]
     cols = np.where(white.sum(axis=0) > 30)[0]
-    if len(rows) == 0 or len(cols) == 0:
-        print("未找到白色圆盘")
-        return
+    x0, y0 = int(cols[0]), int(rows[0]) + Y_LO
+    x1, y1 = int(cols[-1]), int(rows[-1]) + Y_LO
 
-    y0, y1 = int(rows[0]) + y_lo, int(rows[-1]) + y_lo
-    x0, x1 = int(cols[0]), int(cols[-1])
-    print("白盘包围盒: x %d-%d, y %d-%d  (%dx%d)"
-          % (x0, x1, y0, y1, x1 - x0 + 1, y1 - y0 + 1))
+    disc = arr[y0:y1 + 1, x0:x1 + 1]
+    hh, ww, _ = disc.shape
+    cy, cx = (hh - 1) / 2.0, (ww - 1) / 2.0
+    print("白盘 bbox: (%d,%d)-(%d,%d)  %dx%d" % (x0, y0, x1, y1, ww, hh))
 
-    crop = im.crop((x0, y0, x1 + 1, y1 + 1))
-
-    # 🔴 把圆盘四角的深色背景刷白。
-    #    包围盒按白色像素算，但圆的四角天然是背景（深青），
-    #    不刷掉会留下四个深色尖角，和其他白底码视觉不统一。
-    ca = np.asarray(crop).astype(int)
-    dark = (ca[:, :, 0] < 120) & (ca[:, :, 1] < 140) & (ca[:, :, 2] < 160)
-    # 只刷「靠近画布边缘」的深色，避免误伤圆盘内部的深色圆环/logo
-    hh, ww = dark.shape
     yy, xx = np.mgrid[0:hh, 0:ww]
-    cx, cy, r = ww / 2.0, hh / 2.0, min(ww, hh) / 2.0
     dist = np.sqrt((xx - cx) ** 2 + (yy - cy) ** 2)
-    outside = dist > r * 0.94          # 圆外区域
-    to_white = dark & outside
-    ca[to_white] = [255, 255, 255]
-    crop = Image.fromarray(ca.astype(np.uint8))
+    outside = dist > MASK_R
 
-    cw, ch = crop.size
-    side = max(cw, ch)
+    out = disc.copy()
+    out[outside] = [255, 255, 255]
+    print("遮蔽半径 %d，刷白像素 %d（圆周外）" % (MASK_R, int(outside.sum())))
 
-    # 白底画布，四周留 10%
-    pad = int(side * MARGIN)
-    canvas_side = side + pad * 2
-    canvas = Image.new("RGB", (canvas_side, canvas_side), (255, 255, 255))
-    canvas.paste(crop, (pad + (side - cw) // 2, pad + (side - ch) // 2))
+    # 验证：圆内非白像素数（码点+圆环+logo），应与原图一致
+    inner = ~outside
+    nz_before = int((np.abs(disc - 255).sum(axis=2)[inner] > 60).sum())
+    nz_after = int((np.abs(out - 255).sum(axis=2)[inner] > 60).sum())
+    print("圆内非白像素: 原图 %d / 输出 %d  %s"
+          % (nz_before, nz_after,
+             "一致 OK" if nz_before == nz_after else "不一致 异常"))
+
+    img = Image.fromarray(out.astype(np.uint8))
+    pad = int(max(ww, hh) * 0.08)
+    canvas = Image.new("RGB", (ww + pad * 2, hh + pad * 2), (255, 255, 255))
+    canvas.paste(img, (pad, pad))
     canvas = canvas.resize((OUT_SIZE, OUT_SIZE), Image.LANCZOS)
 
     canvas.save(DST, "PNG", optimize=True)
