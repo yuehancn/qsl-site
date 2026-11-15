@@ -28,7 +28,7 @@ from datetime import datetime
 
 BASE = os.path.dirname(os.path.abspath(__file__))
 SEED = r"C:/Users/yuehancn/WorkBuddy/丘山录/hardware-lab-miniprogram/seed"
-OUT = os.path.join(BASE, "public")
+OUT = os.path.join(BASE, "docs")
 DOMAIN = "361365365.xyz"
 SITE = "丘山录实测库"
 SITE_DESC = "真机实测的 AI 硬件选型数据：能不能跑、跑多快、多少钱，全部给数字和失效边界。"
