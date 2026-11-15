@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>DGX Spark #2 实测数据 · 25 条</title>
+<meta name="description" content="DGX Spark #2 的真机实测记录：0 条跑分与显存数据。">
+<link rel="canonical" href="https://361365365.xyz/machines/dgx-spark-2/">
+
+<style>
+:root{--ink:#1a1a1a;--sub:#5b6570;--line:#e3e6ea;--bg:#fff;--soft:#f7f8fa;
+--accent:#b03a2e;--ok:#1e7b45;--warn:#9a6b00;--danger:#a11b1b;--none:#6b7280}
+*{box-sizing:border-box}
+body{margin:0;font:16px/1.75 -apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC",
+"Hiragino Sans GB","Microsoft YaHei",sans-serif;color:var(--ink);background:var(--bg)}
+a{color:#1a4f8a;text-decoration:none}a:hover{text-decoration:underline}
+.wrap{max-width:820px;margin:0 auto;padding:0 20px}
+header.site{border-bottom:1px solid var(--line);padding:18px 0;margin-bottom:32px}
+header.site .wrap{display:flex;align-items:baseline;gap:18px;flex-wrap:wrap}
+header.site .logo{font-weight:700;font-size:18px;color:var(--ink)}
+header.site nav{font-size:14px}
+header.site nav a{color:var(--sub);margin-right:16px}
+h1{font-size:27px;line-height:1.4;margin:0 0 10px;letter-spacing:-.2px}
+h2{font-size:19px;margin:34px 0 12px;padding-top:6px}
+h3{font-size:16px;margin:22px 0 8px}
+p{margin:0 0 14px}
+.meta{color:var(--sub);font-size:13px;margin-bottom:22px;line-height:1.9}
+.meta span{margin-right:14px;white-space:nowrap}
+.lede{font-size:17px;line-height:1.8;background:var(--soft);border-left:3px solid var(--accent);
+padding:16px 18px;margin:0 0 26px}
+table{width:100%;border-collapse:collapse;margin:16px 0;font-size:14px}
+th,td{border:1px solid var(--line);padding:9px 11px;text-align:left;vertical-align:top}
+th{background:var(--soft);font-weight:600}
+td.num{font-variant-numeric:tabular-nums;white-space:nowrap}
+.tag{display:inline-block;font-size:12px;padding:1px 7px;border:1px solid var(--line);
+border-radius:3px;color:var(--sub);margin:0 6px 6px 0;background:#fff}
+.card{border:1px solid var(--line);border-radius:5px;padding:17px 19px;margin:0 0 14px}
+.card h3{margin:0 0 7px;font-size:16px;line-height:1.5}
+.card h3 a{color:var(--ink)}
+.card p{font-size:14px;color:var(--sub);margin:0 0 8px}
+.card .kv{font-size:12.5px;color:var(--sub)}
+ul,ol{padding-left:22px}li{margin-bottom:7px}
+code{background:var(--soft);padding:1px 5px;border-radius:3px;font-size:13.5px;
+font-family:ui-monospace,Consolas,monospace}
+pre{background:var(--soft);padding:14px;border-radius:4px;overflow-x:auto;font-size:13px;
+line-height:1.6}
+pre code{background:none;padding:0}
+.lv{display:inline-block;font-size:11.5px;padding:0 6px;border-radius:3px;
+border:1px solid currentColor;font-weight:600}
+.lv-L1{color:var(--ok)}.lv-L0{color:var(--warn)}.lv-none{color:var(--none)}
+.v-ok{color:var(--ok)}.v-warn{color:var(--warn)}.v-danger{color:var(--danger)}
+.v-limited{color:#7a4b00}.v-none{color:var(--none)}
+.note{border-left:3px solid var(--warn);background:#fffdf5;padding:13px 16px;
+margin:18px 0;font-size:14.5px}
+.caveat{border-left:3px solid var(--accent);background:#fdf7f6;padding:13px 16px;margin:18px 0}
+.caveat strong{color:var(--accent)}
+footer{border-top:1px solid var(--line);margin-top:56px;padding:26px 0 44px;
+font-size:13px;color:var(--sub)}
+footer a{color:var(--sub)}
+.pager{display:flex;justify-content:space-between;gap:16px;margin:36px 0 0;
+padding-top:20px;border-top:1px solid var(--line);font-size:14px}
+.pager a{max-width:46%}
+.count{color:var(--sub);font-size:13.5px;margin:-8px 0 18px}
+.tw{width:100%;overflow-x:auto;-webkit-overflow-scrolling:touch;margin:16px 0}
+.tw table{margin:0;min-width:100%}
+body{overflow-x:hidden}
+@media(max-width:600px){h1{font-size:22px}.wrap{padding:0 15px}table{font-size:13px}
+th,td{padding:7px 9px}pre{font-size:12px}}
+</style>
+</head>
+<body>
+<body>
+<header class="site"><div class="wrap">
+<a class="logo" href="/">丘山录实测库</a>
+<nav><a href="/bench/">跑分</a><a href="/fix/">排错</a><a href="/license/">许可证</a><a href="/machines/">机器</a><a href="/about/">口径</a></nav>
+</div></header>
+<main class="wrap">
+
+<h1>DGX Spark #2</h1>
+<div class="meta"><span>企业级集群</span><span>25 条实测</span></div>
+<div class="tw"><div class="tw"><table><tr><th>GPU</th><td>NVIDIA GB10 (Grace Blackwell)</td></tr><tr><th>显存</th><td>统一内存 121GB</td></tr><tr><th>CPU</th><td>20 核 Cortex-X925 (ARM)</td></tr><tr><th>内存</th><td>121 GB 统一内存</td></tr><tr><th>磁盘</th><td>3.7 TB 系统盘</td></tr><tr><th>系统</th><td>Ubuntu 24.04.5 LTS</td></tr><tr><th>驱动</th><td>580.178.04</td></tr><tr><th>CUDA</th><td>13.0</td></tr><tr><th>架构</th><td>aarch64</td></tr></table></div></div>
+<div class="caveat"><strong>这台机器的坑</strong><br>统一内存架构：nvidia-smi 显存显示为 N/A 属正常；2026-10-24 补录官方电源口径（此前机型卡无功耗字段）：整机电源 240 W、GB10 芯片 TDP 140 W，余约 100 W 供 ConnectX-7 / Wi-Fi / SSD / USB-C 等外设。🔴 由此产生一个必踩的坑：<code></code> 报的是 GPU 芯片封装功耗，2026-10-24 实测四台满载仅 146.30 W（单台 34.65–38.77 W），只占整机电源额定 960 W 的 15.2% —— 用它算电费会低估 6.6 倍（63.20 元/月 vs 实际 414.72 元/月）。算钱要用墙上的数，不是芯片里的数；2026-10-31 补录实测口径（四台同时采样 01:00-02:00）：MemTotal = 127,598,752 kB = 121.69 GiB / 台（厂商标称 128 GB 是十进制口径，差 0.4 GiB 来自单位换算与固件预留，不是少给内存）。🔴 显存三项确认在 NVML 层就返回 [N/A]：memory.total = [N/A]、memory.used = [N/A]、utilization.memory = Not Supported，power.limit 同为 [N/A] —— 已做硬件自证（PnP OK / 错误码 0 / nvlddmkm Running / NVML 与 nvidia-smi 版本均 8.17.16.1088），<strong></strong>。⇒ 查内存水位只看 /proc/meminfo 的 MemAvailable（四台实测 16.68 / 17.93 / 18.23 / 18.07 GiB），查模型实际占用看 nvidia-smi --query-compute-apps=used_memory（实测 94.43 GiB），两者都别用 docker stats（实测 5.405 GiB，会高估余量 17.5 倍）。；2026-11-03 补录互联口径（此前机型卡没有这一项，直接影响「能不能多机」判断）：每台有 4 个 200G 网口（<code></code> 全为 200000），<code></code> 里 4 个 RoCE HCA 全为 PORT_ACTIVE，但<strong></strong>，另 2 个有物理层、有链路、无地址。⇒ 四台之间不是交换机全互联，而是<strong></strong>（每台只与相邻 2 台直连，共 4 条边，无对角线通路）。实测每条边 8 流 TCP 只能跑 95.6–110.7 Gbps（平均 102.8，对 200G 标称达成率 51.4%），单条 TCP 更只有 40.0 Gbps。⇒ <strong></strong>环上必须做两件事：rank 顺序改成物理环序、rendezvous 放管理网；否则 NCCL 会跨对角线建 QP 而超时 110。</div>
+DGX Spark 集群节点 2
+<h2>与选型相关的实测（0 条）</h2>
+<p>尚无实测记录。</p>
+<h2>部署与运维相关（25 条）</h2>
+<p class="count">磁盘、缓存、网络层面的数据，决定「能不能装下、传得快不快」，
+不代表算力强弱。</p>
+<div class="tw"><div class="tw"><table><tr><th>任务</th><th>数值</th><th>等级</th></tr><tr><td>200G 环网单文件 8 线程搬运</td><td class="num">12.2089 GB/s</td><td><span class="lv lv-L1">L1</span></td></tr><tr><td>48 分片 8 路并行搬运（200G 环网）</td><td class="num">2.4328 GB/s</td><td><span class="lv lv-L1">L1</span></td></tr><tr><td>48 分片串行搬运耗时（200G 环网）</td><td class="num">562.82 秒</td><td><span class="lv lv-L1">L1</span></td></tr><tr><td>DGX Spark #2 板载 NVMe 4K 随机读 IOPS（QD1）</td><td class="num">4577 IOPS</td><td><span class="lv lv-L1">L1</span></td></tr><tr><td>DGX Spark #2 板载 NVMe 随机 8MB 块读（绕页缓存）</td><td class="num">7521.9 MB/s</td><td><span class="lv lv-L1">L1</span></td></tr><tr><td>DGX Spark #2 板载 NVMe 顺序写（绕页缓存）</td><td class="num">7517.6 MB/s</td><td><span class="lv lv-L1">L1</span></td></tr><tr><td>DGX Spark 板载 NVMe 顺序读（绕页缓存）</td><td class="num">7332.9 MB/s</td><td><span class="lv lv-L1">L1</span></td></tr><tr><td>HF 缓存目录体积（.cache/huggingface）</td><td class="num">158 GiB</td><td><span class="lv lv-L0">L0</span></td></tr><tr><td>NVMe 顺序写 4GB 文件（direct+fsync，第 2 台）</td><td class="num">4.7 GB/s</td><td><span class="lv lv-L0">L0</span></td></tr><tr><td>NVMe 顺序读 4GB 文件（direct）</td><td class="num">8.6 GB/s</td><td><span class="lv lv-L0">L0</span></td></tr><tr><td>sglang 设备侧占用（nvidia-smi used_memory，MiB 口径）</td><td class="num">96691 MiB</td><td><span class="lv lv-L0">L0</span></td></tr><tr><td>可用统一内存（Spark #2）</td><td class="num">121.7 GiB</td><td><span class="lv lv-L0">L0</span></td></tr><tr><td>实际可释放体积</td><td class="num">475.27 GiB</td><td><span class="lv lv-L0">L0</span></td></tr><tr><td>容器视图内存（docker stats MemUsage）</td><td class="num">3.837 GiB</td><td><span class="lv lv-L1">L1</span></td></tr><tr><td>并发 8 时 GPU 功耗读数</td><td class="num">36.31 W</td><td><span class="lv lv-L0">L0</span></td></tr><tr><td>整机可用内存（MemAvailable）</td><td class="num">17.93 GiB</td><td><span class="lv lv-L1">L1</span></td></tr><tr><td>整机已用内存（MemTotal − MemAvailable）</td><td class="num">103.76 GiB</td><td><span class="lv lv-L1">L1</span></td></tr><tr><td>新版模型目录体积（dsv41-model）</td><td class="num">476 GiB</td><td><span class="lv lv-L0">L0</span></td></tr><tr><td>旧权重中 links=1（真占）体积</td><td class="num">475.27 GiB</td><td><span class="lv lv-L0">L0</span></td></tr><tr><td>旧权重中 links=2（硬链接）体积</td><td class="num">0 GiB</td><td><span class="lv lv-L0">L0</span></td></tr><tr><td>旧版模型目录体积（dsv41-model-v41old）</td><td class="num">476 GiB</td><td><span class="lv lv-L0">L0</span></td></tr><tr><td>环拓扑单边 TCP 8 流（Spark #2→#4）</td><td class="num">95.6 Gbps</td><td><span class="lv lv-L0">L0</span></td></tr><tr><td>系统盘已用容量</td><td class="num">1274 GiB</td><td><span class="lv lv-L0">L0</span></td></tr><tr><td>统一内存带宽 copy 512MB（Spark #2）</td><td class="num">225.9 GB/s</td><td><span class="lv lv-L0">L0</span></td></tr><tr><td>读入 Qwen3.8-Flash-Next 360.02GB 权重耗时（DGX Spark #2 板载）</td><td class="num">0.82 分钟</td><td><span class="lv lv-L1">L1</span></td></tr></table></div></div>
+<p style="margin-top:30px"><a href="/machines/">← 返回机器清单</a></p>
+
+</main>
+<footer><div class="wrap">
+<p>本站数字均为真机实测，逐条标注验证等级（<span class="lv lv-L1">L1</span> 多次复测取中位 /
+<span class="lv lv-L0">L0</span> 单次测量）。查不到的写「未采集」，不估算。</p>
+<p>数据源自丘山录硬件实测库 · 本页生成于 2026-11-15 · <a href="/about/">数据口径与方法</a></p>
+</div></footer>
+</body>
+</html>

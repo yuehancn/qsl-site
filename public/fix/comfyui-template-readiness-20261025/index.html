@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ComfyUI 官方模板就绪度怎么核：502 个模板里只有 4 个能直接跑 · 丘山录实测库</title>
+<meta name="description" content="判断「这台机器能不能跑某个 ComfyUI 模板」不要看模板总数，要三查：一查模板是否吃本地权重（api_ 前缀的 231 个发请求到厂商服务器）、二查加载器下拉框里有没有对应文件名（那是 ComfyUI 从磁盘真实扫出来的）、三查单个权重是否超过可用显存。">
+<link rel="canonical" href="https://361365365.xyz/fix/comfyui-template-readiness-20261025/">
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"TechArticle","headline":"ComfyUI 官方模板就绪度怎么核：502 个模板里只有 4 个能直接跑","datePublished":"2026-10-25","description":"判断「这台机器能不能跑某个 ComfyUI 模板」不要看模板总数，要三查：一查模板是否吃本地权重（api_ 前缀的 231 个发请求到厂商服务器）、二查加载器下拉框里有没有对应文件名（那是 ComfyUI 从磁盘真实扫出来的）、三查单个权重是否超过可用显存。","author":{"@type":"Person","name":"丘山录"}}</script>
+<style>
+:root{--ink:#1a1a1a;--sub:#5b6570;--line:#e3e6ea;--bg:#fff;--soft:#f7f8fa;
+--accent:#b03a2e;--ok:#1e7b45;--warn:#9a6b00;--danger:#a11b1b;--none:#6b7280}
+*{box-sizing:border-box}
+body{margin:0;font:16px/1.75 -apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC",
+"Hiragino Sans GB","Microsoft YaHei",sans-serif;color:var(--ink);background:var(--bg)}
+a{color:#1a4f8a;text-decoration:none}a:hover{text-decoration:underline}
+.wrap{max-width:820px;margin:0 auto;padding:0 20px}
+header.site{border-bottom:1px solid var(--line);padding:18px 0;margin-bottom:32px}
+header.site .wrap{display:flex;align-items:baseline;gap:18px;flex-wrap:wrap}
+header.site .logo{font-weight:700;font-size:18px;color:var(--ink)}
+header.site nav{font-size:14px}
+header.site nav a{color:var(--sub);margin-right:16px}
+h1{font-size:27px;line-height:1.4;margin:0 0 10px;letter-spacing:-.2px}
+h2{font-size:19px;margin:34px 0 12px;padding-top:6px}
+h3{font-size:16px;margin:22px 0 8px}
+p{margin:0 0 14px}
+.meta{color:var(--sub);font-size:13px;margin-bottom:22px;line-height:1.9}
+.meta span{margin-right:14px;white-space:nowrap}
+.lede{font-size:17px;line-height:1.8;background:var(--soft);border-left:3px solid var(--accent);
+padding:16px 18px;margin:0 0 26px}
+table{width:100%;border-collapse:collapse;margin:16px 0;font-size:14px}
+th,td{border:1px solid var(--line);padding:9px 11px;text-align:left;vertical-align:top}
+th{background:var(--soft);font-weight:600}
+td.num{font-variant-numeric:tabular-nums;white-space:nowrap}
+.tag{display:inline-block;font-size:12px;padding:1px 7px;border:1px solid var(--line);
+border-radius:3px;color:var(--sub);margin:0 6px 6px 0;background:#fff}
+.card{border:1px solid var(--line);border-radius:5px;padding:17px 19px;margin:0 0 14px}
+.card h3{margin:0 0 7px;font-size:16px;line-height:1.5}
+.card h3 a{color:var(--ink)}
+.card p{font-size:14px;color:var(--sub);margin:0 0 8px}
+.card .kv{font-size:12.5px;color:var(--sub)}
+ul,ol{padding-left:22px}li{margin-bottom:7px}
+code{background:var(--soft);padding:1px 5px;border-radius:3px;font-size:13.5px;
+font-family:ui-monospace,Consolas,monospace}
+pre{background:var(--soft);padding:14px;border-radius:4px;overflow-x:auto;font-size:13px;
+line-height:1.6}
+pre code{background:none;padding:0}
+.lv{display:inline-block;font-size:11.5px;padding:0 6px;border-radius:3px;
+border:1px solid currentColor;font-weight:600}
+.lv-L1{color:var(--ok)}.lv-L0{color:var(--warn)}.lv-none{color:var(--none)}
+.v-ok{color:var(--ok)}.v-warn{color:var(--warn)}.v-danger{color:var(--danger)}
+.v-limited{color:#7a4b00}.v-none{color:var(--none)}
+.note{border-left:3px solid var(--warn);background:#fffdf5;padding:13px 16px;
+margin:18px 0;font-size:14.5px}
+.caveat{border-left:3px solid var(--accent);background:#fdf7f6;padding:13px 16px;margin:18px 0}
+.caveat strong{color:var(--accent)}
+footer{border-top:1px solid var(--line);margin-top:56px;padding:26px 0 44px;
+font-size:13px;color:var(--sub)}
+footer a{color:var(--sub)}
+.pager{display:flex;justify-content:space-between;gap:16px;margin:36px 0 0;
+padding-top:20px;border-top:1px solid var(--line);font-size:14px}
+.pager a{max-width:46%}
+.count{color:var(--sub);font-size:13.5px;margin:-8px 0 18px}
+.tw{width:100%;overflow-x:auto;-webkit-overflow-scrolling:touch;margin:16px 0}
+.tw table{margin:0;min-width:100%}
+body{overflow-x:hidden}
+@media(max-width:600px){h1{font-size:22px}.wrap{padding:0 15px}table{font-size:13px}
+th,td{padding:7px 9px}pre{font-size:12px}}
+</style>
+</head>
+<body>
+<body>
+<header class="site"><div class="wrap">
+<a class="logo" href="/">丘山录实测库</a>
+<nav><a href="/bench/">跑分</a><a href="/fix/">排错</a><a href="/license/">许可证</a><a href="/machines/">机器</a><a href="/about/">口径</a></nav>
+</div></header>
+<main class="wrap">
+
+<h1>ComfyUI 官方模板就绪度怎么核：502 个模板里只有 4 个能直接跑</h1>
+<div class="meta"><span>环境与安装 · 502 模板 / 305 权重 / 1.04 TiB / 61 小时</span><span><span class="lv lv-L0">L0</span></span><span>整理于 2026-10-25</span>
+<span>有效期 180d</span></div>
+<p class="lede">判断「这台机器能不能跑某个 ComfyUI 模板」不要看模板总数，要三查：一查模板是否吃本地权重（api_ 前缀的 231 个发请求到厂商服务器）、二查加载器下拉框里有没有对应文件名（那是 ComfyUI 从磁盘真实扫出来的）、三查单个权重是否超过可用显存。本机 5090D（32607 MiB）实测：502 个模板里 271 个本地模板、224 个要权重、去重 305 个文件，权重全齐的只有 4 个。</p>
+<span class="tag">ComfyUI</span><span class="tag">模板</span><span class="tag">本地部署</span><span class="tag">显存</span><span class="tag">权重</span><span class="tag">显卡选型</span><span class="tag">workflow</span><span class="tag">object_info</span><span class="tag">ComfyUI-Manager</span><span class="tag">ONNX</span>
+<h2>这条适用于</h2><ul><li>ComfyUI 0.33.0 服务端可访问（GET /object_info 能返回节点定义），且能拖入官方模板</li><li>模板包 comfyui_workflow_templates_json 已装（templates/ 目录下能看到 518 个 JSON）</li><li>能读目录与文件体积（扫 D:\models 需要普通读权限即可，不需要管理员）</li></ul>
+<h2>版本指纹</h2><p><code>Windows 11 / ComfyUI 0.33.0 / comfyui-workflow-templates 0.11.43 / RTX 5090 D 32607 MiB（驱动 591.86 / CUDA 13.1）/ extra_model_paths.yaml 指向 D:\models</code></p>
+<h2>具体做法</h2>
+<p>本机实测环境：Windows / ComfyUI 0.33.0 / comfyui-workflow-templates 0.11.43 / RTX 5090 D 32607 MiB / extra_model_paths.yaml 指向 D:\models。</p>
+<p>【模板库构成】<br>· templates/ 目录 518 个 JSON，其中 16 个是 index.*.json 语言索引 → 真模板 502 个<br>· 502 个里 api_ 前缀 231 个（覆盖 47 家厂商：字节 16 / Seedance 15 / 可灵 14 / Grok 11 / OpenAI 11 / Vidu 11 / Luma 9 / BFL 8 / Recraft 8），本地权重引用 0 个<br>· 剩下 271 个本地模板：224 个要权重、47 个不要（纯图像处理/参数节点）<br>· 224 个模板引用的权重去重 305 个文件；其中 124 个带官方直链</p>
+<pre><code>【官方直链体积（HF 镜像 X-Linked-Size，124 个全查）】
+· 合计 1,142,093,694,166 字节 = 1.039 TiB
+· 单文件最大 32.29 GiB（wan2.1_vace_14B_fp16.safetensors）
+· 次大 31.86 GiB（hidream_e1_full / hidream_e1_1 bf16）</code></pre>
+<p>【本机权重库存】<br>· 57 个文件条目 / 40 个去重文件名 / 259.46 GiB<br>· 与 305 个需求交集 16 个<br>· 权重全齐的模板 4 个：flux_schnell / video_minimax_h3_i2v / video_minimax_h3_t2v / video_wan2_2_5B_ti2v</p>
+<p>【下拉可见性（GET /object_info，1116 个节点）】<br>· 带权重下拉的输入项 45 个（分布 36 个节点）<br>· 下拉框可见文件名 42 个：其中磁盘真有 22、磁盘没有 20（comfyui_controlnet_aux 硬编码的预处理器名）<br>· 磁盘有但下拉看不见 18 个 / 76.65 GiB（全是 diffusers 目录结构）<br>· 空下拉加载器 12 个：ControlNetLoader / DiffControlNetLoader / StyleModelLoader / ModelPatchLoader / SAMLoader / LatentUpscaleModelLoader / FrameInterpolationModelLoader / OpticalFlowLoader / ONNXDetectorProvider / LoadMoGeModel / LoadDA3Model / LoadMediaPipeFaceLandmarker</p>
+<pre><code>【缺模型报错原文（POST /prompt 实测）】
+type=prompt_outputs_failed_validation → node_errors.1.errors[0].type=value_not_in_list，details 里直接列出「本机能看见的全部文件名」。这是最省事的自检入口。</code></pre>
+<pre><code>【下载成本】
+· 缺 289 个 / 其中 111 个体积已知 = 977.3 GiB
+· 镜像实测 4.56 MB/s（wan_2.1_vae 20s 采样 4.56、umt5_xxl_fp8 4.79）
+· 977.3 GiB ÷ 4.56 MB/s = 61.0 小时；70W 下载机电费 4.27 kWh = 2.35 元</code></pre>
+<p>【显存分档（按模板最大单个权重）】<br>· 有体积数据 177 个：≤ 15.93 GiB 141 个（16G 卡装得下）、&gt; 15.93 GiB 36 个、&gt; 31.84 GiB 8 个（5090D 也装不下）<br>· 36 个装不下的模板涉及 473.1 GiB 权重</p>
+<div class="caveat"><strong>失效边界</strong><br>四点必须说清：① 可跑通判定用的是「权重文件齐备 + 节点类型已注册」两道静态条件，没有逐模板真正跑一遍，运行期 OOM 与显存峰值未验证 ② 权重体积取 HF 响应头声明值，未逐个下载校验，理论上可能与实际文件有差异 ③ 下载速度 4.56 MB/s 是单条镜像线路 20 秒采样，实际受时段与线路影响，波动可能超过一倍 ④ 显存判据用的是「最大单个权重 ≤ 可用显存」这一保守口径，实际还要加 CLIP、VAE、latent 与激活值占用，真实门槛比这个更严——所以 141 个「装得下」的不等于 141 个「跑得动」。</div>
+<div class="pager"><a href="/fix/dgx-spark-hardlink-dup-disk-20261024/">← DGX Spark 升级模型没删旧权重：四台白占 1.4TB，其中 616.90 GiB 是硬链接假象</a><a href="/fix/ollama-lan-access-20261026/" style="text-align:right">Ollama 局域网访问怎么通：三道门 + 2.16 秒启动空窗 →</a></div>
+<p style="margin-top:30px"><a href="/fix/">← 返回全部排错方案</a></p>
+
+</main>
+<footer><div class="wrap">
+<p>本站数字均为真机实测，逐条标注验证等级（<span class="lv lv-L1">L1</span> 多次复测取中位 /
+<span class="lv lv-L0">L0</span> 单次测量）。查不到的写「未采集」，不估算。</p>
+<p>数据源自丘山录硬件实测库 · 本页生成于 2026-11-15 · <a href="/about/">数据口径与方法</a></p>
+</div></footer>
+</body>
+</html>

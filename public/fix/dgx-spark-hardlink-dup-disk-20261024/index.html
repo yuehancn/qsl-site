@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>DGX Spark 升级模型没删旧权重：四台白占 1.4TB，其中 616.90 GiB 是硬链接假象 · 丘山录实测库</title>
+<meta name="description" content="「删了旧目录却没释放空间」的排查法：先按 inode 去重算真实体积，再看链接计数（%n）。本机四台 DGX Spark 实测：每台旧权重 476 GiB，四台名义合计 2,089.">
+<link rel="canonical" href="https://361365365.xyz/fix/dgx-spark-hardlink-dup-disk-20261024/">
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"TechArticle","headline":"DGX Spark 升级模型没删旧权重：四台白占 1.4TB，其中 616.90 GiB 是硬链接假象","datePublished":"2026-10-24","description":"「删了旧目录却没释放空间」的排查法：先按 inode 去重算真实体积，再看链接计数（%n）。本机四台 DGX Spark 实测：每台旧权重 476 GiB，四台名义合计 2,089.92 GiB，但 Spark #1 的旧目录与 HF 缓存是同一批 inode（links=2），单删一侧零释放 → 真实可释放只有 1,473.02 GiB，差 616.90 GiB 是算重了。","author":{"@type":"Person","name":"丘山录"}}</script>
+<style>
+:root{--ink:#1a1a1a;--sub:#5b6570;--line:#e3e6ea;--bg:#fff;--soft:#f7f8fa;
+--accent:#b03a2e;--ok:#1e7b45;--warn:#9a6b00;--danger:#a11b1b;--none:#6b7280}
+*{box-sizing:border-box}
+body{margin:0;font:16px/1.75 -apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC",
+"Hiragino Sans GB","Microsoft YaHei",sans-serif;color:var(--ink);background:var(--bg)}
+a{color:#1a4f8a;text-decoration:none}a:hover{text-decoration:underline}
+.wrap{max-width:820px;margin:0 auto;padding:0 20px}
+header.site{border-bottom:1px solid var(--line);padding:18px 0;margin-bottom:32px}
+header.site .wrap{display:flex;align-items:baseline;gap:18px;flex-wrap:wrap}
+header.site .logo{font-weight:700;font-size:18px;color:var(--ink)}
+header.site nav{font-size:14px}
+header.site nav a{color:var(--sub);margin-right:16px}
+h1{font-size:27px;line-height:1.4;margin:0 0 10px;letter-spacing:-.2px}
+h2{font-size:19px;margin:34px 0 12px;padding-top:6px}
+h3{font-size:16px;margin:22px 0 8px}
+p{margin:0 0 14px}
+.meta{color:var(--sub);font-size:13px;margin-bottom:22px;line-height:1.9}
+.meta span{margin-right:14px;white-space:nowrap}
+.lede{font-size:17px;line-height:1.8;background:var(--soft);border-left:3px solid var(--accent);
+padding:16px 18px;margin:0 0 26px}
+table{width:100%;border-collapse:collapse;margin:16px 0;font-size:14px}
+th,td{border:1px solid var(--line);padding:9px 11px;text-align:left;vertical-align:top}
+th{background:var(--soft);font-weight:600}
+td.num{font-variant-numeric:tabular-nums;white-space:nowrap}
+.tag{display:inline-block;font-size:12px;padding:1px 7px;border:1px solid var(--line);
+border-radius:3px;color:var(--sub);margin:0 6px 6px 0;background:#fff}
+.card{border:1px solid var(--line);border-radius:5px;padding:17px 19px;margin:0 0 14px}
+.card h3{margin:0 0 7px;font-size:16px;line-height:1.5}
+.card h3 a{color:var(--ink)}
+.card p{font-size:14px;color:var(--sub);margin:0 0 8px}
+.card .kv{font-size:12.5px;color:var(--sub)}
+ul,ol{padding-left:22px}li{margin-bottom:7px}
+code{background:var(--soft);padding:1px 5px;border-radius:3px;font-size:13.5px;
+font-family:ui-monospace,Consolas,monospace}
+pre{background:var(--soft);padding:14px;border-radius:4px;overflow-x:auto;font-size:13px;
+line-height:1.6}
+pre code{background:none;padding:0}
+.lv{display:inline-block;font-size:11.5px;padding:0 6px;border-radius:3px;
+border:1px solid currentColor;font-weight:600}
+.lv-L1{color:var(--ok)}.lv-L0{color:var(--warn)}.lv-none{color:var(--none)}
+.v-ok{color:var(--ok)}.v-warn{color:var(--warn)}.v-danger{color:var(--danger)}
+.v-limited{color:#7a4b00}.v-none{color:var(--none)}
+.note{border-left:3px solid var(--warn);background:#fffdf5;padding:13px 16px;
+margin:18px 0;font-size:14.5px}
+.caveat{border-left:3px solid var(--accent);background:#fdf7f6;padding:13px 16px;margin:18px 0}
+.caveat strong{color:var(--accent)}
+footer{border-top:1px solid var(--line);margin-top:56px;padding:26px 0 44px;
+font-size:13px;color:var(--sub)}
+footer a{color:var(--sub)}
+.pager{display:flex;justify-content:space-between;gap:16px;margin:36px 0 0;
+padding-top:20px;border-top:1px solid var(--line);font-size:14px}
+.pager a{max-width:46%}
+.count{color:var(--sub);font-size:13.5px;margin:-8px 0 18px}
+.tw{width:100%;overflow-x:auto;-webkit-overflow-scrolling:touch;margin:16px 0}
+.tw table{margin:0;min-width:100%}
+body{overflow-x:hidden}
+@media(max-width:600px){h1{font-size:22px}.wrap{padding:0 15px}table{font-size:13px}
+th,td{padding:7px 9px}pre{font-size:12px}}
+</style>
+</head>
+<body>
+<body>
+<header class="site"><div class="wrap">
+<a class="logo" href="/">丘山录实测库</a>
+<nav><a href="/bench/">跑分</a><a href="/fix/">排错</a><a href="/license/">许可证</a><a href="/machines/">机器</a><a href="/about/">口径</a></nav>
+</div></header>
+<main class="wrap">
+
+<h1>DGX Spark 升级模型没删旧权重：四台白占 1.4TB，其中 616.90 GiB 是硬链接假象</h1>
+<div class="meta"><span>环境与安装 · 四台各 476 GiB / 名义 2,089.92 GiB / 实释放 1,473.02 GiB</span><span><span class="lv lv-L0">L0</span></span><span>整理于 2026-10-24</span>
+<span>有效期 180d</span></div>
+<p class="lede">「删了旧目录却没释放空间」的排查法：先按 inode 去重算真实体积，再看链接计数（%n）。本机四台 DGX Spark 实测：每台旧权重 476 GiB，四台名义合计 2,089.92 GiB，但 Spark #1 的旧目录与 HF 缓存是同一批 inode（links=2），单删一侧零释放 → 真实可释放只有 1,473.02 GiB，差 616.90 GiB 是算重了。跨机器的硬链接不存在，所以 N 台机器就是 N 份，这是集群架构的固有成本。</p>
+<span class="tag">磁盘管理</span><span class="tag">硬链接</span><span class="tag">inode</span><span class="tag">DGX Spark</span><span class="tag">集群</span><span class="tag">模型权重</span><span class="tag">空间释放</span><span class="tag">links</span><span class="tag">df</span><span class="tag">du</span><span class="tag">存储成本</span>
+<h2>这条适用于</h2><ul><li>能用 root 或目录属主身份执行 find/stat（读 inode 与链接计数需要）</li><li>模型权重存放于本地文件系统（ext4/xfs/btrfs 均可；对象存储/网络挂载不适用）</li><li>删旧权重前已确认无容器/服务引用该目录（docker inspect 查 Mounts）</li></ul>
+<h2>版本指纹</h2><p><code>4× DGX Spark / Ubuntu 24.04.5 / 3.7 TB 系统盘 / coreutils find（-printf %i %s %n 与 -inum 可用）；模型 deepseek-v4.1-flash（48 分片 safetensors）</code></p>
+<h2>具体做法</h2>
+<p>【场景】4× DGX Spark 集群，每台 3.7 TB 系统盘，TP4 张量并行跑 deepseek-v4.1-flash。升级模型时新权重解压到新目录、旧目录留着「回滚」，一个月后盘点发现每台旧权重 476 GiB。</p>
+<p>【四台盘点（2026-10-24 实测，按 inode 去重）】<br>· 新版 dsv41-model：四台均 476 GiB<br>· 旧版 dsv41-model-v41old：四台均 476 GiB（mtime 2026-09-19，比新版早整一个月）<br>· HF 缓存 .cache/huggingface：Spark #1 476 / Spark #2 158 / Spark #3 0 / Spark #4 0 GiB<br>· 系统盘已用：Spark #1 1,118 / Spark #2 1,274 / Spark #3 1,115 / Spark #4 1,114 GiB</p>
+<pre><code>【硬链接坑（本文核心）】
+Spark #1 的旧目录与 .cache/huggingface/blobs 是同一批 inode：
+  inode 13384498  links=2
+    → dsv41-model-v41old/model-00047-of-00048.safetensors
+    → .cache/huggingface/hub/blobs/ea/ea90b8dc…4fb
+⇒ 删掉旧目录，一个字节都不会释放（链接计数 2→1，数据块仍在）。</code></pre>
+<pre><code>【按 links 拆分后的真实账】
+· Spark #1：links=1 占 47.21 GiB（真占）/ links=2 占 475.27 GiB（假占）→ 可释放 47.21 GiB
+· Spark #2/3/4：links=1 各占 475.27 GiB → 各可释放 475.27 GiB
+· 四台名义合计 2,089.92 GiB，实际可释放 1,473.02 GiB，差 616.90 GiB 是算重了</code></pre>
+<p>【架构层面的结论】<br>Spark #1 做了硬链接（权重与 HF 缓存共用一份），另外三台没有 → 同一批权重在四台机器上存了四份，其中三份是纯重复。跨机器的硬链接不存在，inode 只在单机文件系统内有效；要靠 NFS 或对象存储共享，代价是 TP4 加载权重时更慢。<strong></strong></p>
+<div class="caveat"><strong>失效边界</strong><br>① 删除前必须确认容器挂载的是新目录还是旧目录（<code></code> 的 Mounts），本文四台的 dsv41-model 挂载明确指向新目录，旧目录不被任何容器引用；② 硬链接的具体行为随文件系统而异（ext4/xfs/btrfs 表现一致，但某些快照/去重层会干扰 <code></code> 读数），删完务必用 <code></code>/<code></code> 复核前后差值，不要只信事前的 links 计数；③ 本文体积为按 inode 去重后的累加值，与 <code></code> 表面值不同，<code></code> 在硬链接下会重复计数（同一 inode 的多个路径各算一次），这正是「名义 2,089.92 vs 实际 1,473.02」的来源。</div>
+<div class="pager"><a href="/fix/llm-vram-weight-plus-kv-20261027/">← 本地部署大模型要多少显存：权重只是首付，KV 才是月供</a><a href="/fix/comfyui-template-readiness-20261025/" style="text-align:right">ComfyUI 官方模板就绪度怎么核：502 个模板里只有 4 个能直接跑 →</a></div>
+<p style="margin-top:30px"><a href="/fix/">← 返回全部排错方案</a></p>
+
+</main>
+<footer><div class="wrap">
+<p>本站数字均为真机实测，逐条标注验证等级（<span class="lv lv-L1">L1</span> 多次复测取中位 /
+<span class="lv lv-L0">L0</span> 单次测量）。查不到的写「未采集」，不估算。</p>
+<p>数据源自丘山录硬件实测库 · 本页生成于 2026-11-15 · <a href="/about/">数据口径与方法</a></p>
+</div></footer>
+</body>
+</html>

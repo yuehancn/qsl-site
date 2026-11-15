@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>37 份技能说明书 27 万 token：按需加载撕掉七成，常驻描述只占 3.16% · 丘山录实测库</title>
+<meta name="description" content="用 Qwen2.5 官方分词器对本机 37 个技能的 SKILL.md 做精确计数（非按字数估算，整库平均 1.92 字符/token）。全量 526,270 字符 / 273,324 token，相当于 219 篇 2000 字公众号稿（单篇约 1,245 token）。">
+<link rel="canonical" href="https://361365365.xyz/fix/skill-md-token-tax-on-demand-20261020/">
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"TechArticle","headline":"37 份技能说明书 27 万 token：按需加载撕掉七成，常驻描述只占 3.16%","datePublished":"2026-10-20","description":"用 Qwen2.5 官方分词器对本机 37 个技能的 SKILL.md 做精确计数（非按字数估算，整库平均 1.92 字符/token）。全量 526,270 字符 / 273,324 token，相当于 219 篇 2000 字公众号稿（单篇约 1,245 token）。","author":{"@type":"Person","name":"丘山录"}}</script>
+<style>
+:root{--ink:#1a1a1a;--sub:#5b6570;--line:#e3e6ea;--bg:#fff;--soft:#f7f8fa;
+--accent:#b03a2e;--ok:#1e7b45;--warn:#9a6b00;--danger:#a11b1b;--none:#6b7280}
+*{box-sizing:border-box}
+body{margin:0;font:16px/1.75 -apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC",
+"Hiragino Sans GB","Microsoft YaHei",sans-serif;color:var(--ink);background:var(--bg)}
+a{color:#1a4f8a;text-decoration:none}a:hover{text-decoration:underline}
+.wrap{max-width:820px;margin:0 auto;padding:0 20px}
+header.site{border-bottom:1px solid var(--line);padding:18px 0;margin-bottom:32px}
+header.site .wrap{display:flex;align-items:baseline;gap:18px;flex-wrap:wrap}
+header.site .logo{font-weight:700;font-size:18px;color:var(--ink)}
+header.site nav{font-size:14px}
+header.site nav a{color:var(--sub);margin-right:16px}
+h1{font-size:27px;line-height:1.4;margin:0 0 10px;letter-spacing:-.2px}
+h2{font-size:19px;margin:34px 0 12px;padding-top:6px}
+h3{font-size:16px;margin:22px 0 8px}
+p{margin:0 0 14px}
+.meta{color:var(--sub);font-size:13px;margin-bottom:22px;line-height:1.9}
+.meta span{margin-right:14px;white-space:nowrap}
+.lede{font-size:17px;line-height:1.8;background:var(--soft);border-left:3px solid var(--accent);
+padding:16px 18px;margin:0 0 26px}
+table{width:100%;border-collapse:collapse;margin:16px 0;font-size:14px}
+th,td{border:1px solid var(--line);padding:9px 11px;text-align:left;vertical-align:top}
+th{background:var(--soft);font-weight:600}
+td.num{font-variant-numeric:tabular-nums;white-space:nowrap}
+.tag{display:inline-block;font-size:12px;padding:1px 7px;border:1px solid var(--line);
+border-radius:3px;color:var(--sub);margin:0 6px 6px 0;background:#fff}
+.card{border:1px solid var(--line);border-radius:5px;padding:17px 19px;margin:0 0 14px}
+.card h3{margin:0 0 7px;font-size:16px;line-height:1.5}
+.card h3 a{color:var(--ink)}
+.card p{font-size:14px;color:var(--sub);margin:0 0 8px}
+.card .kv{font-size:12.5px;color:var(--sub)}
+ul,ol{padding-left:22px}li{margin-bottom:7px}
+code{background:var(--soft);padding:1px 5px;border-radius:3px;font-size:13.5px;
+font-family:ui-monospace,Consolas,monospace}
+pre{background:var(--soft);padding:14px;border-radius:4px;overflow-x:auto;font-size:13px;
+line-height:1.6}
+pre code{background:none;padding:0}
+.lv{display:inline-block;font-size:11.5px;padding:0 6px;border-radius:3px;
+border:1px solid currentColor;font-weight:600}
+.lv-L1{color:var(--ok)}.lv-L0{color:var(--warn)}.lv-none{color:var(--none)}
+.v-ok{color:var(--ok)}.v-warn{color:var(--warn)}.v-danger{color:var(--danger)}
+.v-limited{color:#7a4b00}.v-none{color:var(--none)}
+.note{border-left:3px solid var(--warn);background:#fffdf5;padding:13px 16px;
+margin:18px 0;font-size:14.5px}
+.caveat{border-left:3px solid var(--accent);background:#fdf7f6;padding:13px 16px;margin:18px 0}
+.caveat strong{color:var(--accent)}
+footer{border-top:1px solid var(--line);margin-top:56px;padding:26px 0 44px;
+font-size:13px;color:var(--sub)}
+footer a{color:var(--sub)}
+.pager{display:flex;justify-content:space-between;gap:16px;margin:36px 0 0;
+padding-top:20px;border-top:1px solid var(--line);font-size:14px}
+.pager a{max-width:46%}
+.count{color:var(--sub);font-size:13.5px;margin:-8px 0 18px}
+.tw{width:100%;overflow-x:auto;-webkit-overflow-scrolling:touch;margin:16px 0}
+.tw table{margin:0;min-width:100%}
+body{overflow-x:hidden}
+@media(max-width:600px){h1{font-size:22px}.wrap{padding:0 15px}table{font-size:13px}
+th,td{padding:7px 9px}pre{font-size:12px}}
+</style>
+</head>
+<body>
+<body>
+<header class="site"><div class="wrap">
+<a class="logo" href="/">丘山录实测库</a>
+<nav><a href="/bench/">跑分</a><a href="/fix/">排错</a><a href="/license/">许可证</a><a href="/machines/">机器</a><a href="/about/">口径</a></nav>
+</div></header>
+<main class="wrap">
+
+<h1>37 份技能说明书 27 万 token：按需加载撕掉七成，常驻描述只占 3.16%</h1>
+<div class="meta"><span>成本账 · 273,324 token · 按需 29.6%</span><span><span class="lv lv-L0">L0</span></span><span>整理于 2026-10-20</span>
+<span>有效期 30d</span></div>
+<p class="lede">用 Qwen2.5 官方分词器对本机 37 个技能的 SKILL.md 做精确计数（非按字数估算，整库平均 1.92 字符/token）。全量 526,270 字符 / 273,324 token，相当于 219 篇 2000 字公众号稿（单篇约 1,245 token）。结构拆分：frontmatter 共 11,482 token 占 4.20%，其中 description 一项 8,646 token 占 3.16%——这是唯一「每次开新会话都要付」的常驻成本；正文 261,813 token 占 95.77%，是按需加载的。单技能差距悬殊：最大 wxmp-virtualpay-cloud 51,060 token（占全库 19.1%，正文 49,964 token / 99,266 汉字，比 32K 窗口还长三倍），正文 token 中位数仅 2,777，最大是最小侧的 18 倍。模拟 6 个真实任务按 description 路由：平均命中 8.0/37 个，平均载入 77,444 token = 全库正文的 29.6%（省 70.4%），杠杆 3.4 倍。窗口占用：8K 窗口全量需 33.0 倍、按需均值 10.5 倍；32K 窗口全量 8.25 倍、按需 2.63 倍。目录体量 6.18 MB / 266 文件 / 78 个 md，单技能文件数 1–69（中位 3），文件数与 token 量不成正比。</p>
+<span class="tag">技能库</span><span class="tag">SKILL.md</span><span class="tag">上下文工程</span><span class="tag">token</span><span class="tag">按需加载</span><span class="tag">Agent</span><span class="tag">上下文窗口</span><span class="tag">描述</span><span class="tag">分词器</span><span class="tag">成本结构</span>
+<h2>这条适用于</h2><ul><li>本地有一批以 SKILL.md 为入口的技能/工具说明书目录</li><li>需要与目标模型匹配的分词器（本文用 Qwen2.5 官方 tokenizer.json）</li><li>能读到每个文件的 frontmatter 与正文分界</li></ul>
+<h2>版本指纹</h2><p><code>Qwen2.5-14B-Instruct tokenizer.json（本地加载）；37 个 SKILL.md，2026-10-20 快照</code></p>
+<h2>具体做法</h2>
+<pre><code>环境：本机 C:\Users\&lt;user&gt;\.workbuddy\skills 目录下 37 个含 SKILL.md 的技能，2026-10-20。分词器 = Qwen2.5-14B-Instruct 官方 tokenizer.json（本地加载，非远程调用）。</code></pre>
+<pre><code>【总量】
+· 37 个技能 / 526,270 字符 / 273,324 token / 平均 1.92 字符·token⁻¹
+· frontmatter 11,482 token = 4.20%
+· description 8,646 token = 3.16%（常驻）
+· 正文 261,813 token = 95.77%（按需）</code></pre>
+<p>【单技能正文 token Top5】<br>· wxmp-virtualpay-cloud 49,964（占全库 19.1%，正文 99,266 字，文件 169,752 B）<br>· gzh-article-to-shipin-hao 35,389（13.5%，正文 57,384 字）<br>· wxmp-wxml-field-audit 20,838（8.0%）<br>· dsh-local-maintain 17,569（6.7%）<br>· wechat-mp-mia-pipeline 14,682（5.6%）<br>· 正文 token 中位数 2,777；全库 total token 中位数 2,926；最大单技能 51,060</p>
+<p>【description 分布】<br>· token 中位 134 / 最长 1,166（wxmp-wxml-field-audit）/ 字符中位 222<br>· 占自身全文比例最高 20.03%（uumit-cruise，正文仅 2,543 token）</p>
+<pre><code>【按需加载模拟（6 个任务，按 description 中文关键词命中）】
+· 公众号出稿 → 命中 9 个 → 123,719 token（47.25%）
+· 长文改口播 → 9 个 → 78,595（30.02%）
+· 查跑分数据 → 9 个 → 57,007（21.77%）
+· 小程序虚拟支付 → 8 个 → 102,562（39.17%）
+· 远程看显卡 → 9 个 → 55,430（21.17%）
+· SRT 白板动画 → 4 个 → 47,353（18.09%）
+· 平均命中 8.0 个 / 平均载入 77,444 token = 29.6%（省 70.4%）</code></pre>
+<p>【结构与窗口】<br>· 目录 6.18 MB / 266 文件 / 78 个 md；单技能文件数 1–69，中位 3<br>· 跨技能重复句仅 3 条、多出 323 token（0.12%）<br>· 8K 窗口：全量 33.0 倍 / 按需 10.5 倍；32K 窗口：8.25 倍 / 2.63 倍<br>· 对照：一篇 2000 字公众号稿 ≈ 1,245 token，全库 ≈ 219 篇</p>
+<div class="caveat"><strong>失效边界</strong><br>本结论为本机实测（2026-10-20），对象是本机 37 个技能的 SKILL.md 说明书，不含脚本、模板与参考文档。token 数由 Qwen2.5 官方分词器精确计数，不同模型分词器结果会不同（同一文本在不同分词器上可差 10% 以上）。6 个任务的路由结果是按中文关键词模拟的，不是真实 Agent 决策日志，因此只能说明「筛得掉」，不能说明「筛得准」。常驻成本只统计了 description 一项，未计入系统提示、工具 schema 等其他常驻开销。</div>
+<div class="pager"><a href="/fix/ollama-resident-vram-startup-fee-20261019/">← 每个常驻模型都有一笔固定显存起步费：权重 262MB 的模型实占 815MB</a><a href="/fix/models-dir-file-vs-size-20261028/" style="text-align:right">模型库 278GB，真正的权重只有 58 个文件 →</a></div>
+<p style="margin-top:30px"><a href="/fix/">← 返回全部排错方案</a></p>
+
+</main>
+<footer><div class="wrap">
+<p>本站数字均为真机实测，逐条标注验证等级（<span class="lv lv-L1">L1</span> 多次复测取中位 /
+<span class="lv lv-L0">L0</span> 单次测量）。查不到的写「未采集」，不估算。</p>
+<p>数据源自丘山录硬件实测库 · 本页生成于 2026-11-15 · <a href="/about/">数据口径与方法</a></p>
+</div></footer>
+</body>
+</html>

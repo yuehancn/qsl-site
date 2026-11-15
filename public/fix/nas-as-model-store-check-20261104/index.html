@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>NAS 能不能当模型盘：随机读差 33 倍，加载 6.5 秒变 4 分 47 秒 · 丘山录实测库</title>
+<meta name="description" content="同一个 19.53GB 真实权重、同一台主机：本机盘读完 6.5 秒，NAS 上 4 分 47 秒，差 44 倍。而把文件搬上 NAS 本身花了 4 分 26 秒——搬一次够本机加载 41 次。">
+<link rel="canonical" href="https://361365365.xyz/fix/nas-as-model-store-check-20261104/">
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"TechArticle","headline":"NAS 能不能当模型盘：随机读差 33 倍，加载 6.5 秒变 4 分 47 秒","datePublished":"2026-11-04","description":"同一个 19.53GB 真实权重、同一台主机：本机盘读完 6.5 秒，NAS 上 4 分 47 秒，差 44 倍。而把文件搬上 NAS 本身花了 4 分 26 秒——搬一次够本机加载 41 次。分界线不在「慢多少」，在随机小块：本机随机读 4KB 是 34.8 MB/s、NAS 只有 0.7，差 50 倍，而模型加载里最多的恰好是小块。三步能在你把模型库搬上 NAS 之前把账算清。","author":{"@type":"Person","name":"丘山录"}}</script>
+<style>
+:root{--ink:#1a1a1a;--sub:#5b6570;--line:#e3e6ea;--bg:#fff;--soft:#f7f8fa;
+--accent:#b03a2e;--ok:#1e7b45;--warn:#9a6b00;--danger:#a11b1b;--none:#6b7280}
+*{box-sizing:border-box}
+body{margin:0;font:16px/1.75 -apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC",
+"Hiragino Sans GB","Microsoft YaHei",sans-serif;color:var(--ink);background:var(--bg)}
+a{color:#1a4f8a;text-decoration:none}a:hover{text-decoration:underline}
+.wrap{max-width:820px;margin:0 auto;padding:0 20px}
+header.site{border-bottom:1px solid var(--line);padding:18px 0;margin-bottom:32px}
+header.site .wrap{display:flex;align-items:baseline;gap:18px;flex-wrap:wrap}
+header.site .logo{font-weight:700;font-size:18px;color:var(--ink)}
+header.site nav{font-size:14px}
+header.site nav a{color:var(--sub);margin-right:16px}
+h1{font-size:27px;line-height:1.4;margin:0 0 10px;letter-spacing:-.2px}
+h2{font-size:19px;margin:34px 0 12px;padding-top:6px}
+h3{font-size:16px;margin:22px 0 8px}
+p{margin:0 0 14px}
+.meta{color:var(--sub);font-size:13px;margin-bottom:22px;line-height:1.9}
+.meta span{margin-right:14px;white-space:nowrap}
+.lede{font-size:17px;line-height:1.8;background:var(--soft);border-left:3px solid var(--accent);
+padding:16px 18px;margin:0 0 26px}
+table{width:100%;border-collapse:collapse;margin:16px 0;font-size:14px}
+th,td{border:1px solid var(--line);padding:9px 11px;text-align:left;vertical-align:top}
+th{background:var(--soft);font-weight:600}
+td.num{font-variant-numeric:tabular-nums;white-space:nowrap}
+.tag{display:inline-block;font-size:12px;padding:1px 7px;border:1px solid var(--line);
+border-radius:3px;color:var(--sub);margin:0 6px 6px 0;background:#fff}
+.card{border:1px solid var(--line);border-radius:5px;padding:17px 19px;margin:0 0 14px}
+.card h3{margin:0 0 7px;font-size:16px;line-height:1.5}
+.card h3 a{color:var(--ink)}
+.card p{font-size:14px;color:var(--sub);margin:0 0 8px}
+.card .kv{font-size:12.5px;color:var(--sub)}
+ul,ol{padding-left:22px}li{margin-bottom:7px}
+code{background:var(--soft);padding:1px 5px;border-radius:3px;font-size:13.5px;
+font-family:ui-monospace,Consolas,monospace}
+pre{background:var(--soft);padding:14px;border-radius:4px;overflow-x:auto;font-size:13px;
+line-height:1.6}
+pre code{background:none;padding:0}
+.lv{display:inline-block;font-size:11.5px;padding:0 6px;border-radius:3px;
+border:1px solid currentColor;font-weight:600}
+.lv-L1{color:var(--ok)}.lv-L0{color:var(--warn)}.lv-none{color:var(--none)}
+.v-ok{color:var(--ok)}.v-warn{color:var(--warn)}.v-danger{color:var(--danger)}
+.v-limited{color:#7a4b00}.v-none{color:var(--none)}
+.note{border-left:3px solid var(--warn);background:#fffdf5;padding:13px 16px;
+margin:18px 0;font-size:14.5px}
+.caveat{border-left:3px solid var(--accent);background:#fdf7f6;padding:13px 16px;margin:18px 0}
+.caveat strong{color:var(--accent)}
+footer{border-top:1px solid var(--line);margin-top:56px;padding:26px 0 44px;
+font-size:13px;color:var(--sub)}
+footer a{color:var(--sub)}
+.pager{display:flex;justify-content:space-between;gap:16px;margin:36px 0 0;
+padding-top:20px;border-top:1px solid var(--line);font-size:14px}
+.pager a{max-width:46%}
+.count{color:var(--sub);font-size:13.5px;margin:-8px 0 18px}
+.tw{width:100%;overflow-x:auto;-webkit-overflow-scrolling:touch;margin:16px 0}
+.tw table{margin:0;min-width:100%}
+body{overflow-x:hidden}
+@media(max-width:600px){h1{font-size:22px}.wrap{padding:0 15px}table{font-size:13px}
+th,td{padding:7px 9px}pre{font-size:12px}}
+</style>
+</head>
+<body>
+<body>
+<header class="site"><div class="wrap">
+<a class="logo" href="/">丘山录实测库</a>
+<nav><a href="/bench/">跑分</a><a href="/fix/">排错</a><a href="/license/">许可证</a><a href="/machines/">机器</a><a href="/about/">口径</a></nav>
+</div></header>
+<main class="wrap">
+
+<h1>NAS 能不能当模型盘：随机读差 33 倍，加载 6.5 秒变 4 分 47 秒</h1>
+<div class="meta"><span>排障 · 约 6 步 / 15 分钟自查</span><span><span class="lv lv-L0">L0</span></span><span>整理于 2026-11-04</span>
+<span>有效期 180d</span></div>
+<p class="lede">同一个 19.53GB 真实权重、同一台主机：本机盘读完 6.5 秒，NAS 上 4 分 47 秒，差 44 倍。而把文件搬上 NAS 本身花了 4 分 26 秒——搬一次够本机加载 41 次。分界线不在「慢多少」，在随机小块：本机随机读 4KB 是 34.8 MB/s、NAS 只有 0.7，差 50 倍，而模型加载里最多的恰好是小块。三步能在你把模型库搬上 NAS 之前把账算清。</p>
+<span class="tag">NAS</span><span class="tag">模型盘</span><span class="tag">随机读</span><span class="tag">加载</span><span class="tag">SMB</span><span class="tag">NVMe</span><span class="tag">存储</span><span class="tag">本地部署</span><span class="tag">权重</span><span class="tag">归档</span><span class="tag">选型</span><span class="tag">IO</span>
+<h2>这条适用于</h2><ul><li>有一块本机 SSD 与一个网络盘（NAS / SMB / NFS 均可）</li><li>知道要放的模型总字节数，且有一份真实权重可读</li><li>能跑无缓冲读写（dd 或带 FILE_FLAG_NO_BUFFERING 的脚本）</li></ul>
+<h2>版本指纹</h2><p><code>Windows FILE_FLAG_NO_BUFFERING；SMB 映射盘；Linux 侧对应 O_DIRECT（需 4K 对齐）</code></p>
+<h2>具体做法</h2>
+<p>【实测条件】同一台 Windows 主机，同一份数据，两条路径（本机 NVMe / 局域网 NAS 经 SMB 映射），全程 FILE_FLAG_NO_BUFFERING 绕过页缓存。2026-11-04 00:16-00:24 采集。</p>
+<p>【三方存储四档对照】<br>本机 NVMe：顺序写 1385.8 / 顺序读 2855.6 / 随机读 8MB 块 2656.1（332 IOPS）/ 随机读 4KB 块 34.8 MB/s（8898.7 IOPS，p50 0.12 ms）<br>局域网 NAS（15T）：顺序写 95.0 / 顺序读 68.0 / 随机读 8MB 块 80.5（10.1 IOPS）/ 随机读 4KB 块 0.7 MB/s（183.1 IOPS，p50 0.78 ms、p95 12.572 ms）<br>DGX 板载 NVMe：顺序写 3.5 / 顺序读 11.3 GB/s（dd 16MB 块 O_DIRECT）</p>
+<pre><code>【真实权重加载（19.53GB，int8 safetensors，逐文件求和）】
+本机：读 4GB 切片 3054.0 MB/s → 全量 6.5 秒（100GB 33.5 秒）
+NAS：读 2GB 切片 69.5 MB/s → 全量 287.2 秒 = 4 分 47 秒（100GB 1470.6 秒）
+差 44 倍。</code></pre>
+<p>【最反常识的一个数】把 19.53GB 复制到 NAS 上本身花了 266.6 秒（75.0 MB/s，4 分 26 秒）。也就是说：搬运一次的时间，是本机加载一次的 41 倍。这不是「顺手放一下」，是每次换模型都要重付一次的固定成本。</p>
+<p>【为什么小块最致命】大块顺序读靠「一口气传」，随机小块靠「每块都要来回一次」。NAS 的瓶颈从来不是带宽，是往返次数。所以顺序读本机对 NAS 是 42 倍、随机 8MB 块 33 倍、一落到 4KB 小块变成 50 倍。而一个 19.53GB 的仓库是几十个 safetensors 分片 + config + tokenizer + 索引：加载器先读索引、再按索引去每个分片定位张量头、再按张量名跳着读 —— 这个「跳着读」就是随机小块。</p>
+<p>【口径陷阱】本机 2656.1 是随机读 8MB 块，DGX 11.3 GB/s 是顺序读 16MB 块，两者不是同一口径。按同口径比（都取顺序大块）：本机 2855.6 MB/s vs 11.3 GB/s，真实差距约 4 倍。别拿 11.3 去比 2656 然后说「差 4.3 倍是随机换顺序的代价」——那是两个变量混在一起。</p>
+<p>【结论】NAS 该买，但它该放在归档那一栏，不是模型库那一栏。模型总量 4TB 以内，一块 NVMe 的钱就买到 33 倍加载速度；要挂多个模型就加盘或上多卡，别指望网络盘。</p>
+<div class="caveat"><strong>失效边界</strong><br>NAS 的硬件规格未知（几盘 RAID、机械还是 SSD、千兆还是 2.5G），所以 80.5 MB/s 这个数无法归因——可能是盘慢、可能是网络慢、可能是单线程 SMB 的天花板，文中只写现象不写归因。随机读只做了单线程单队列，NVMe 的强项是深队列，所以本机侧被低估。只测了读得到多快，没测加载完之后跑得多快（加载带宽 ≠ 推理 tok/s）。6.5 秒 / 287.2 秒 / 44 倍等为按实测带宽换算，非独立计时。</div>
+<div class="pager"><a href="/fix/ffmpeg-subtitle-line-width-wrap-20261023/">← ffmpeg 字幕每行几个字是算出来的：12 号字 16 字 705px，第 17 个就折行</a><a href="/fix/proxy-env-trap-20260930/" style="text-align:right">内网推理服务「偶尔连不上」：先查代理环境变量，别查配置 →</a></div>
+<p style="margin-top:30px"><a href="/fix/">← 返回全部排错方案</a></p>
+
+</main>
+<footer><div class="wrap">
+<p>本站数字均为真机实测，逐条标注验证等级（<span class="lv lv-L1">L1</span> 多次复测取中位 /
+<span class="lv lv-L0">L0</span> 单次测量）。查不到的写「未采集」，不估算。</p>
+<p>数据源自丘山录硬件实测库 · 本页生成于 2026-11-15 · <a href="/about/">数据口径与方法</a></p>
+</div></footer>
+</body>
+</html>

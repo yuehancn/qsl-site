@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ARM 小机跑端侧模型的三个前置门槛：指令集、glibc、cmake · 丘山录实测库</title>
+<meta name="description" content="4 核 Cortex-A55 的 ARM 盒子（3.9GB 内存、零 swap、Debian 12）跑 llama.cpp 官方 arm64 预编译包，下载 200 成功、运行直接报 GLIBCXX_3.4.32 / GLIBC_2.38 / CXXABI_1.3.">
+<link rel="canonical" href="https://361365365.xyz/fix/arm-edge-deploy-prereq-20261109/">
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"TechArticle","headline":"ARM 小机跑端侧模型的三个前置门槛：指令集、glibc、cmake","datePublished":"2026-11-09","description":"4 核 Cortex-A55 的 ARM 盒子（3.9GB 内存、零 swap、Debian 12）跑 llama.cpp 官方 arm64 预编译包，下载 200 成功、运行直接报 GLIBCXX_3.4.32 / GLIBC_2.38 / CXXABI_1.3.15 not found —— 本机 glibc 2.36，差两个小版本。","author":{"@type":"Person","name":"丘山录"}}</script>
+<style>
+:root{--ink:#1a1a1a;--sub:#5b6570;--line:#e3e6ea;--bg:#fff;--soft:#f7f8fa;
+--accent:#b03a2e;--ok:#1e7b45;--warn:#9a6b00;--danger:#a11b1b;--none:#6b7280}
+*{box-sizing:border-box}
+body{margin:0;font:16px/1.75 -apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC",
+"Hiragino Sans GB","Microsoft YaHei",sans-serif;color:var(--ink);background:var(--bg)}
+a{color:#1a4f8a;text-decoration:none}a:hover{text-decoration:underline}
+.wrap{max-width:820px;margin:0 auto;padding:0 20px}
+header.site{border-bottom:1px solid var(--line);padding:18px 0;margin-bottom:32px}
+header.site .wrap{display:flex;align-items:baseline;gap:18px;flex-wrap:wrap}
+header.site .logo{font-weight:700;font-size:18px;color:var(--ink)}
+header.site nav{font-size:14px}
+header.site nav a{color:var(--sub);margin-right:16px}
+h1{font-size:27px;line-height:1.4;margin:0 0 10px;letter-spacing:-.2px}
+h2{font-size:19px;margin:34px 0 12px;padding-top:6px}
+h3{font-size:16px;margin:22px 0 8px}
+p{margin:0 0 14px}
+.meta{color:var(--sub);font-size:13px;margin-bottom:22px;line-height:1.9}
+.meta span{margin-right:14px;white-space:nowrap}
+.lede{font-size:17px;line-height:1.8;background:var(--soft);border-left:3px solid var(--accent);
+padding:16px 18px;margin:0 0 26px}
+table{width:100%;border-collapse:collapse;margin:16px 0;font-size:14px}
+th,td{border:1px solid var(--line);padding:9px 11px;text-align:left;vertical-align:top}
+th{background:var(--soft);font-weight:600}
+td.num{font-variant-numeric:tabular-nums;white-space:nowrap}
+.tag{display:inline-block;font-size:12px;padding:1px 7px;border:1px solid var(--line);
+border-radius:3px;color:var(--sub);margin:0 6px 6px 0;background:#fff}
+.card{border:1px solid var(--line);border-radius:5px;padding:17px 19px;margin:0 0 14px}
+.card h3{margin:0 0 7px;font-size:16px;line-height:1.5}
+.card h3 a{color:var(--ink)}
+.card p{font-size:14px;color:var(--sub);margin:0 0 8px}
+.card .kv{font-size:12.5px;color:var(--sub)}
+ul,ol{padding-left:22px}li{margin-bottom:7px}
+code{background:var(--soft);padding:1px 5px;border-radius:3px;font-size:13.5px;
+font-family:ui-monospace,Consolas,monospace}
+pre{background:var(--soft);padding:14px;border-radius:4px;overflow-x:auto;font-size:13px;
+line-height:1.6}
+pre code{background:none;padding:0}
+.lv{display:inline-block;font-size:11.5px;padding:0 6px;border-radius:3px;
+border:1px solid currentColor;font-weight:600}
+.lv-L1{color:var(--ok)}.lv-L0{color:var(--warn)}.lv-none{color:var(--none)}
+.v-ok{color:var(--ok)}.v-warn{color:var(--warn)}.v-danger{color:var(--danger)}
+.v-limited{color:#7a4b00}.v-none{color:var(--none)}
+.note{border-left:3px solid var(--warn);background:#fffdf5;padding:13px 16px;
+margin:18px 0;font-size:14.5px}
+.caveat{border-left:3px solid var(--accent);background:#fdf7f6;padding:13px 16px;margin:18px 0}
+.caveat strong{color:var(--accent)}
+footer{border-top:1px solid var(--line);margin-top:56px;padding:26px 0 44px;
+font-size:13px;color:var(--sub)}
+footer a{color:var(--sub)}
+.pager{display:flex;justify-content:space-between;gap:16px;margin:36px 0 0;
+padding-top:20px;border-top:1px solid var(--line);font-size:14px}
+.pager a{max-width:46%}
+.count{color:var(--sub);font-size:13.5px;margin:-8px 0 18px}
+.tw{width:100%;overflow-x:auto;-webkit-overflow-scrolling:touch;margin:16px 0}
+.tw table{margin:0;min-width:100%}
+body{overflow-x:hidden}
+@media(max-width:600px){h1{font-size:22px}.wrap{padding:0 15px}table{font-size:13px}
+th,td{padding:7px 9px}pre{font-size:12px}}
+</style>
+</head>
+<body>
+<body>
+<header class="site"><div class="wrap">
+<a class="logo" href="/">丘山录实测库</a>
+<nav><a href="/bench/">跑分</a><a href="/fix/">排错</a><a href="/license/">许可证</a><a href="/machines/">机器</a><a href="/about/">口径</a></nav>
+</div></header>
+<main class="wrap">
+
+<h1>ARM 小机跑端侧模型的三个前置门槛：指令集、glibc、cmake</h1>
+<div class="meta"><span>环境与安装 · 5 步 / 约 30 分钟（不含下载与编译）</span><span><span class="lv lv-none">未标注</span></span><span>整理于 2026-11-09</span>
+<span>有效期 180d</span></div>
+<p class="lede">4 核 Cortex-A55 的 ARM 盒子（3.9GB 内存、零 swap、Debian 12）跑 llama.cpp 官方 arm64 预编译包，下载 200 成功、运行直接报 GLIBCXX_3.4.32 / GLIBC_2.38 / CXXABI_1.3.15 not found —— 本机 glibc 2.36，差两个小版本。有 gcc 12.2 和 make 却缺 cmake，源码编译这条路也断。附三条开工前 30 秒能跑完的检查命令，以及「参数量不代表能跑」的实测对照。</p>
+<span class="tag">端侧</span><span class="tag">ARM</span><span class="tag">aarch64</span><span class="tag">llama.cpp</span><span class="tag">glibc</span><span class="tag">指令集</span><span class="tag">部署</span><span class="tag">报错</span><span class="tag">选型</span><span class="tag">量化</span><span class="tag">内存带宽</span>
+<h2>这条适用于</h2><ul><li>目标机可通过 SSH 登录，能读 /proc/cpuinfo 与 ldd --version</li><li>已知要跑的模型体积（字节数），不是「大概几百兆」</li><li>若需源码编译，机器上须有 gcc + make + cmake 三件</li></ul>
+<h2>版本指纹</h2><p><code>Debian 12.12 / glibc 2.36 / GLIBCXX 3.4.30 / llama.cpp b12128</code></p>
+<h2>具体做法</h2>
+<p>【实测环境】ARM 端侧小机：4 核 Cortex-A55（CPU part 0xd05）、aarch64、3.9GB 内存、零 swap、Debian 12.12、glibc 2.36、libstdc++ 最高 GLIBCXX 3.4.30、gcc 12.2.0、有 make 无 cmake、SoC 温度 48.9°C。</p>
+<p>【预编译包失败原文】包 llama-b12128-bin-ubuntu-arm64.tar.gz，18,753,070 字节，经 gh-proxy 下载返回 200。add_executable 生成的二进制直接运行报三行：GLIBCXX_3.4.32 not found / CXXABI_1.3.15 not found / GLIBC_2.38 not found。三个都要，缺一个都起不来。</p>
+<p>【指令集缺口】该 CPU 的 Features 里有 asimd、asimdhp、asimddp、fp、aes、crc32，但 i8mm / bf16 / dotprod / sve2 四项全部为 false。这四项正是所有 INT4/INT8 反量化加速赖以生效的指令。对照：官方在手机上宣传的 350 tok/s，那台设备的芯片有 i8mm 与 bf16。</p>
+<pre><code>【反量化实测】gcc -O3 -march=native 现场编译 Q4_0 格式微基准：纯反量化吞吐 4,015.5 MB/s，反量化+GEMV 有效带宽 0.8 GB/s、0.4 GFLOPS，纯 fp32 GEMV 0.6 GFLOPS —— 反量化单独占 32.4% 的时间。这三分之一只干「把 4bit 变回 float」一件事，还没开始乘加。</code></pre>
+<pre><code>【内存带宽】256MB copy、threading.Barrier 栅栏同步起跑、读写各计一次：T=1 5.01 / T=2 10.72 / T=4 18.35 GB/s。按 573MB 权重每 token 读全量算，单线程上界 14.0 tok/s。</code></pre>
+<pre><code>【跨算力档对照（同一模型 PLaMo 0.8B Q4_K_M 573,126,848 字节）】低配 x86 4 核（仅 SSE4.2、无 AVX/FMA）decode T1/T2/T4 = 2.0 / 3.8 / 7.4 tok/s，prefill 3.1 / 5.8 / 11.7；80 线程双路 Xeon（AVX2+FMA）decode T1-T20 = 14.8 / 25.4 / 37.0 / 45.5 / 45.9 / 44.4，prefill 40.2 / 78.1 / 137.9 / 217.1 / 318.8 / 341.9。跨机单线程 7.4 倍、4 线程 5.0 倍；80 线程机在 T=8 就饱和，T=16 只多 0.9%、T=20 反降 2.4% —— 80 个逻辑核只有 8 个在干活。</code></pre>
+<pre><code>【带宽达成率】低配 x86 机 T=1 只吃到带宽的 14.3%（隐含有效带宽 1.15 GB/s），Xeon T=1 吃到 49.6%（8.48 GB/s）。两者裸带宽只差 2 倍（8.01 vs 17.09 GB/s），达成率却差 3.5 倍 —— 决定速度的不是内存有多快，是能不能把带宽用起来。</code></pre>
+<p>【为什么 ARM 上没拿到 tok/s】官方 arm64 预编译包跑不起来（上面三条），本机又缺 cmake 无法源码编译。ARM 侧的真实 tok/s 是本次最大空白，不做估算、不用 x86 数字顶替。</p>
+<div class="caveat"><strong>失效边界</strong><br>ARM 侧真实 tok/s 未取得：预编译包因 glibc 2.36 &lt; 2.38 无法运行，本机缺 cmake 无法源码编译，两条路都断。文中所有 tok/s 均来自 x86 两台机器（低配 4 核与 80 线程双路 Xeon），与 ARM 盒子不是同一台设备，不可直接外推。反量化加速比（i8mm/bf16 贡献多少）只能定性说，本机群没有带 i8mm 的 ARM 设备，量不出具体倍数。功耗未测 —— 该机没有可读功率计，SoC 温度 48.9°C 只是温度不是功耗。</div>
+<div class="pager"><a href="/fix/model-weight-move-verify-path-20261108/">← 模型权重从下载到上机：四跳链路 + 校验一跳的完整计时</a><a href="/fix/numpy-torch-version-conflict-20261006/" style="text-align:right">升级一个包整个环境就崩：numpy 1.x/2.x 断代是最经典的那种 →</a></div>
+<p style="margin-top:30px"><a href="/fix/">← 返回全部排错方案</a></p>
+
+</main>
+<footer><div class="wrap">
+<p>本站数字均为真机实测，逐条标注验证等级（<span class="lv lv-L1">L1</span> 多次复测取中位 /
+<span class="lv lv-L0">L0</span> 单次测量）。查不到的写「未采集」，不估算。</p>
+<p>数据源自丘山录硬件实测库 · 本页生成于 2026-11-15 · <a href="/about/">数据口径与方法</a></p>
+</div></footer>
+</body>
+</html>

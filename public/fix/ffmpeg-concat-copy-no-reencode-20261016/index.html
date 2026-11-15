@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ffmpeg 拼片头不该重编：加 7 秒，全片被重走一遍编码器 · 丘山录实测库</title>
+<meta name="description" content="成片加 3 秒片头 + 4 秒片尾，两段合计只占发布版体积 1.6%，但产线的 concat 步骤把 116.4 秒正片整段用 libx264 重编了一遍，多出 725,385 字节 = +10.05%。">
+<link rel="canonical" href="https://361365365.xyz/fix/ffmpeg-concat-copy-no-reencode-20261016/">
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"TechArticle","headline":"ffmpeg 拼片头不该重编：加 7 秒，全片被重走一遍编码器","datePublished":"2026-10-16","description":"成片加 3 秒片头 + 4 秒片尾，两段合计只占发布版体积 1.6%，但产线的 concat 步骤把 116.4 秒正片整段用 libx264 重编了一遍，多出 725,385 字节 = +10.05%。","author":{"@type":"Person","name":"丘山录"}}</script>
+<style>
+:root{--ink:#1a1a1a;--sub:#5b6570;--line:#e3e6ea;--bg:#fff;--soft:#f7f8fa;
+--accent:#b03a2e;--ok:#1e7b45;--warn:#9a6b00;--danger:#a11b1b;--none:#6b7280}
+*{box-sizing:border-box}
+body{margin:0;font:16px/1.75 -apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC",
+"Hiragino Sans GB","Microsoft YaHei",sans-serif;color:var(--ink);background:var(--bg)}
+a{color:#1a4f8a;text-decoration:none}a:hover{text-decoration:underline}
+.wrap{max-width:820px;margin:0 auto;padding:0 20px}
+header.site{border-bottom:1px solid var(--line);padding:18px 0;margin-bottom:32px}
+header.site .wrap{display:flex;align-items:baseline;gap:18px;flex-wrap:wrap}
+header.site .logo{font-weight:700;font-size:18px;color:var(--ink)}
+header.site nav{font-size:14px}
+header.site nav a{color:var(--sub);margin-right:16px}
+h1{font-size:27px;line-height:1.4;margin:0 0 10px;letter-spacing:-.2px}
+h2{font-size:19px;margin:34px 0 12px;padding-top:6px}
+h3{font-size:16px;margin:22px 0 8px}
+p{margin:0 0 14px}
+.meta{color:var(--sub);font-size:13px;margin-bottom:22px;line-height:1.9}
+.meta span{margin-right:14px;white-space:nowrap}
+.lede{font-size:17px;line-height:1.8;background:var(--soft);border-left:3px solid var(--accent);
+padding:16px 18px;margin:0 0 26px}
+table{width:100%;border-collapse:collapse;margin:16px 0;font-size:14px}
+th,td{border:1px solid var(--line);padding:9px 11px;text-align:left;vertical-align:top}
+th{background:var(--soft);font-weight:600}
+td.num{font-variant-numeric:tabular-nums;white-space:nowrap}
+.tag{display:inline-block;font-size:12px;padding:1px 7px;border:1px solid var(--line);
+border-radius:3px;color:var(--sub);margin:0 6px 6px 0;background:#fff}
+.card{border:1px solid var(--line);border-radius:5px;padding:17px 19px;margin:0 0 14px}
+.card h3{margin:0 0 7px;font-size:16px;line-height:1.5}
+.card h3 a{color:var(--ink)}
+.card p{font-size:14px;color:var(--sub);margin:0 0 8px}
+.card .kv{font-size:12.5px;color:var(--sub)}
+ul,ol{padding-left:22px}li{margin-bottom:7px}
+code{background:var(--soft);padding:1px 5px;border-radius:3px;font-size:13.5px;
+font-family:ui-monospace,Consolas,monospace}
+pre{background:var(--soft);padding:14px;border-radius:4px;overflow-x:auto;font-size:13px;
+line-height:1.6}
+pre code{background:none;padding:0}
+.lv{display:inline-block;font-size:11.5px;padding:0 6px;border-radius:3px;
+border:1px solid currentColor;font-weight:600}
+.lv-L1{color:var(--ok)}.lv-L0{color:var(--warn)}.lv-none{color:var(--none)}
+.v-ok{color:var(--ok)}.v-warn{color:var(--warn)}.v-danger{color:var(--danger)}
+.v-limited{color:#7a4b00}.v-none{color:var(--none)}
+.note{border-left:3px solid var(--warn);background:#fffdf5;padding:13px 16px;
+margin:18px 0;font-size:14.5px}
+.caveat{border-left:3px solid var(--accent);background:#fdf7f6;padding:13px 16px;margin:18px 0}
+.caveat strong{color:var(--accent)}
+footer{border-top:1px solid var(--line);margin-top:56px;padding:26px 0 44px;
+font-size:13px;color:var(--sub)}
+footer a{color:var(--sub)}
+.pager{display:flex;justify-content:space-between;gap:16px;margin:36px 0 0;
+padding-top:20px;border-top:1px solid var(--line);font-size:14px}
+.pager a{max-width:46%}
+.count{color:var(--sub);font-size:13.5px;margin:-8px 0 18px}
+.tw{width:100%;overflow-x:auto;-webkit-overflow-scrolling:touch;margin:16px 0}
+.tw table{margin:0;min-width:100%}
+body{overflow-x:hidden}
+@media(max-width:600px){h1{font-size:22px}.wrap{padding:0 15px}table{font-size:13px}
+th,td{padding:7px 9px}pre{font-size:12px}}
+</style>
+</head>
+<body>
+<body>
+<header class="site"><div class="wrap">
+<a class="logo" href="/">丘山录实测库</a>
+<nav><a href="/bench/">跑分</a><a href="/fix/">排错</a><a href="/license/">许可证</a><a href="/machines/">机器</a><a href="/about/">口径</a></nav>
+</div></header>
+<main class="wrap">
+
+<h1>ffmpeg 拼片头不该重编：加 7 秒，全片被重走一遍编码器</h1>
+<div class="meta"><span>排障 · 两路线对照 / 116 秒正片</span><span><span class="lv lv-L1">L1</span></span><span>整理于 2026-10-16</span>
+<span>有效期 30d</span></div>
+<p class="lede">成片加 3 秒片头 + 4 秒片尾，两段合计只占发布版体积 1.6%，但产线的 concat 步骤把 116.4 秒正片整段用 libx264 重编了一遍，多出 725,385 字节 = +10.05%。同一份输入实测两条路线：重编 7,945,595 B / 2.55 秒 / 正片段落 SSIM 0.996955；-c copy 7,220,210 B / 0.08 秒 / SSIM 1.000000 —— 体积省 10%、耗时省 32 倍，画质反而更好。前提是三段流编码参数完全一致（本机实测九个字段全同）。</p>
+<span class="tag">ffmpeg</span><span class="tag">concat</span><span class="tag">重编</span><span class="tag">体积</span><span class="tag">编码参数</span><span class="tag">本地部署</span><span class="tag">AI音视频</span><span class="tag">成片产线</span>
+<h2>这条适用于</h2><ul><li>拼接的三段流编码参数不完全一致时不可用（-c copy 的唯一前提）</li><li>产线的 concat 步骤当前仍带 -c:v libx264 重编</li></ul>
+<h2>版本指纹</h2><p><code>本机 5090D 内容机；ffmpeg 实测 concat 两步对照（重编 vs -c copy）；九字段流参数比对</code></p>
+<h2>具体做法</h2>
+<p>本机实测（2026-10-16，ffmpeg Lavc63.1.101 / Windows）：</p>
+<p>【真实产线三代文件】<br>· raw.mp4        7,018,936 B / 116.400 s / 3491 帧<br>· 竖屏.mp4（烧字幕）  7,095,090 B / 116.400 s / 3491 帧<br>· 发布版.mp4（含片头片尾）7,945,595 B / 123.433 s / 3701 帧</p>
+<pre><code>【成本归属】
+· 片头 head_a.mp4 65,522 B + 片尾 tail_a.mp4 61,747 B = 127,269 B，占发布版 1.6%
+· 发布版 − 头 − 尾 = 7,818,326 B（正片重编后的字节）
+· 同一段画面第二次编码后多出 725,385 B（+10.19% 相对竖屏版同段）</code></pre>
+<p>【两条路线对照（同输入同清单）】<br>· 重编（产线现行 -c:v libx264 -crf 20 -preset medium）：7,945,595 B / 2.55 s / 3701 帧 / v码率 392,218<br>· stream copy（-c copy）：7,220,210 B / 0.08 s / 3701 帧 / v码率 345,608<br>· 差 725,385 B = +10.05%；耗时差 32.0 倍<br>· 正片段落 vs 源：重编版 SSIM 0.996955；copy 版 SSIM 1.000000（未过编码器）</p>
+<p>【-c copy 安全性核验（三段流字段）】<br>head_a / 竖屏正片 / tail_a 三段完全一致：h264 / High / level 32 / yuv420p / 768×1344 / 30-1<br>→ 不一致字段：无</p>
+<pre><code>【修复后完整性】
+整片解码零报错；nb_frames 3701 = 头 90 + 身 3491 + 尾 120；抽帧四点（1.5 s / 3.0 s / 119.4 s / 121.0 s）全部正常。</code></pre>
+<p>【代际损耗（raw.mp4 为基准连编四代）】<br>· G1（原片）7,018,936 B / SSIM 1.000000 / PSNR inf<br>· G2 6,755,538 B（−3.75%）/ SSIM 0.999046 / PSNR 52.13<br>· G3 6,615,623 B（−5.75%）/ SSIM 0.998604 / PSNR 49.88<br>· G4 6,494,791 B（−7.47%）/ SSIM 0.998282 / PSNR 48.59<br>→ 损耗只发生在第一次（G2→G3 掉 0.000442，G3→G4 只掉 0.000322），体积却每代都付。</p>
+<p>【产线 crf 取证】<br>· steps_burn.py（烧字幕）：-c:v libx264，未指定 crf（libx264 默认 23）<br>· _add_intro_outro_common.py（片头片尾 + concat）：-crf 20 -preset medium<br>→ 参数差异被最后一步重编抹平，故 copy 可行。</p>
+<pre><code>【附：帧率核查】
+发布版 r_frame_rate=30/1、avg_frame_rate=18505/617（29.9919），90+3491+120=3701 与文件报数一致 → 此处无问题。</code></pre>
+<div class="caveat"><strong>失效边界</strong><br>本结论为本机实测（2026-10-16；ffmpeg Lavc63.1.101；源素材为本机成片产线 768×1344@30fps 竖屏正片 116.4 秒）。体积与帧数为文件实测值；SSIM 与 PSNR 为 ffmpeg 内置滤镜输出，仅用于同一批文件之间的相对比较，不代表观看感受。耗时受本机负载影响，不同硬件上绝对值会不同，路线之间的倍数关系可参考。测量前已停止本机其他占卡任务。改 -c copy 前务必先自核三段流参数，参数不一致时直接 copy 会产生接缝问题。</div>
+<div class="pager"><a href="/fix/multi-platform-silent-overwrite-20261011/">← 三平台各出一条片最后只剩一条：跳过被当成了完成</a><a href="/fix/ollama-embed-silent-truncation-20261017/" style="text-align:right">Ollama 向量入库静默截断 2048 token：超出部分对检索贡献是精确的零 →</a></div>
+<p style="margin-top:30px"><a href="/fix/">← 返回全部排错方案</a></p>
+
+</main>
+<footer><div class="wrap">
+<p>本站数字均为真机实测，逐条标注验证等级（<span class="lv lv-L1">L1</span> 多次复测取中位 /
+<span class="lv lv-L0">L0</span> 单次测量）。查不到的写「未采集」，不估算。</p>
+<p>数据源自丘山录硬件实测库 · 本页生成于 2026-11-15 · <a href="/about/">数据口径与方法</a></p>
+</div></footer>
+</body>
+</html>

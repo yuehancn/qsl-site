@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>DGX Spark 双网怎么测：千兆口 118.7 MB/s，200G 环网 16 流 13.8 GB/s · 丘山录实测库</title>
+<meta name="description" content="同一批文件，千兆管理网实测 118.7 MB/s，200G 环网 16 流 13796.5 MB/s，差 116 倍。但单流只跑出 4.9% —— 所以别用 iperf3 单流跑一把就下结论：服务端还得一线程一连接，否则多流其实在排队，会把 200G 的网误判成 10G。四步顺序做完再信数字。">
+<link rel="canonical" href="https://361365365.xyz/fix/dgx-spark-dual-net-verify-20261105/">
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"TechArticle","headline":"DGX Spark 双网怎么测：千兆口 118.7 MB/s，200G 环网 16 流 13.8 GB/s","datePublished":"2026-11-05","description":"同一批文件，千兆管理网实测 118.7 MB/s，200G 环网 16 流 13796.5 MB/s，差 116 倍。但单流只跑出 4.9% —— 所以别用 iperf3 单流跑一把就下结论：服务端还得一线程一连接，否则多流其实在排队，会把 200G 的网误判成 10G。四步顺序做完再信数字。","author":{"@type":"Person","name":"丘山录"}}</script>
+<style>
+:root{--ink:#1a1a1a;--sub:#5b6570;--line:#e3e6ea;--bg:#fff;--soft:#f7f8fa;
+--accent:#b03a2e;--ok:#1e7b45;--warn:#9a6b00;--danger:#a11b1b;--none:#6b7280}
+*{box-sizing:border-box}
+body{margin:0;font:16px/1.75 -apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC",
+"Hiragino Sans GB","Microsoft YaHei",sans-serif;color:var(--ink);background:var(--bg)}
+a{color:#1a4f8a;text-decoration:none}a:hover{text-decoration:underline}
+.wrap{max-width:820px;margin:0 auto;padding:0 20px}
+header.site{border-bottom:1px solid var(--line);padding:18px 0;margin-bottom:32px}
+header.site .wrap{display:flex;align-items:baseline;gap:18px;flex-wrap:wrap}
+header.site .logo{font-weight:700;font-size:18px;color:var(--ink)}
+header.site nav{font-size:14px}
+header.site nav a{color:var(--sub);margin-right:16px}
+h1{font-size:27px;line-height:1.4;margin:0 0 10px;letter-spacing:-.2px}
+h2{font-size:19px;margin:34px 0 12px;padding-top:6px}
+h3{font-size:16px;margin:22px 0 8px}
+p{margin:0 0 14px}
+.meta{color:var(--sub);font-size:13px;margin-bottom:22px;line-height:1.9}
+.meta span{margin-right:14px;white-space:nowrap}
+.lede{font-size:17px;line-height:1.8;background:var(--soft);border-left:3px solid var(--accent);
+padding:16px 18px;margin:0 0 26px}
+table{width:100%;border-collapse:collapse;margin:16px 0;font-size:14px}
+th,td{border:1px solid var(--line);padding:9px 11px;text-align:left;vertical-align:top}
+th{background:var(--soft);font-weight:600}
+td.num{font-variant-numeric:tabular-nums;white-space:nowrap}
+.tag{display:inline-block;font-size:12px;padding:1px 7px;border:1px solid var(--line);
+border-radius:3px;color:var(--sub);margin:0 6px 6px 0;background:#fff}
+.card{border:1px solid var(--line);border-radius:5px;padding:17px 19px;margin:0 0 14px}
+.card h3{margin:0 0 7px;font-size:16px;line-height:1.5}
+.card h3 a{color:var(--ink)}
+.card p{font-size:14px;color:var(--sub);margin:0 0 8px}
+.card .kv{font-size:12.5px;color:var(--sub)}
+ul,ol{padding-left:22px}li{margin-bottom:7px}
+code{background:var(--soft);padding:1px 5px;border-radius:3px;font-size:13.5px;
+font-family:ui-monospace,Consolas,monospace}
+pre{background:var(--soft);padding:14px;border-radius:4px;overflow-x:auto;font-size:13px;
+line-height:1.6}
+pre code{background:none;padding:0}
+.lv{display:inline-block;font-size:11.5px;padding:0 6px;border-radius:3px;
+border:1px solid currentColor;font-weight:600}
+.lv-L1{color:var(--ok)}.lv-L0{color:var(--warn)}.lv-none{color:var(--none)}
+.v-ok{color:var(--ok)}.v-warn{color:var(--warn)}.v-danger{color:var(--danger)}
+.v-limited{color:#7a4b00}.v-none{color:var(--none)}
+.note{border-left:3px solid var(--warn);background:#fffdf5;padding:13px 16px;
+margin:18px 0;font-size:14.5px}
+.caveat{border-left:3px solid var(--accent);background:#fdf7f6;padding:13px 16px;margin:18px 0}
+.caveat strong{color:var(--accent)}
+footer{border-top:1px solid var(--line);margin-top:56px;padding:26px 0 44px;
+font-size:13px;color:var(--sub)}
+footer a{color:var(--sub)}
+.pager{display:flex;justify-content:space-between;gap:16px;margin:36px 0 0;
+padding-top:20px;border-top:1px solid var(--line);font-size:14px}
+.pager a{max-width:46%}
+.count{color:var(--sub);font-size:13.5px;margin:-8px 0 18px}
+.tw{width:100%;overflow-x:auto;-webkit-overflow-scrolling:touch;margin:16px 0}
+.tw table{margin:0;min-width:100%}
+body{overflow-x:hidden}
+@media(max-width:600px){h1{font-size:22px}.wrap{padding:0 15px}table{font-size:13px}
+th,td{padding:7px 9px}pre{font-size:12px}}
+</style>
+</head>
+<body>
+<body>
+<header class="site"><div class="wrap">
+<a class="logo" href="/">丘山录实测库</a>
+<nav><a href="/bench/">跑分</a><a href="/fix/">排错</a><a href="/license/">许可证</a><a href="/machines/">机器</a><a href="/about/">口径</a></nav>
+</div></header>
+<main class="wrap">
+
+<h1>DGX Spark 双网怎么测：千兆口 118.7 MB/s，200G 环网 16 流 13.8 GB/s</h1>
+<div class="meta"><span>环境与安装 · 约 5 步 / 30 分钟实测</span><span><span class="lv lv-L0">L0</span></span><span>整理于 2026-11-05</span>
+<span>有效期 30d</span></div>
+<p class="lede">同一批文件，千兆管理网实测 118.7 MB/s，200G 环网 16 流 13796.5 MB/s，差 116 倍。但单流只跑出 4.9% —— 所以别用 iperf3 单流跑一把就下结论：服务端还得一线程一连接，否则多流其实在排队，会把 200G 的网误判成 10G。四步顺序做完再信数字。</p>
+<span class="tag">DGX Spark</span><span class="tag">内网</span><span class="tag">带宽</span><span class="tag">TCP</span><span class="tag">多流</span><span class="tag">200G</span><span class="tag">千兆</span><span class="tag">打流</span><span class="tag">部署</span><span class="tag">网络</span><span class="tag">测速</span><span class="tag">环网</span>
+<h2>这条适用于</h2><ul><li>两台及以上的 Linux 机器，至少一对之间有高速直连口</li><li>两端能跑 Python 3.8+（零第三方依赖）</li><li>知道对端 IP 与网口名</li></ul>
+<h2>版本指纹</h2><p><code>Python 3 标准库 socket；Linux /sys/class/net 与 iproute2；Windows Get-NetAdapter</code></p>
+<h2>具体做法</h2>
+<p>【实测条件】2026-11-05 00:12-00:20。纯 Python socket 打流，不装 iperf3；服务端每连接一线程，客户端多流并发，每档 6 秒。管理网路径 5090D → 对端管理机 与 → 集群节点1（含反向 1 档）；环网路径 节点1 → 节点2（环网第一段）1/4/8/16 流，节点4 → 节点2（环网第二段）1/8 流做独立复测。</p>
+<pre><code>【千兆管理网】
+单流 118.7 MB/s（0.95 Gbps）｜4 流 118.5 MB/s（0.95 Gbps）｜→集群节点1 单流 117.3 / 4 流 118.6｜反向 117.7
+1 流与 4 流数字一模一样 → 瓶颈不在 TCP 窗口、SMB 或服务端，链路已满。118.7 / 125 = 95.0% 线速，余下 5% 是 TCP/IP 头开销。</code></pre>
+<pre><code>【200G 环网 节点1→节点2】
+1 流 1232.7 MB/s = 9.86 Gbps（4.9%）
+4 流 5077.2 MB/s = 40.62 Gbps（20.3%）
+8 流 12544.6 MB/s = 100.36 Gbps（50.2%）
+16 流 13796.5 MB/s = 110.37 Gbps（55.2%）
+单流到 16 流 11.19 倍。另一条边 节点4→节点2 单流 9.47 / 8 流 110.80，同形 → 结构性上限。</code></pre>
+<pre><code>【两网比值】13796.5 ÷ 118.7 = 116.2 倍（标称差 200 倍）。
+搬 1.5TB 权重：1G 3.52 小时 vs 200G 109 秒（按实测带宽换算，非端到端实测）。</code></pre>
+<p>【三个前提事实】<br>① 本机网卡 Realtek PCIe 5GbE，但 LinkSpeed 与 EEE Max Support Speed 都只到 1.0 Gbps ——不是改驱动能解决的，属对端口或线材限制。<br>② 四台 DGX 的 200G 口只用于机器之间，不接交换机，没有到本机的路径；管理口全部 1000Mb。所以普通机器全挂在 1G 那一侧。<br>③ 环上没有 集群节点1 到 集群节点4 的直达：<code></code> 掉默认网关，ping 3 发 0 收。</p>
+<p>【顺手答完的一个悬念】NAS 单流读 80.8 MB/s，4 线程读 124.5 MB/s（1.04 Gbps），越过 1G 标称 → 盘不慢，是「SMB 单流 + 千兆链路」共同卡住的。你的 NAS 慢，先别买盘，先加线程。</p>
+<pre><code>【更正】2026-11-03 记录的「单流 40.0 Gbps、占 20%」作废：那是串行 accept 服务端的假值，单流真实值 9.86 Gbps（4.9%），扩展比被严重低估。原始数据已标 valid=false。</code></pre>
+<p>【换算成时间成本（落点）】<br>搬 1.5TB 权重：千兆管理网 3.52 小时（3 小时 29 分钟），200G 环网 16 流 109 秒。<br>差出来的 3 小时 27 分钟不是一次性成本 —— 每换一个模型版本就重付一次。<br>一天搬一趟、一个月 22 天，就是 76 小时干等；你这个月的模型如果超过 1TB，光搬一趟就是 3 小时起。</p>
+<p>【NAS 那一档的口径】<br>1 线程读 1024MB 得 80.8 MB/s；4 线程各读 256MB 得 124.5 MB/s（1.04 Gbps），比单流快 54%。<br>盘不慢，是「SMB 单流 + 千兆链路」一起卡住的 —— 先加线程，别先买盘。</p>
+<div class="caveat"><strong>失效边界</strong><br>只测了 TCP 层，没测 RDMA / RoCE 直连（若用 GPUDirect 数值会不同）。200G 达成率仅 55.2%，成因未定位：PFC / ECN 配置、GPUDirect 是否生效、PCIe 通道数、单口还是双口绑定，这四项都没测，文中只写现象不写归因。1.5TB 的 3.52 小时与 109 秒是按实测带宽换算，不是真的搬了一遍，端到端还受小文件数量与协议开销影响。本机 5GbE 为何只协商 1G 未做换线换口对照，只确认事实未定位原因。NAS 硬件规格仍未知（无 SSH，仅 SMB 445 可达），所以只能说不慢，不能说是什么盘。</div>
+<div class="pager"><a href="/fix/model-weight-io-budget-20261030/">← 本地部署的时间账：加载慢一半不怪硬盘，卡人的是第一次搬权重</a><a href="/fix/model-download-route-split-20261109/" style="text-align:right">下模型慢不是源的问题：同一天同一个源，五条路径差 180 倍 →</a></div>
+<p style="margin-top:30px"><a href="/fix/">← 返回全部排错方案</a></p>
+
+</main>
+<footer><div class="wrap">
+<p>本站数字均为真机实测，逐条标注验证等级（<span class="lv lv-L1">L1</span> 多次复测取中位 /
+<span class="lv lv-L0">L0</span> 单次测量）。查不到的写「未采集」，不估算。</p>
+<p>数据源自丘山录硬件实测库 · 本页生成于 2026-11-15 · <a href="/about/">数据口径与方法</a></p>
+</div></footer>
+</body>
+</html>

@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Ollama 并发该开几个槽：峰值在 4 槽，16 槽比单槽还慢 · 丘山录实测库</title>
+<meta name="description" content="同一台 5090D 跑 qwen2.5:14b，五档槽位扫描：61.25 → 97.33 → 180.92 → 158.82 → 55.71 tok/s，峰值在 4 槽，开到 16 槽比只开 1 槽还低 9%。">
+<link rel="canonical" href="https://361365365.xyz/fix/ollama-np-slot-check-20261105/">
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"TechArticle","headline":"Ollama 并发该开几个槽：峰值在 4 槽，16 槽比单槽还慢","datePublished":"2026-11-05","description":"同一台 5090D 跑 qwen2.5:14b，五档槽位扫描：61.25 → 97.33 → 180.92 → 158.82 → 55.71 tok/s，峰值在 4 槽，开到 16 槽比只开 1 槽还低 9%。原因是 Ollama 在显存不够时不报错，而是把 KV 和部分权重悄悄搬到内存走 PCIe。三步能在你调 NUM_PARALLEL 之前把该开几槽算清。","author":{"@type":"Person","name":"丘山录"}}</script>
+<style>
+:root{--ink:#1a1a1a;--sub:#5b6570;--line:#e3e6ea;--bg:#fff;--soft:#f7f8fa;
+--accent:#b03a2e;--ok:#1e7b45;--warn:#9a6b00;--danger:#a11b1b;--none:#6b7280}
+*{box-sizing:border-box}
+body{margin:0;font:16px/1.75 -apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC",
+"Hiragino Sans GB","Microsoft YaHei",sans-serif;color:var(--ink);background:var(--bg)}
+a{color:#1a4f8a;text-decoration:none}a:hover{text-decoration:underline}
+.wrap{max-width:820px;margin:0 auto;padding:0 20px}
+header.site{border-bottom:1px solid var(--line);padding:18px 0;margin-bottom:32px}
+header.site .wrap{display:flex;align-items:baseline;gap:18px;flex-wrap:wrap}
+header.site .logo{font-weight:700;font-size:18px;color:var(--ink)}
+header.site nav{font-size:14px}
+header.site nav a{color:var(--sub);margin-right:16px}
+h1{font-size:27px;line-height:1.4;margin:0 0 10px;letter-spacing:-.2px}
+h2{font-size:19px;margin:34px 0 12px;padding-top:6px}
+h3{font-size:16px;margin:22px 0 8px}
+p{margin:0 0 14px}
+.meta{color:var(--sub);font-size:13px;margin-bottom:22px;line-height:1.9}
+.meta span{margin-right:14px;white-space:nowrap}
+.lede{font-size:17px;line-height:1.8;background:var(--soft);border-left:3px solid var(--accent);
+padding:16px 18px;margin:0 0 26px}
+table{width:100%;border-collapse:collapse;margin:16px 0;font-size:14px}
+th,td{border:1px solid var(--line);padding:9px 11px;text-align:left;vertical-align:top}
+th{background:var(--soft);font-weight:600}
+td.num{font-variant-numeric:tabular-nums;white-space:nowrap}
+.tag{display:inline-block;font-size:12px;padding:1px 7px;border:1px solid var(--line);
+border-radius:3px;color:var(--sub);margin:0 6px 6px 0;background:#fff}
+.card{border:1px solid var(--line);border-radius:5px;padding:17px 19px;margin:0 0 14px}
+.card h3{margin:0 0 7px;font-size:16px;line-height:1.5}
+.card h3 a{color:var(--ink)}
+.card p{font-size:14px;color:var(--sub);margin:0 0 8px}
+.card .kv{font-size:12.5px;color:var(--sub)}
+ul,ol{padding-left:22px}li{margin-bottom:7px}
+code{background:var(--soft);padding:1px 5px;border-radius:3px;font-size:13.5px;
+font-family:ui-monospace,Consolas,monospace}
+pre{background:var(--soft);padding:14px;border-radius:4px;overflow-x:auto;font-size:13px;
+line-height:1.6}
+pre code{background:none;padding:0}
+.lv{display:inline-block;font-size:11.5px;padding:0 6px;border-radius:3px;
+border:1px solid currentColor;font-weight:600}
+.lv-L1{color:var(--ok)}.lv-L0{color:var(--warn)}.lv-none{color:var(--none)}
+.v-ok{color:var(--ok)}.v-warn{color:var(--warn)}.v-danger{color:var(--danger)}
+.v-limited{color:#7a4b00}.v-none{color:var(--none)}
+.note{border-left:3px solid var(--warn);background:#fffdf5;padding:13px 16px;
+margin:18px 0;font-size:14.5px}
+.caveat{border-left:3px solid var(--accent);background:#fdf7f6;padding:13px 16px;margin:18px 0}
+.caveat strong{color:var(--accent)}
+footer{border-top:1px solid var(--line);margin-top:56px;padding:26px 0 44px;
+font-size:13px;color:var(--sub)}
+footer a{color:var(--sub)}
+.pager{display:flex;justify-content:space-between;gap:16px;margin:36px 0 0;
+padding-top:20px;border-top:1px solid var(--line);font-size:14px}
+.pager a{max-width:46%}
+.count{color:var(--sub);font-size:13.5px;margin:-8px 0 18px}
+.tw{width:100%;overflow-x:auto;-webkit-overflow-scrolling:touch;margin:16px 0}
+.tw table{margin:0;min-width:100%}
+body{overflow-x:hidden}
+@media(max-width:600px){h1{font-size:22px}.wrap{padding:0 15px}table{font-size:13px}
+th,td{padding:7px 9px}pre{font-size:12px}}
+</style>
+</head>
+<body>
+<body>
+<header class="site"><div class="wrap">
+<a class="logo" href="/">丘山录实测库</a>
+<nav><a href="/bench/">跑分</a><a href="/fix/">排错</a><a href="/license/">许可证</a><a href="/machines/">机器</a><a href="/about/">口径</a></nav>
+</div></header>
+<main class="wrap">
+
+<h1>Ollama 并发该开几个槽：峰值在 4 槽，16 槽比单槽还慢</h1>
+<div class="meta"><span>性能 · 约 5 步 / 40 分钟实测</span><span><span class="lv lv-L0">L0</span></span><span>整理于 2026-11-05</span>
+<span>有效期 30d</span></div>
+<p class="lede">同一台 5090D 跑 qwen2.5:14b，五档槽位扫描：61.25 → 97.33 → 180.92 → 158.82 → 55.71 tok/s，峰值在 4 槽，开到 16 槽比只开 1 槽还低 9%。原因是 Ollama 在显存不够时不报错，而是把 KV 和部分权重悄悄搬到内存走 PCIe。三步能在你调 NUM_PARALLEL 之前把该开几槽算清。</p>
+<span class="tag">Ollama</span><span class="tag">NUM_PARALLEL</span><span class="tag">并发</span><span class="tag">槽位</span><span class="tag">KV缓存</span><span class="tag">显存</span><span class="tag">吞吐</span><span class="tag">本地部署</span><span class="tag">调优</span><span class="tag">14B</span><span class="tag">5090D</span><span class="tag">5060Ti</span>
+<h2>这条适用于</h2><ul><li>一台 16GB 或 32GB 显存的 NVIDIA 卡</li><li>Ollama 0.40+，能改环境变量并重启 ollama serve</li><li>一个 7B–14B 的 Q4_K_M 模型</li></ul>
+<h2>版本指纹</h2><p><code>Ollama 0.40.4 / qwen2.5:14b Q4_K_M / ctx 8192</code></p>
+<h2>具体做法</h2>
+<p>【实测条件】2026-11-03，RTX 5090D 32GB + Ollama 0.40.4，qwen2.5:14b Q4_K_M，ctx 8192，每请求 128 token。每档独立重启 serve，丢弃首轮预热，三轮取中位，轮间极差 0.4%–10.9%。对照机：RTX 5060Ti 16GB + Ollama 0.40.3（桌面环境已占约 9.2 GiB）。</p>
+<p>【五档扫描（32G 卡）】<br>1 槽：61.25 tok/s｜总显存 13502 MiB｜无卸载<br>2 槽：97.33 tok/s（1.59×）｜15042 MiB｜无卸载<br>4 槽：180.92 tok/s（2.95×）｜18119 MiB｜无卸载 ← 峰值<br>8 槽：158.82 tok/s（2.59×）｜24962 MiB｜无卸载（占 32G 的 76.6%）<br>16 槽：55.71 tok/s（0.91×）｜31887 MiB｜CPU KV 2560 MiB、权重外移 832.07 MiB</p>
+<pre><code>【KV 是纯线性叠加】ctx 8192 固定，单槽 KV = 1536 MiB：
+NP=1 → 1536.00 MiB（8192 cells, 48 layers, 1/1 seqs）
+NP=8 → 12288.00 MiB（8/8 seqs）
+NP=16 → 24576.00 MiB（16/16 seqs）
+公式 196,608 B/token × 8192 × N 与日志逐 MiB 一致。⇒ 加一个槽不是多一个用户，是多一整份 1.5 GiB 上下文，没有共享也没有摊薄。</code></pre>
+<pre><code>【两段曲线，两个机制】
+4→8 槽：无任何溢出，仍掉 12%（180.92→158.82）。这是单卡上 8 路 decode 抢同一份 SM，不是容量问题。
+8→16 槽：日志出现 `CPU KV buffer size = 2560.00 MiB` / `CUDA0 KV buffer size = 22016.00 MiB`；模型段从 GPU 8148.38 变成 GPU 7316.31 + Host 1249.73。请求仍返回 200，只有吞吐塌了。decode 阶段每生成一个 token 都要把全部 KV 读一遍，落在 CPU 的那部分每次过 PCIe ——这就是延迟从 1.47 秒涨到 22.69 秒的原因。</code></pre>
+<pre><code>【卸载有边界】NP=16 × ctx 32768 需 KV 98304 MiB，Ollama 返 502 Bad Gateway（错误体 `upstream connect failed`）。卸载能兜「超出一点点」，兜不住「超出三倍」。</code></pre>
+<p>【16G 卡对照】1 槽 11.43 tok/s（15945 MiB，余 366 MiB）→ 2 槽 16.63（1.45×，延迟仅 +3%）→ 4 槽 16.22（0.98×，延迟 13.80 秒）。峰值 2 槽。两卡峰值差 10.9 倍。</p>
+<p>【按显存分档的判据（ctx 8192 跑 14B）】<br>16GB（5060Ti）：单槽已用 15945 / 16311 MiB，4 槽只剩 392 MiB、总占 15919 MiB，吞吐反降 2%（16.22 tok/s）→ 开 2 槽。<br>32GB（5090D）：4 槽 18119 MiB 全程无溢出、2.95× 吞吐 → 开 4 槽（以单槽 1.00× 为基准）。<br>24GB（4090）：没有实测，不给数。<br>效率账：4 槽换 2.95 倍吞吐，并行效率 73.8%，这是「完全不溢出」能达到的上限。</p>
+<p>【换算成钱和产出（落点）】<br>一台 24 小时跑的本地服务，按 4 槽配置一天理论 180.92 × 86400 ≈ 15.6M token；按 16 槽只有 4.8M。<br>同一张卡同一份电，开错槽位等于白扔掉三分之二的产出。<br>满载按 575W、0.55 元一度估，一天电费不到 5 元 —— 省电从来不是重点，白扔吞吐才是。<br>选卡摊价：并发峰值差 10.9 倍，摊到每 1 tok/s，5090D 约 166 元、5060Ti 约 601 元，要跑并发服务前者大约便宜 3.6 倍；只跑单路对话这个价差一分都不值。</p>
+<pre><code>【卸载边界的关键三个数】
+8 槽到 16 槽：卸载量只占 KV 的 10.4%（2560 / 24576 MiB），吞吐却从 158.82 掉到 55.71，掉 65%。
+单请求延迟 1.47 秒 → 22.69 秒，慢 15.4 倍；16G 卡三档延迟 8.12 秒 → 13.80 秒。
+NP=16 总显存占 32607 MiB 的 97.8%，余 720 MiB，已在 OOM 边缘。
+NP=8 的 24962 MiB 构成：模型 8148.38 + KV 12288 + CUDA_Host 417.66 + 计算缓冲。
+NP=16 总显存 31887 MiB 低于「模型 8148 + KV 24576 = 32724」的直觉值，差额就是被搬出显存的那部分。
+推演：ctx 拉到 32768 后单槽 KV 6144 MiB，4 槽 24576 MiB —— 已超今天 4 槽实际占用 12288 的两倍，峰值可能前移。</code></pre>
+<div class="caveat"><strong>失效边界</strong><br>五档数据只对 qwen2.5:14b / ctx 8192 / 这两张卡成立，换模型、换上下文长度、换量化格式都要重测。24GB 卡（4090）本轮没有实测，文中不给数；双卡与多机并发未测。「4→8 槽掉 12% 是抢 SM」是机制解释，未做 profile 验证。跑分库里 NP=8 总显存另有 24267 MiB 一条读数，与同轮启动日志算不平，本方案采用与日志对齐的 24962 MiB。</div>
+<div class="pager"><a href="/fix/endside-i8mm-check-20261101/">← 端侧设备选型先查指令集：缺 i8mm 的机器，int8 量化比 fp32 慢 47 倍</a><a href="/fix/llm-concurrency-ceiling-20260930/" style="text-align:right">并发加到 16 吞吐反而没涨：找到收益天花板与实用拐点 →</a></div>
+<p style="margin-top:30px"><a href="/fix/">← 返回全部排错方案</a></p>
+
+</main>
+<footer><div class="wrap">
+<p>本站数字均为真机实测，逐条标注验证等级（<span class="lv lv-L1">L1</span> 多次复测取中位 /
+<span class="lv lv-L0">L0</span> 单次测量）。查不到的写「未采集」，不估算。</p>
+<p>数据源自丘山录硬件实测库 · 本页生成于 2026-11-15 · <a href="/about/">数据口径与方法</a></p>
+</div></footer>
+</body>
+</html>

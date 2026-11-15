@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>模型库按文件名去重会删错真模型：40 个文件名里有 17 个重名 · 丘山录实测库</title>
+<meta name="description" content="对模型库做「按文件名去重」是危险的：diffusers 目录里每个模型都有一份 unet/diffusion_pytorch_model.safetensors、text_encoder/model.safetensors，压平成一层后槽位名就撞了。">
+<link rel="canonical" href="https://361365365.xyz/fix/weight-name-collision-20261025/">
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"TechArticle","headline":"模型库按文件名去重会删错真模型：40 个文件名里有 17 个重名","datePublished":"2026-10-25","description":"对模型库做「按文件名去重」是危险的：diffusers 目录里每个模型都有一份 unet/diffusion_pytorch_model.safetensors、text_encoder/model.safetensors，压平成一层后槽位名就撞了。","author":{"@type":"Person","name":"丘山录"}}</script>
+<style>
+:root{--ink:#1a1a1a;--sub:#5b6570;--line:#e3e6ea;--bg:#fff;--soft:#f7f8fa;
+--accent:#b03a2e;--ok:#1e7b45;--warn:#9a6b00;--danger:#a11b1b;--none:#6b7280}
+*{box-sizing:border-box}
+body{margin:0;font:16px/1.75 -apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC",
+"Hiragino Sans GB","Microsoft YaHei",sans-serif;color:var(--ink);background:var(--bg)}
+a{color:#1a4f8a;text-decoration:none}a:hover{text-decoration:underline}
+.wrap{max-width:820px;margin:0 auto;padding:0 20px}
+header.site{border-bottom:1px solid var(--line);padding:18px 0;margin-bottom:32px}
+header.site .wrap{display:flex;align-items:baseline;gap:18px;flex-wrap:wrap}
+header.site .logo{font-weight:700;font-size:18px;color:var(--ink)}
+header.site nav{font-size:14px}
+header.site nav a{color:var(--sub);margin-right:16px}
+h1{font-size:27px;line-height:1.4;margin:0 0 10px;letter-spacing:-.2px}
+h2{font-size:19px;margin:34px 0 12px;padding-top:6px}
+h3{font-size:16px;margin:22px 0 8px}
+p{margin:0 0 14px}
+.meta{color:var(--sub);font-size:13px;margin-bottom:22px;line-height:1.9}
+.meta span{margin-right:14px;white-space:nowrap}
+.lede{font-size:17px;line-height:1.8;background:var(--soft);border-left:3px solid var(--accent);
+padding:16px 18px;margin:0 0 26px}
+table{width:100%;border-collapse:collapse;margin:16px 0;font-size:14px}
+th,td{border:1px solid var(--line);padding:9px 11px;text-align:left;vertical-align:top}
+th{background:var(--soft);font-weight:600}
+td.num{font-variant-numeric:tabular-nums;white-space:nowrap}
+.tag{display:inline-block;font-size:12px;padding:1px 7px;border:1px solid var(--line);
+border-radius:3px;color:var(--sub);margin:0 6px 6px 0;background:#fff}
+.card{border:1px solid var(--line);border-radius:5px;padding:17px 19px;margin:0 0 14px}
+.card h3{margin:0 0 7px;font-size:16px;line-height:1.5}
+.card h3 a{color:var(--ink)}
+.card p{font-size:14px;color:var(--sub);margin:0 0 8px}
+.card .kv{font-size:12.5px;color:var(--sub)}
+ul,ol{padding-left:22px}li{margin-bottom:7px}
+code{background:var(--soft);padding:1px 5px;border-radius:3px;font-size:13.5px;
+font-family:ui-monospace,Consolas,monospace}
+pre{background:var(--soft);padding:14px;border-radius:4px;overflow-x:auto;font-size:13px;
+line-height:1.6}
+pre code{background:none;padding:0}
+.lv{display:inline-block;font-size:11.5px;padding:0 6px;border-radius:3px;
+border:1px solid currentColor;font-weight:600}
+.lv-L1{color:var(--ok)}.lv-L0{color:var(--warn)}.lv-none{color:var(--none)}
+.v-ok{color:var(--ok)}.v-warn{color:var(--warn)}.v-danger{color:var(--danger)}
+.v-limited{color:#7a4b00}.v-none{color:var(--none)}
+.note{border-left:3px solid var(--warn);background:#fffdf5;padding:13px 16px;
+margin:18px 0;font-size:14.5px}
+.caveat{border-left:3px solid var(--accent);background:#fdf7f6;padding:13px 16px;margin:18px 0}
+.caveat strong{color:var(--accent)}
+footer{border-top:1px solid var(--line);margin-top:56px;padding:26px 0 44px;
+font-size:13px;color:var(--sub)}
+footer a{color:var(--sub)}
+.pager{display:flex;justify-content:space-between;gap:16px;margin:36px 0 0;
+padding-top:20px;border-top:1px solid var(--line);font-size:14px}
+.pager a{max-width:46%}
+.count{color:var(--sub);font-size:13.5px;margin:-8px 0 18px}
+.tw{width:100%;overflow-x:auto;-webkit-overflow-scrolling:touch;margin:16px 0}
+.tw table{margin:0;min-width:100%}
+body{overflow-x:hidden}
+@media(max-width:600px){h1{font-size:22px}.wrap{padding:0 15px}table{font-size:13px}
+th,td{padding:7px 9px}pre{font-size:12px}}
+</style>
+</head>
+<body>
+<body>
+<header class="site"><div class="wrap">
+<a class="logo" href="/">丘山录实测库</a>
+<nav><a href="/bench/">跑分</a><a href="/fix/">排错</a><a href="/license/">许可证</a><a href="/machines/">机器</a><a href="/about/">口径</a></nav>
+</div></header>
+<main class="wrap">
+
+<h1>模型库按文件名去重会删错真模型：40 个文件名里有 17 个重名</h1>
+<div class="meta"><span>环境与安装 · 57 条目 / 40 名称 / 17 重名 / 可删 43.70 GiB / 不可删 45.03 GiB</span><span><span class="lv lv-L1">L1</span></span><span>整理于 2026-10-25</span>
+<span>有效期 180d</span></div>
+<p class="lede">对模型库做「按文件名去重」是危险的：diffusers 目录里每个模型都有一份 unet/diffusion_pytorch_model.safetensors、text_encoder/model.safetensors，压平成一层后槽位名就撞了。本机 57 个条目去重后 40 个文件名、17 个重名，分两类：6 组「同名同字节」可删共 43.70 GiB；4 组「同名异字节」不可删、涉及 45.03 GiB，最坏误删 43.95 GiB。正确判据是「大小 + 至少一个结构指纹」，不是文件名。</p>
+<span class="tag">模型库</span><span class="tag">权重管理</span><span class="tag">去重</span><span class="tag">diffusers</span><span class="tag">同名文件</span><span class="tag">磁盘空间</span><span class="tag">ComfyUI</span><span class="tag">安全删除</span><span class="tag">safetensors</span><span class="tag">文件指纹</span><span class="tag">模型管理</span>
+<h2>这条适用于</h2><ul><li>能在模型库目录上执行列目录 + 读文件大小（不需要管理员权限）</li><li>权重以本地文件形式存在（diffusers 目录或单文件 safetensors 均可）</li><li>删任何文件前已确认加载器不引用它（或已备份 / 已改名验证）</li></ul>
+<h2>版本指纹</h2><p><code>Windows 11 / ComfyUI 0.33.0 / D:\models + ComfyUI models/ 全量扫描 / RTX 5090 D 32607 MiB / diffusers 目录结构规范（unet·vae·text_encoder 固定槽位名）</code></p>
+<h2>具体做法</h2>
+<p>本机实测环境：Windows 11 / ComfyUI 0.33.0 / D:\models（extra_model_paths.yaml）+ ComfyUI 自带 models/ 全量扫描 / RTX 5090 D 32607 MiB。</p>
+<p>【扫描结果】<br>· 57 个文件条目 → 去重后 40 个文件名 → 17 个条目是重名<br>· 合计体积 259.46 GiB</p>
+<pre><code>【六组「同名同字节」= 可删（合计可释放 43.70 GiB）】
+· sd_xl_base_1.0.safetensors：2 份 × 6.46 GiB → 多占 6.46 GiB
+· wan2.2_ti2v_5B_fp16.safetensors：2 份 × 9.31 GiB → 多占 9.31 GiB
+· wan2.2_vae.safetensors：2 份 × 1.31 GiB → 多占 1.31 GiB
+· diffusion_pytorch_model-00001-of-00003.safetensors：2 份 × 9.28 GiB
+· diffusion_pytorch_model-00002-of-00003.safetensors：2 份 × 9.21 GiB
+· diffusion_pytorch_model-00003-of-00003.safetensors：2 份 × 8.12 GiB
+  （后三组是同一模型的三个分片，一起重复，必须整组处理）</code></pre>
+<pre><code>【四组「同名异字节」= 不可删（涉及 45.03 GiB）】
+· diffusion_pytorch_model.safetensors × 5：9.56 / 0.31 / 9.31 / 1.31 / 0.24 GiB
+  → 分别是 SDXL UNet / 小 VAE / Wan2.2 transformer / Wan2.2 VAE / 另一套小 VAE
+· diffusion_pytorch_model.fp16.safetensors × 4：4.78 / 0.16 / 2.84 / 0.18 GiB
+· model.safetensors × 3：0.46 / 2.59 / 10.59 GiB（三套 diffusers 的 text_encoder）
+· model.fp16.safetensors × 3：0.23 / 1.29 / 1.18 GiB
+· 按文件名去重会在每组随机留一个删其余 → 最坏误删 43.95 GiB 真模型，且不报错</code></pre>
+<pre><code>【重复的账】
+· 43.70 GiB ÷ 4.56 MB/s = 2.73 小时重下时间；70W × 2.73h ≈ 0.11 元电费
+· 43.70 GiB ÷ 1516.5 GiB 空闲 = 2.9% —— 删了毫无感觉
+· 结论：重复文件的成本不是空间，是每次盘库都要重新判断「这个和那个是不是同一个」</code></pre>
+<pre><code>【两笔账加起来】
+· 可删重复 43.70 GiB + 加载器看不见的 diffusers 目录 76.65 GiB = 120.35 GiB
+· 占 259.46 GiB 的 46.4% —— 接近一半的存量既没被用上、也没被算清
+· D 盘容量 1788.5 GiB / 已用 272.0 GiB / 空闲 1516.5 GiB</code></pre>
+<p>【为什么名字会撞】<br>· diffusers 目录规范：每个模型目录都有 unet/diffusion_pytorch_model.safetensors、vae/diffusion_pytorch_model.safetensors、text_encoder/model.safetensors<br>· 这是规定，不是人的疏忽 —— 目录才是身份，文件名只是目录内部的槽位名<br>· 拍平成一层后名字就撞了：这不是重复，是丢了一层索引</p>
+<div class="caveat"><strong>失效边界</strong><br>四点必须说清：① 重复判定仅用「文件名相同 + 字节数完全相同」，未做哈希校验，所以「可删」结论只针对字节数一致的六组；四组同名异字节的判定同样只基于字节数差异。② 电费按 0.55 元/kWh、下载机 70W 估算，非实测功耗与账单。③ 重下时间 2.73 小时用的是本机镜像线路 4.56 MB/s 单次采样，换线路或换时段差异可能很大。④ 删文件有风险：动手前先备份或先改名验证，确认加载器仍能跑通再真删。</div>
+<div class="pager"><a href="/fix/ollama-lan-access-20261026/">← Ollama 局域网访问怎么通：三道门 + 2.16 秒启动空窗</a><a href="/fix/shard-move-parallel-planning-20261111/" style="text-align:right">大模型权重跨机搬运怎么开并行：8 路只给 2.68 倍，三个背锅侠全被排除 →</a></div>
+<p style="margin-top:30px"><a href="/fix/">← 返回全部排错方案</a></p>
+
+</main>
+<footer><div class="wrap">
+<p>本站数字均为真机实测，逐条标注验证等级（<span class="lv lv-L1">L1</span> 多次复测取中位 /
+<span class="lv lv-L0">L0</span> 单次测量）。查不到的写「未采集」，不估算。</p>
+<p>数据源自丘山录硬件实测库 · 本页生成于 2026-11-15 · <a href="/about/">数据口径与方法</a></p>
+</div></footer>
+</body>
+</html>

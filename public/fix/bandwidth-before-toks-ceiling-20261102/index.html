@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>算 tok/s 上限之前先量带宽：标称 273 GB/s 的机器，四台实测只到 233.6 · 丘山录实测库</title>
+<meta name="description" content="四台 DGX Spark（GB10 统一内存）实测 copy 512MB 分别为 229.6 / 225.9 / 228.3 / 233.6 GB/s，对标称 273 GB/s 的达成率只有 82.7%-85.6%，四台离散度 3.4%。">
+<link rel="canonical" href="https://361365365.xyz/fix/bandwidth-before-toks-ceiling-20261102/">
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"TechArticle","headline":"算 tok/s 上限之前先量带宽：标称 273 GB/s 的机器，四台实测只到 233.6","datePublished":"2026-11-02","description":"四台 DGX Spark（GB10 统一内存）实测 copy 512MB 分别为 229.6 / 225.9 / 228.3 / 233.6 GB/s，对标称 273 GB/s 的达成率只有 82.7%-85.6%，四台离散度 3.4%。用标称值算 decode 上限会高估 17%（111 vs 93.7 tok/s），进而把回本月数低估 17%。","author":{"@type":"Person","name":"丘山录"}}</script>
+<style>
+:root{--ink:#1a1a1a;--sub:#5b6570;--line:#e3e6ea;--bg:#fff;--soft:#f7f8fa;
+--accent:#b03a2e;--ok:#1e7b45;--warn:#9a6b00;--danger:#a11b1b;--none:#6b7280}
+*{box-sizing:border-box}
+body{margin:0;font:16px/1.75 -apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC",
+"Hiragino Sans GB","Microsoft YaHei",sans-serif;color:var(--ink);background:var(--bg)}
+a{color:#1a4f8a;text-decoration:none}a:hover{text-decoration:underline}
+.wrap{max-width:820px;margin:0 auto;padding:0 20px}
+header.site{border-bottom:1px solid var(--line);padding:18px 0;margin-bottom:32px}
+header.site .wrap{display:flex;align-items:baseline;gap:18px;flex-wrap:wrap}
+header.site .logo{font-weight:700;font-size:18px;color:var(--ink)}
+header.site nav{font-size:14px}
+header.site nav a{color:var(--sub);margin-right:16px}
+h1{font-size:27px;line-height:1.4;margin:0 0 10px;letter-spacing:-.2px}
+h2{font-size:19px;margin:34px 0 12px;padding-top:6px}
+h3{font-size:16px;margin:22px 0 8px}
+p{margin:0 0 14px}
+.meta{color:var(--sub);font-size:13px;margin-bottom:22px;line-height:1.9}
+.meta span{margin-right:14px;white-space:nowrap}
+.lede{font-size:17px;line-height:1.8;background:var(--soft);border-left:3px solid var(--accent);
+padding:16px 18px;margin:0 0 26px}
+table{width:100%;border-collapse:collapse;margin:16px 0;font-size:14px}
+th,td{border:1px solid var(--line);padding:9px 11px;text-align:left;vertical-align:top}
+th{background:var(--soft);font-weight:600}
+td.num{font-variant-numeric:tabular-nums;white-space:nowrap}
+.tag{display:inline-block;font-size:12px;padding:1px 7px;border:1px solid var(--line);
+border-radius:3px;color:var(--sub);margin:0 6px 6px 0;background:#fff}
+.card{border:1px solid var(--line);border-radius:5px;padding:17px 19px;margin:0 0 14px}
+.card h3{margin:0 0 7px;font-size:16px;line-height:1.5}
+.card h3 a{color:var(--ink)}
+.card p{font-size:14px;color:var(--sub);margin:0 0 8px}
+.card .kv{font-size:12.5px;color:var(--sub)}
+ul,ol{padding-left:22px}li{margin-bottom:7px}
+code{background:var(--soft);padding:1px 5px;border-radius:3px;font-size:13.5px;
+font-family:ui-monospace,Consolas,monospace}
+pre{background:var(--soft);padding:14px;border-radius:4px;overflow-x:auto;font-size:13px;
+line-height:1.6}
+pre code{background:none;padding:0}
+.lv{display:inline-block;font-size:11.5px;padding:0 6px;border-radius:3px;
+border:1px solid currentColor;font-weight:600}
+.lv-L1{color:var(--ok)}.lv-L0{color:var(--warn)}.lv-none{color:var(--none)}
+.v-ok{color:var(--ok)}.v-warn{color:var(--warn)}.v-danger{color:var(--danger)}
+.v-limited{color:#7a4b00}.v-none{color:var(--none)}
+.note{border-left:3px solid var(--warn);background:#fffdf5;padding:13px 16px;
+margin:18px 0;font-size:14.5px}
+.caveat{border-left:3px solid var(--accent);background:#fdf7f6;padding:13px 16px;margin:18px 0}
+.caveat strong{color:var(--accent)}
+footer{border-top:1px solid var(--line);margin-top:56px;padding:26px 0 44px;
+font-size:13px;color:var(--sub)}
+footer a{color:var(--sub)}
+.pager{display:flex;justify-content:space-between;gap:16px;margin:36px 0 0;
+padding-top:20px;border-top:1px solid var(--line);font-size:14px}
+.pager a{max-width:46%}
+.count{color:var(--sub);font-size:13.5px;margin:-8px 0 18px}
+.tw{width:100%;overflow-x:auto;-webkit-overflow-scrolling:touch;margin:16px 0}
+.tw table{margin:0;min-width:100%}
+body{overflow-x:hidden}
+@media(max-width:600px){h1{font-size:22px}.wrap{padding:0 15px}table{font-size:13px}
+th,td{padding:7px 9px}pre{font-size:12px}}
+</style>
+</head>
+<body>
+<body>
+<header class="site"><div class="wrap">
+<a class="logo" href="/">丘山录实测库</a>
+<nav><a href="/bench/">跑分</a><a href="/fix/">排错</a><a href="/license/">许可证</a><a href="/machines/">机器</a><a href="/about/">口径</a></nav>
+</div></header>
+<main class="wrap">
+
+<h1>算 tok/s 上限之前先量带宽：标称 273 GB/s 的机器，四台实测只到 233.6</h1>
+<div class="meta"><span>性能 · 4× DGX Spark / 统一内存 121.69 GiB/台</span><span><span class="lv lv-L0">L0</span></span><span>整理于 2026-11-02</span>
+<span>有效期 180d</span></div>
+<p class="lede">四台 DGX Spark（GB10 统一内存）实测 copy 512MB 分别为 229.6 / 225.9 / 228.3 / 233.6 GB/s，对标称 273 GB/s 的达成率只有 82.7%-85.6%，四台离散度 3.4%。用标称值算 decode 上限会高估 17%（111 vs 93.7 tok/s），进而把回本月数低估 17%。而单条请求因为 batch=1 只能拿到峰值的 72.9%，短输出再掉 27% —— 同一个「能跑多少 tok/s」，三个折扣叠加后差一半。</p>
+<span class="tag">统一内存</span><span class="tag">带宽</span><span class="tag">GB/s</span><span class="tag">tok/s</span><span class="tag">decode</span><span class="tag">DGX Spark</span><span class="tag">GB10</span><span class="tag">内存带宽</span><span class="tag">选型</span><span class="tag">本地部署</span><span class="tag">产能估算</span><span class="tag">GEMV</span>
+<h2>这条适用于</h2><ul><li>一台能跑 torch 的机器（统一内存或独立显存都行），能进容器或 venv</li><li>目标模型的 config.json（算每 token 激活权重必须有）</li><li>知道自己的并行度（TP/EP 各多少）</li></ul>
+<h2>版本指纹</h2><p><code>GB10 统一内存 / CUDA 13.0 / torch 2.13.0+cu130 / 标称 273 GB/s 实测 225.9-233.6</code></p>
+<h2>具体做法</h2>
+<p>实测环境：4 台 DGX Spark（GB10 Grace Blackwell 统一内存，121.69 GiB/台，Ubuntu 24.04，CUDA 13.0），容器内 torch 2.13.0+cu130，四台各自独立跑，零新增依赖。</p>
+<pre><code>【copy 带宽（GB/s）】
+        64MB     256MB    512MB    只读512MB   add3 512MB
+Spark#1    224.5    226.9    229.6    255.9       229.3
+Spark#2    225.8    227.2    225.9    248.5       231.2
+Spark#3    224.8    227.5    228.3    250.6       230.6
+Spark#4    230.5    232.3    233.6    257.5       232.8
+→ 四台 225.9-233.6，离散度 3.4%；标称 273 → 达成率 82.7%-85.6%
+→ 只读比 copy 高约 11%（copy 同时占读写两个方向）；64MB 比 512MB 低约 2%（启动开销）</code></pre>
+<pre><code>【生产模型每 token 激活权重（DeepSeek-V4.1-Flash config）】
+routed experts（384 选 6，FP4） 8.49 B → 3.96 GiB
+shared expert（×1，FP8）        1.42 B → 1.32 GiB
+attention（40 层含 MLA，FP8）   4.87 B → 4.53 GiB
+合计 14.78 B → 9.81 GiB（10.53 GB）；TP=4 每卡 2.45 GiB</code></pre>
+<pre><code>【上限与实际】
+标称 273 ÷ 2.45 = 111 tok/s（照标称推算，行业常见做法）
+实测 229.6 ÷ 2.45 = 93.7 tok/s（真实天花板）
+实测产出 56.32 tok/s（512 token 长输出）
+→ 带宽利用率 = 56.32 ÷ 93.7 = 60.1%（不是 50.7%）</code></pre>
+<pre><code>【单条请求的折扣（GEMV，4096² fp16 = 32MB）】
+bs=1  0.183 ms → 170.3 GB/s（= 峰值的 72.9%）
+bs=32 0.135 ms → 231.1 GB/s（= 峰值的 98.9%）
+→ 单用户看到的是 72.9%，多用户才能把带宽榨干</code></pre>
+<pre><code>【输出长度的折扣（temperature=0，ignore_eos）】
+64 token  1.555 s → 41.16 tok/s
+256 token 4.708 s → 54.38 tok/s
+512 token 9.091 s → 56.32 tok/s
+→ 短请求比长请求低 26.9%，差额是首 token 固定开销摊不薄</code></pre>
+<pre><code>【剩下 40% 花在哪：非权重开销合计 37.4 tok/s】
+带宽上限 93.7、实测 56.32，中间少 37.4 tok/s。这不是带宽不够，是别的东西在吃：
+KV 读写（每生成一个 token 都要读历史 KV）、权重解压（expert 是 FP4、attention 是 FP8，
+读进来是压缩的、用之前要解）、多卡通信（TP=4 加 EP=4）。
+三者拆不开 —— 需要 nsight 这类系统级 profiler，不在允许范围内，
+所以只能说「非权重开销合计 37.4 tok/s」，不能写成「通信占 X、KV 占 Y」。</code></pre>
+<pre><code>【单条 vs 聚合：862.8 与 55.4 是两个世界】
+四台聚合能跑到 862.8 tok/s，而单用户只有 55.4 tok/s。
+单条请求 batch=1，一次只读一份权重、只服务一个 token，
+硬件没有足够的独立请求去填满内存流水线 —— 它拿到的就是峰值 233.6 的 72.9%。
+这不是调度不公平，是单条请求物理上吃不满带宽。
+一个人用，看到的就是那 72.9%；要榨干带宽只能上并发。</code></pre>
+<p>【换一张卡怎么代】<br>带宽是 tok/s 的直接决定项，但它不是商品页上那个数。<br>这张卡标称 1792 GB/s 还是 273 GB/s，落到你的任务上大概打八五折 ——<br>缺口 15% 就是本文四台机器测出来的那个缺口的通用形态。<br>按实测值砍 15% 再算，是保守但不返工的做法。</p>
+<div class="caveat"><strong>失效边界</strong><br>① 233.6 是 512MB 张量 copy 的实测峰值，换张量尺寸或访问模式会有差异，只测了 64/256/512MB 三档。② 170.3 GB/s 只在 Spark#1 上跑了一次，未做多次取中位数 —— 方向可靠（bs=1 明显低于 bs=32），具体数值有波动。③ prefill 与 decode 未严格分离：56.32 含首 token 延迟，是靠「短 prompt + 长输出」逼近出来的。④ 64.6%→60.1% 里「通信占多少、KV 占多少」拆不出来，需要多机重启 + profiler，本轮未做，只能整体说「非权重开销合计约 40%」。⑤ 标称 273 GB/s 的原始测试条件未取得，全文写「标称」不写「官方实测」。⑥ 不同固件、功耗策略下数值会变，方法是稳定的、数字不是。</div>
+<div class="pager"><a href="/fix/arete-27b-vram-kv-account-20261108/">← Arete-27B 装得下吗：混合注意力省 75% KV，但省不动权重</a><a href="/fix/gb-vs-gib-model-capacity-20261110/" style="text-align:right">下大模型前先算 GB 与 GiB：同一个权重两种口径差一百多 GiB →</a></div>
+<p style="margin-top:30px"><a href="/fix/">← 返回全部排错方案</a></p>
+
+</main>
+<footer><div class="wrap">
+<p>本站数字均为真机实测，逐条标注验证等级（<span class="lv lv-L1">L1</span> 多次复测取中位 /
+<span class="lv lv-L0">L0</span> 单次测量）。查不到的写「未采集」，不估算。</p>
+<p>数据源自丘山录硬件实测库 · 本页生成于 2026-11-15 · <a href="/about/">数据口径与方法</a></p>
+</div></footer>
+</body>
+</html>

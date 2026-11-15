@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Ollama 冷加载的时间大头不在读盘：小模型 93% 花在固定开销上 · 丘山录实测库</title>
+<meta name="description" content="本机 RTX 5090D 32GB + Ollama 0.40.4 的「模型冷加载 vs 裸顺序读权重文件」同条件对照。14B 对话模型（qwen2.5:14b Q4_K_M）权重 8,988,110,688 B = 8.371 GiB，裸读 5 次 2.3886–2.4324 秒（3.441–3.">
+<link rel="canonical" href="https://361365365.xyz/fix/ollama-cold-load-fixed-cost-20261019/">
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"TechArticle","headline":"Ollama 冷加载的时间大头不在读盘：小模型 93% 花在固定开销上","datePublished":"2026-10-19","description":"本机 RTX 5090D 32GB + Ollama 0.40.4 的「模型冷加载 vs 裸顺序读权重文件」同条件对照。14B 对话模型（qwen2.5:14b Q4_K_M）权重 8,988,110,688 B = 8.371 GiB，裸读 5 次 2.3886–2.4324 秒（3.441–3.504 GiB/s）；","author":{"@type":"Person","name":"丘山录"}}</script>
+<style>
+:root{--ink:#1a1a1a;--sub:#5b6570;--line:#e3e6ea;--bg:#fff;--soft:#f7f8fa;
+--accent:#b03a2e;--ok:#1e7b45;--warn:#9a6b00;--danger:#a11b1b;--none:#6b7280}
+*{box-sizing:border-box}
+body{margin:0;font:16px/1.75 -apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC",
+"Hiragino Sans GB","Microsoft YaHei",sans-serif;color:var(--ink);background:var(--bg)}
+a{color:#1a4f8a;text-decoration:none}a:hover{text-decoration:underline}
+.wrap{max-width:820px;margin:0 auto;padding:0 20px}
+header.site{border-bottom:1px solid var(--line);padding:18px 0;margin-bottom:32px}
+header.site .wrap{display:flex;align-items:baseline;gap:18px;flex-wrap:wrap}
+header.site .logo{font-weight:700;font-size:18px;color:var(--ink)}
+header.site nav{font-size:14px}
+header.site nav a{color:var(--sub);margin-right:16px}
+h1{font-size:27px;line-height:1.4;margin:0 0 10px;letter-spacing:-.2px}
+h2{font-size:19px;margin:34px 0 12px;padding-top:6px}
+h3{font-size:16px;margin:22px 0 8px}
+p{margin:0 0 14px}
+.meta{color:var(--sub);font-size:13px;margin-bottom:22px;line-height:1.9}
+.meta span{margin-right:14px;white-space:nowrap}
+.lede{font-size:17px;line-height:1.8;background:var(--soft);border-left:3px solid var(--accent);
+padding:16px 18px;margin:0 0 26px}
+table{width:100%;border-collapse:collapse;margin:16px 0;font-size:14px}
+th,td{border:1px solid var(--line);padding:9px 11px;text-align:left;vertical-align:top}
+th{background:var(--soft);font-weight:600}
+td.num{font-variant-numeric:tabular-nums;white-space:nowrap}
+.tag{display:inline-block;font-size:12px;padding:1px 7px;border:1px solid var(--line);
+border-radius:3px;color:var(--sub);margin:0 6px 6px 0;background:#fff}
+.card{border:1px solid var(--line);border-radius:5px;padding:17px 19px;margin:0 0 14px}
+.card h3{margin:0 0 7px;font-size:16px;line-height:1.5}
+.card h3 a{color:var(--ink)}
+.card p{font-size:14px;color:var(--sub);margin:0 0 8px}
+.card .kv{font-size:12.5px;color:var(--sub)}
+ul,ol{padding-left:22px}li{margin-bottom:7px}
+code{background:var(--soft);padding:1px 5px;border-radius:3px;font-size:13.5px;
+font-family:ui-monospace,Consolas,monospace}
+pre{background:var(--soft);padding:14px;border-radius:4px;overflow-x:auto;font-size:13px;
+line-height:1.6}
+pre code{background:none;padding:0}
+.lv{display:inline-block;font-size:11.5px;padding:0 6px;border-radius:3px;
+border:1px solid currentColor;font-weight:600}
+.lv-L1{color:var(--ok)}.lv-L0{color:var(--warn)}.lv-none{color:var(--none)}
+.v-ok{color:var(--ok)}.v-warn{color:var(--warn)}.v-danger{color:var(--danger)}
+.v-limited{color:#7a4b00}.v-none{color:var(--none)}
+.note{border-left:3px solid var(--warn);background:#fffdf5;padding:13px 16px;
+margin:18px 0;font-size:14.5px}
+.caveat{border-left:3px solid var(--accent);background:#fdf7f6;padding:13px 16px;margin:18px 0}
+.caveat strong{color:var(--accent)}
+footer{border-top:1px solid var(--line);margin-top:56px;padding:26px 0 44px;
+font-size:13px;color:var(--sub)}
+footer a{color:var(--sub)}
+.pager{display:flex;justify-content:space-between;gap:16px;margin:36px 0 0;
+padding-top:20px;border-top:1px solid var(--line);font-size:14px}
+.pager a{max-width:46%}
+.count{color:var(--sub);font-size:13.5px;margin:-8px 0 18px}
+.tw{width:100%;overflow-x:auto;-webkit-overflow-scrolling:touch;margin:16px 0}
+.tw table{margin:0;min-width:100%}
+body{overflow-x:hidden}
+@media(max-width:600px){h1{font-size:22px}.wrap{padding:0 15px}table{font-size:13px}
+th,td{padding:7px 9px}pre{font-size:12px}}
+</style>
+</head>
+<body>
+<body>
+<header class="site"><div class="wrap">
+<a class="logo" href="/">丘山录实测库</a>
+<nav><a href="/bench/">跑分</a><a href="/fix/">排错</a><a href="/license/">许可证</a><a href="/machines/">机器</a><a href="/about/">口径</a></nav>
+</div></header>
+<main class="wrap">
+
+<h1>Ollama 冷加载的时间大头不在读盘：小模型 93% 花在固定开销上</h1>
+<div class="meta"><span>排障 · 8.371 GiB vs 0.2555 GiB · 各 5 次取样</span><span><span class="lv lv-L0">L0</span></span><span>整理于 2026-10-19</span>
+<span>有效期 30d</span></div>
+<p class="lede">本机 RTX 5090D 32GB + Ollama 0.40.4 的「模型冷加载 vs 裸顺序读权重文件」同条件对照。14B 对话模型（qwen2.5:14b Q4_K_M）权重 8,988,110,688 B = 8.371 GiB，裸读 5 次 2.3886–2.4324 秒（3.441–3.504 GiB/s）；Ollama 冷加载 5 次 2.9155–2.9447 秒（2.843–2.871 GiB/s）。embedding 模型（nomic-embed-text F16）权重 274,290,656 B = 0.2555 GiB，裸读 0.0749–0.0825 秒（3.097–3.410 GiB/s）；Ollama 冷加载 5 次 1.1287–1.1353 秒（仅 0.226 GiB/s）。两者相减得每次加载的固定成本：14B 约 0.51 秒（占 17%）、embedding 约 1.06 秒（占 93.4%）。因此体积涨 32.8 倍，加载时间只涨 2.58 倍。另做 3 轮页缓存对照（先裸读一遍再加载 vs 直接加载），差值 0.011 / 0.013 / 0.011 秒且方向不一致，说明预读无效。</p>
+<span class="tag">Ollama</span><span class="tag">冷加载</span><span class="tag">模型加载</span><span class="tag">本地部署</span><span class="tag">固定开销</span><span class="tag">页缓存</span><span class="tag">load_duration</span><span class="tag">小模型</span><span class="tag">embedding</span><span class="tag">读盘</span>
+<h2>这条适用于</h2><ul><li>本地用 Ollama 跑生成式或嵌入模型（本机 0.40.4）</li><li>模型权重存放在本地盘（本机 D 盘 NVMe）</li><li>每次测量前已把模型从显存卸载（keep_alive=0）</li></ul>
+<h2>版本指纹</h2><p><code>Windows 11 + RTX 5090D 32GB；Ollama 0.40.4；qwen2.5:14b（Q4_K_M / 14.8B / 8.371 GiB）+ nomic-embed-text（F16 / 0.2555 GiB）</code></p>
+<h2>具体做法</h2>
+<pre><code>环境：本机 RTX 5090D 32GB / Ollama 0.40.4，权重置于 D 盘 NVMe（INTEL SSDPF2KX19T1M），OLLAMA_MODELS=D:\models\ollama，2026-10-19。</code></pre>
+<pre><code>【14B 对话模型（qwen2.5:14b Q4_K_M，权重 8,988,110,688 B = 8.371 GiB）】
+· 裸顺序读 5 次：2.4324 / 2.4132 / 2.4152 / 2.4262 / 2.3886 秒 → 3.441–3.504 GiB/s
+· Ollama 冷加载 5 次：2.9447 / 2.9165 / 2.9372 / 2.9155 / 2.9209 秒 → 2.843–2.871 GiB/s
+· 差值（固定成本）≈ 0.51 秒，占加载耗时 17%</code></pre>
+<pre><code>【embedding 模型（nomic-embed-text F16，权重 274,290,656 B = 0.2555 GiB）】
+· 裸顺序读 3 次：0.0825 / 0.0750 / 0.0749 秒 → 3.097–3.410 GiB/s
+· Ollama 冷加载 5 次：1.1287 / 1.1298 / 1.1353 / 1.1308 / 1.1313 秒 → 0.226 GiB/s
+· 差值（固定成本）≈ 1.06 秒，占加载耗时 93.4%</code></pre>
+<p>【页缓存对照（交替 3 轮）】<br>· 直接加载：3.1894 / 2.9362 / 2.9606 秒<br>· 先裸读一遍再加载：3.2007 / 2.9494 / 2.9498 秒（裸读本体 2.4364 / 2.4073 / 2.4124 秒）<br>· 差值：+0.011 / +0.013 / −0.011 秒 → 预读无收益</p>
+<p>【已加载态再请求（验证无重载）】<br>· load_duration：0.001053 / 0.003125 / 0.001053 秒</p>
+<p>【预填充随输入长度（同模型已常驻）】<br>· prompt 50 / 500 / 2000 / 8000 字 → 74 / 411 / 1536 / 6036 token → 0.1925 / 0.859 / 4.4553 / 23.624 秒</p>
+<div class="caveat"><strong>失效边界</strong><br>本结论为本机实测（2026-10-19；RTX 5090D 32GB / Ollama 0.40.4）。加载耗时取自 Ollama 接口返回的 load_duration 字段，非手工计时；裸读由 Python read() 无缓冲顺序读权重 blob 实测。本组测量期间本机另有一个占用 GPU 的后台进程在运行，load_duration 由 Ollama 内部计时、不受其影响，故时间数据有效；涉及功耗与占用率的数据本轮未采用。不同模型的加载结构不同，本文结论基于 qwen2.5:14b 与 nomic-embed-text 这两个具体模型，不外推到所有模型。</div>
+<div class="pager"><a href="/fix/local-14b-output-length-ceiling-20261018/">← 本地 14B 写长文有天花板：要 5000 字只给 2400，且它自己认为写完了</a><a href="/fix/safetensors-header-inspect-read-amplification-20261021/" style="text-align:right">模型文件先读头再加载：260 KB 看清 1438 个张量，别让加载器替你全读 16 GiB →</a></div>
+<p style="margin-top:30px"><a href="/fix/">← 返回全部排错方案</a></p>
+
+</main>
+<footer><div class="wrap">
+<p>本站数字均为真机实测，逐条标注验证等级（<span class="lv lv-L1">L1</span> 多次复测取中位 /
+<span class="lv lv-L0">L0</span> 单次测量）。查不到的写「未采集」，不估算。</p>
+<p>数据源自丘山录硬件实测库 · 本页生成于 2026-11-15 · <a href="/about/">数据口径与方法</a></p>
+</div></footer>
+</body>
+</html>

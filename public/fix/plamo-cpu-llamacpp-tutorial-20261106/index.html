@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>llama.cpp 纯 CPU 跑 PLaMo 0.8B：五步命令 + 线程扫到饱和点 · 丘山录实测库</title>
+<meta name="description" content="一台没有显卡的机器也能跑 0.8B 翻译模型：546.6 MiB 的 GGUF，4 核老机器全核 7.59 tok/s 已经能用，单线程只有 2.01。但 decode 在 8 线程就到顶 —— 因为瓶颈是内存带宽不是算力，同一台机器 prefill 却能一路涨到 20 线程。">
+<link rel="canonical" href="https://361365365.xyz/fix/plamo-cpu-llamacpp-tutorial-20261106/">
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"TechArticle","headline":"llama.cpp 纯 CPU 跑 PLaMo 0.8B：五步命令 + 线程扫到饱和点","datePublished":"2026-11-06","description":"一台没有显卡的机器也能跑 0.8B 翻译模型：546.6 MiB 的 GGUF，4 核老机器全核 7.59 tok/s 已经能用，单线程只有 2.01。但 decode 在 8 线程就到顶 —— 因为瓶颈是内存带宽不是算力，同一台机器 prefill 却能一路涨到 20 线程。五步命令从零到出译文，附「什么机器在哪一档」的对号入座表。","author":{"@type":"Person","name":"丘山录"}}</script>
+<style>
+:root{--ink:#1a1a1a;--sub:#5b6570;--line:#e3e6ea;--bg:#fff;--soft:#f7f8fa;
+--accent:#b03a2e;--ok:#1e7b45;--warn:#9a6b00;--danger:#a11b1b;--none:#6b7280}
+*{box-sizing:border-box}
+body{margin:0;font:16px/1.75 -apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC",
+"Hiragino Sans GB","Microsoft YaHei",sans-serif;color:var(--ink);background:var(--bg)}
+a{color:#1a4f8a;text-decoration:none}a:hover{text-decoration:underline}
+.wrap{max-width:820px;margin:0 auto;padding:0 20px}
+header.site{border-bottom:1px solid var(--line);padding:18px 0;margin-bottom:32px}
+header.site .wrap{display:flex;align-items:baseline;gap:18px;flex-wrap:wrap}
+header.site .logo{font-weight:700;font-size:18px;color:var(--ink)}
+header.site nav{font-size:14px}
+header.site nav a{color:var(--sub);margin-right:16px}
+h1{font-size:27px;line-height:1.4;margin:0 0 10px;letter-spacing:-.2px}
+h2{font-size:19px;margin:34px 0 12px;padding-top:6px}
+h3{font-size:16px;margin:22px 0 8px}
+p{margin:0 0 14px}
+.meta{color:var(--sub);font-size:13px;margin-bottom:22px;line-height:1.9}
+.meta span{margin-right:14px;white-space:nowrap}
+.lede{font-size:17px;line-height:1.8;background:var(--soft);border-left:3px solid var(--accent);
+padding:16px 18px;margin:0 0 26px}
+table{width:100%;border-collapse:collapse;margin:16px 0;font-size:14px}
+th,td{border:1px solid var(--line);padding:9px 11px;text-align:left;vertical-align:top}
+th{background:var(--soft);font-weight:600}
+td.num{font-variant-numeric:tabular-nums;white-space:nowrap}
+.tag{display:inline-block;font-size:12px;padding:1px 7px;border:1px solid var(--line);
+border-radius:3px;color:var(--sub);margin:0 6px 6px 0;background:#fff}
+.card{border:1px solid var(--line);border-radius:5px;padding:17px 19px;margin:0 0 14px}
+.card h3{margin:0 0 7px;font-size:16px;line-height:1.5}
+.card h3 a{color:var(--ink)}
+.card p{font-size:14px;color:var(--sub);margin:0 0 8px}
+.card .kv{font-size:12.5px;color:var(--sub)}
+ul,ol{padding-left:22px}li{margin-bottom:7px}
+code{background:var(--soft);padding:1px 5px;border-radius:3px;font-size:13.5px;
+font-family:ui-monospace,Consolas,monospace}
+pre{background:var(--soft);padding:14px;border-radius:4px;overflow-x:auto;font-size:13px;
+line-height:1.6}
+pre code{background:none;padding:0}
+.lv{display:inline-block;font-size:11.5px;padding:0 6px;border-radius:3px;
+border:1px solid currentColor;font-weight:600}
+.lv-L1{color:var(--ok)}.lv-L0{color:var(--warn)}.lv-none{color:var(--none)}
+.v-ok{color:var(--ok)}.v-warn{color:var(--warn)}.v-danger{color:var(--danger)}
+.v-limited{color:#7a4b00}.v-none{color:var(--none)}
+.note{border-left:3px solid var(--warn);background:#fffdf5;padding:13px 16px;
+margin:18px 0;font-size:14.5px}
+.caveat{border-left:3px solid var(--accent);background:#fdf7f6;padding:13px 16px;margin:18px 0}
+.caveat strong{color:var(--accent)}
+footer{border-top:1px solid var(--line);margin-top:56px;padding:26px 0 44px;
+font-size:13px;color:var(--sub)}
+footer a{color:var(--sub)}
+.pager{display:flex;justify-content:space-between;gap:16px;margin:36px 0 0;
+padding-top:20px;border-top:1px solid var(--line);font-size:14px}
+.pager a{max-width:46%}
+.count{color:var(--sub);font-size:13.5px;margin:-8px 0 18px}
+.tw{width:100%;overflow-x:auto;-webkit-overflow-scrolling:touch;margin:16px 0}
+.tw table{margin:0;min-width:100%}
+body{overflow-x:hidden}
+@media(max-width:600px){h1{font-size:22px}.wrap{padding:0 15px}table{font-size:13px}
+th,td{padding:7px 9px}pre{font-size:12px}}
+</style>
+</head>
+<body>
+<body>
+<header class="site"><div class="wrap">
+<a class="logo" href="/">丘山录实测库</a>
+<nav><a href="/bench/">跑分</a><a href="/fix/">排错</a><a href="/license/">许可证</a><a href="/machines/">机器</a><a href="/about/">口径</a></nav>
+</div></header>
+<main class="wrap">
+
+<h1>llama.cpp 纯 CPU 跑 PLaMo 0.8B：五步命令 + 线程扫到饱和点</h1>
+<div class="meta"><span>环境与安装 · 约 5 步 / 25 分钟</span><span><span class="lv lv-L0">L0</span></span><span>整理于 2026-11-06</span>
+<span>有效期 30d</span></div>
+<p class="lede">一台没有显卡的机器也能跑 0.8B 翻译模型：546.6 MiB 的 GGUF，4 核老机器全核 7.59 tok/s 已经能用，单线程只有 2.01。但 decode 在 8 线程就到顶 —— 因为瓶颈是内存带宽不是算力，同一台机器 prefill 却能一路涨到 20 线程。五步命令从零到出译文，附「什么机器在哪一档」的对号入座表。</p>
+<span class="tag">llama.cpp</span><span class="tag">纯CPU</span><span class="tag">GGUF</span><span class="tag">PLaMo</span><span class="tag">量化</span><span class="tag">线程</span><span class="tag">内存带宽</span><span class="tag">decode</span><span class="tag">prefill</span><span class="tag">本地部署</span><span class="tag">无显卡</span><span class="tag">命令</span>
+<h2>这条适用于</h2><ul><li>一台能装 llama.cpp 的机器（x86_64 或 ARM 均可），内存 ≥ 2GB 可用</li><li>一个 0.5B–2B 的 GGUF 模型文件</li><li>不需要显卡。双路机器建议先确认 NUMA 拓扑</li></ul>
+<h2>版本指纹</h2><p><code>llama.cpp（llama-bench / llama-cli / llama-server）+ PLaMo 3 Translate 0.8B Q4_K_M</code></p>
+<h2>具体做法</h2>
+<p>【实测条件】2026-11-06 00:20–00:43。模型 plamo-3-translate-0.8b-Q4_K_M.gguf，实测 573,116,288 B（546.6 MiB），GGUF 魔数通过，llama.cpp 报 890.34 M 参数。两台机器均无显卡。</p>
+<p>【机器 A：Xeon E5-2673 v4 @ 2.30GHz】2×20C/80T，双 NUMA，AVX2，后端 libggml-cpu-haswell.so，<code></code> 绑单 NUMA node0，p128/n64/r3。<br>线程 → decode(64) / prefill(128)：<br>1 → 14.68 / 49.43<br>2 → 24.42 / 98.37<br>4 → 36.56 / 180.61<br>8 → 40.64 / 343.24（decode 在此饱和）<br>16 → 42.04 / 616.58<br>20 → 41.72 / 701.39<br>⇒ decode 8→20 线程只多 2.7%；prefill 同期翻一倍（343→701）。同一个进程里两件事走向相反，就是「decode 吃带宽、prefill 吃算力」的直接证据。</p>
+<p>【机器 B：Celeron J3455 @ 1.50GHz】4C/4T，仅 SSE4.2 无 AVX，后端降级 libggml-cpu-sse42.so，p64/n32/r2。<br>1 → 2.01 / 3.16｜2 → 3.86 / 6.06｜4 → 7.59 / 12.09</p>
+<pre><code>【跨机对照】单线程 14.68 vs 2.01 = 7.3 倍；4 线程 36.56 vs 7.59 = 4.8 倍；4 线程相对单线程的扩展比 Xeon 2.49× vs J3455 3.78× ——老机器加核效率反而更高，因为它没有跨 NUMA 远程访问、也没有超线程抢执行单元。</code></pre>
+<p>【带宽解释】同机体积对照 qwen2.5-1.5b-instruct-q4_k_m（实测 1,117,320,736 B）：体积比 1.95，速度比 1.70，两者只差 14.5%；每 token 有效带宽 23.29 vs 26.67 GB/s。⇒ decode 速度 ≈ 可用内存带宽 ÷ 模型体积，只能当趋势用。拿 0.8B 反推 2B 得 12.89 tok/s，实测 17.27，误差 25.4%（层数/专家结构不同，读取量不等于文件体积）。</p>
+<p>【内存带宽实测】每线程独立 256MB buffer 并行 copy，读写双计：T1 14.71 / T2 22.99 / T4 54.83 / T8 74.90 GB/s。⚠️ T16 185.94、T20 219.60 超过 E5-2673 v4 理论带宽 76.8 GB/s（4ch DDR4-2400）→ cache 命中污染，判为无效，可信区间只有 T1–T8。</p>
+<p>【真实任务】llama-cli 英译中整轮 4.18 秒（生成 48.0 tok/s、prompt 231.3 tok/s），中译日 4.42 秒。⚠️ EN→ZH 指令输出了日文（内容准确、语种未听）——这是 0.8B 的真实局限，<code></code> 已排除随机性。</p>
+<pre><code>【对号入座】2 tok/s 以下 = 看不了；2–7 = 能看但难受；7–15 = 能用（接近阅读速度）；15+ = 顺手。</code></pre>
+<p>【官方 GGUF 四档字节（hf-mirror API 逐文件取）】0.8B：Q2_K 391.1 / Q3_K_M 463.8 / Q4_0 522.2 / Q4_K_M 546.6 MiB。2B Q4_K_M 1723.5 MiB；8B Q4_K_M 5035.8 MiB。</p>
+<pre><code>【四档真实字节与体积换算】Q4_K_M 573,116,288 B = 0.573 GB（546.6 MiB）。另三档：Q2_K 410,177,946 B、Q3_K_M 486,286,394 B、Q4_0 547,565,978 B（391.1 / 463.8 / 522.2 MiB）。同机对照的 qwen2.5-1.5b-instruct-q4_k_m 是 1,117,320,736 B = 1.117 GB，同参数 decode 23.87 tok/s —— 这就是上面「体积比 1.95、速度比 1.70」那两行的原始读数。</code></pre>
+<p>【起 server 与端口】llama-server 默认 8080 端口，<code></code> 是上下文长度。</p>
+<p>【机器年龄与功耗口径】J3455 是 2016 年 Apollo Lake（4 核 4 线程，仅 SSE4.2）；TDP 10W。E5-2673 v4 TDP 135W。两者均为官方标称，整机实际功耗未测。</p>
+<p>【跨 NUMA 的旧测量（同机型）】10-30 那篇在同样两台机器上量过：跨 NUMA 同 8 线程慢 19%，80 线程全开比 8 线程慢 2.66 倍。那次是 Qwen3-0.6B，这次是 PLaMo 0.8B，结论一致。</p>
+<p>【等待时间的直观刻度】7 tok/s 这一档，1000 字译文要等 2 分钟以上 —— 所以「能用」这条线不是体感，是算出来的。</p>
+<p>【成本账：为省钱别装】每月按 200 万 token 的翻译量算：走云端 API，按每百万输入 0.83 美元、输出 2.50 美元估，输入输出对半，一个月约 3.3 美元（23 块左右）；自己跑，J3455 整机 10W 级、一天跑 4 小时，一个月电费不到 2 块。差价 20 块左右 → 为省钱买机器算不过来。纯 CPU 跑本地的价值在「离线」和「数据不出门」：飞行模式、断网环境、不能上传的文档，这些场景云端 API 给不了。</p>
+<div class="caveat"><strong>失效边界</strong><br>8B / 31B 两档未测：8B 的 Q4_K_M 需 5035.8 MiB（下载约 27 分钟，时间盒不够）；31B 官方只给 14 分片 safetensors，需自行转 GGUF。所以本文的尺寸曲线只有 0.8B / 1.5B / 2B 三点，不能外推到 8B。Q4 其他量化档位（Q2_K / Q3_K_M / Q4_0）字节数已知但没真跑，「量化到多低还能用」无答案。批量译文质量未打分，也未与云端同类服务同题对照；PFN 官方称 0.8B 质量超过谷歌与腾讯同类模型，属其自评口径，未验证。KV cache 与长上下文未测（全部测试为 p128/n64 短序列）。整机功耗未测（文中 TDP 为官方标称值）。</div>
+<div class="pager"><a href="/fix/pip-cache-hidden-space-20261007/">← pip 缓存空间账：list 命令看不见的那 8 个 G</a><a href="/fix/model-weights-disk-placement-20261107/" style="text-align:right">本地部署模型放哪块盘：三介质同一套方法测出来的配盘顺序 →</a></div>
+<p style="margin-top:30px"><a href="/fix/">← 返回全部排错方案</a></p>
+
+</main>
+<footer><div class="wrap">
+<p>本站数字均为真机实测，逐条标注验证等级（<span class="lv lv-L1">L1</span> 多次复测取中位 /
+<span class="lv lv-L0">L0</span> 单次测量）。查不到的写「未采集」，不估算。</p>
+<p>数据源自丘山录硬件实测库 · 本页生成于 2026-11-15 · <a href="/about/">数据口径与方法</a></p>
+</div></footer>
+</body>
+</html>

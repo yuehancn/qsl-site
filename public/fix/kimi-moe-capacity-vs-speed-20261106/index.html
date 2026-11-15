@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>MoE 大模型能不能跑：容量和速度是两笔账，别混成一句「太大了」 · 丘山录实测库</title>
+<meta name="description" content="Kimi K3.1 Pro 权重 1561GB，按单卡 141GB 算要 12 张卡；同一天网上两批说法——「2.8T 没戏」和「MoE 只激活 104B 没那么吓人」——都对但都没说到点上。">
+<link rel="canonical" href="https://361365365.xyz/fix/kimi-moe-capacity-vs-speed-20261106/">
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"TechArticle","headline":"MoE 大模型能不能跑：容量和速度是两笔账，别混成一句「太大了」","datePublished":"2026-11-06","description":"Kimi K3.1 Pro 权重 1561GB，按单卡 141GB 算要 12 张卡；同一天网上两批说法——「2.8T 没戏」和「MoE 只激活 104B 没那么吓人」——都对但都没说到点上。容量是加法题、速度才是带宽题：总参是 65B 稠密模型的 43 倍，每 token 读取量只多 60%，但那 12 张卡一张都不能少。附两步判断顺序。","author":{"@type":"Person","name":"丘山录"}}</script>
+<style>
+:root{--ink:#1a1a1a;--sub:#5b6570;--line:#e3e6ea;--bg:#fff;--soft:#f7f8fa;
+--accent:#b03a2e;--ok:#1e7b45;--warn:#9a6b00;--danger:#a11b1b;--none:#6b7280}
+*{box-sizing:border-box}
+body{margin:0;font:16px/1.75 -apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC",
+"Hiragino Sans GB","Microsoft YaHei",sans-serif;color:var(--ink);background:var(--bg)}
+a{color:#1a4f8a;text-decoration:none}a:hover{text-decoration:underline}
+.wrap{max-width:820px;margin:0 auto;padding:0 20px}
+header.site{border-bottom:1px solid var(--line);padding:18px 0;margin-bottom:32px}
+header.site .wrap{display:flex;align-items:baseline;gap:18px;flex-wrap:wrap}
+header.site .logo{font-weight:700;font-size:18px;color:var(--ink)}
+header.site nav{font-size:14px}
+header.site nav a{color:var(--sub);margin-right:16px}
+h1{font-size:27px;line-height:1.4;margin:0 0 10px;letter-spacing:-.2px}
+h2{font-size:19px;margin:34px 0 12px;padding-top:6px}
+h3{font-size:16px;margin:22px 0 8px}
+p{margin:0 0 14px}
+.meta{color:var(--sub);font-size:13px;margin-bottom:22px;line-height:1.9}
+.meta span{margin-right:14px;white-space:nowrap}
+.lede{font-size:17px;line-height:1.8;background:var(--soft);border-left:3px solid var(--accent);
+padding:16px 18px;margin:0 0 26px}
+table{width:100%;border-collapse:collapse;margin:16px 0;font-size:14px}
+th,td{border:1px solid var(--line);padding:9px 11px;text-align:left;vertical-align:top}
+th{background:var(--soft);font-weight:600}
+td.num{font-variant-numeric:tabular-nums;white-space:nowrap}
+.tag{display:inline-block;font-size:12px;padding:1px 7px;border:1px solid var(--line);
+border-radius:3px;color:var(--sub);margin:0 6px 6px 0;background:#fff}
+.card{border:1px solid var(--line);border-radius:5px;padding:17px 19px;margin:0 0 14px}
+.card h3{margin:0 0 7px;font-size:16px;line-height:1.5}
+.card h3 a{color:var(--ink)}
+.card p{font-size:14px;color:var(--sub);margin:0 0 8px}
+.card .kv{font-size:12.5px;color:var(--sub)}
+ul,ol{padding-left:22px}li{margin-bottom:7px}
+code{background:var(--soft);padding:1px 5px;border-radius:3px;font-size:13.5px;
+font-family:ui-monospace,Consolas,monospace}
+pre{background:var(--soft);padding:14px;border-radius:4px;overflow-x:auto;font-size:13px;
+line-height:1.6}
+pre code{background:none;padding:0}
+.lv{display:inline-block;font-size:11.5px;padding:0 6px;border-radius:3px;
+border:1px solid currentColor;font-weight:600}
+.lv-L1{color:var(--ok)}.lv-L0{color:var(--warn)}.lv-none{color:var(--none)}
+.v-ok{color:var(--ok)}.v-warn{color:var(--warn)}.v-danger{color:var(--danger)}
+.v-limited{color:#7a4b00}.v-none{color:var(--none)}
+.note{border-left:3px solid var(--warn);background:#fffdf5;padding:13px 16px;
+margin:18px 0;font-size:14.5px}
+.caveat{border-left:3px solid var(--accent);background:#fdf7f6;padding:13px 16px;margin:18px 0}
+.caveat strong{color:var(--accent)}
+footer{border-top:1px solid var(--line);margin-top:56px;padding:26px 0 44px;
+font-size:13px;color:var(--sub)}
+footer a{color:var(--sub)}
+.pager{display:flex;justify-content:space-between;gap:16px;margin:36px 0 0;
+padding-top:20px;border-top:1px solid var(--line);font-size:14px}
+.pager a{max-width:46%}
+.count{color:var(--sub);font-size:13.5px;margin:-8px 0 18px}
+.tw{width:100%;overflow-x:auto;-webkit-overflow-scrolling:touch;margin:16px 0}
+.tw table{margin:0;min-width:100%}
+body{overflow-x:hidden}
+@media(max-width:600px){h1{font-size:22px}.wrap{padding:0 15px}table{font-size:13px}
+th,td{padding:7px 9px}pre{font-size:12px}}
+</style>
+</head>
+<body>
+<body>
+<header class="site"><div class="wrap">
+<a class="logo" href="/">丘山录实测库</a>
+<nav><a href="/bench/">跑分</a><a href="/fix/">排错</a><a href="/license/">许可证</a><a href="/machines/">机器</a><a href="/about/">口径</a></nav>
+</div></header>
+<main class="wrap">
+
+<h1>MoE 大模型能不能跑：容量和速度是两笔账，别混成一句「太大了」</h1>
+<div class="meta"><span>成本账 · 约 2 步 / 10 分钟估算</span><span><span class="lv lv-none">未标注</span></span><span>整理于 2026-11-06</span>
+<span>有效期 30d</span></div>
+<p class="lede">Kimi K3.1 Pro 权重 1561GB，按单卡 141GB 算要 12 张卡；同一天网上两批说法——「2.8T 没戏」和「MoE 只激活 104B 没那么吓人」——都对但都没说到点上。容量是加法题、速度才是带宽题：总参是 65B 稠密模型的 43 倍，每 token 读取量只多 60%，但那 12 张卡一张都不能少。附两步判断顺序。</p>
+<span class="tag">MoE</span><span class="tag">激活率</span><span class="tag">容量</span><span class="tag">显存</span><span class="tag">内存</span><span class="tag">Kimi</span><span class="tag">B200</span><span class="tag">稠密模型</span><span class="tag">本地部署</span><span class="tag">选型</span><span class="tag">大模型</span><span class="tag">参数量</span>
+<h2>这条适用于</h2><ul><li>知道目标模型的总参与激活参数（官方模型卡）</li><li>知道自己的内存/显存总量与目标量化档的字节数</li><li>不需要真的下载权重 —— 这一步是算，不是跑</li></ul>
+<h2>版本指纹</h2><p><code>官方模型卡参数 + HF 仓库文件体积</code></p>
+<h2>具体做法</h2>
+<p>【口径声明】本方案全部数字来自各模型官方公布的参数量与公开报道的权重体积，属按参数推算，不是本机实测。Kimi K3.1 Pro 权重 1.56TB（MXFP4）/ 5.6TB（BF16），本机最大内存 122GB，装不下，无法加载实测。</p>
+<p>【四方对照（官方参数）】总参 / 激活 / 激活率 / FP8 每 token 需读：<br>PLaMo 0.8B（稠密）0.9B / 0.9B / 100% / 0.9 GB<br>Ripple-65B（稠密）65B / 65B / 100% / 65 GB<br>腾讯 Hy4（MoE）770B / 49B / 6.36% / 49 GB<br>Kimi K3.1 Pro（MoE）2800B / 104B / 3.71% / 104 GB</p>
+<p>⇒ 关键比值：Kimi 总参是 Ripple-65B 的 43 倍，但每 token 读取量只多 60%（65 → 104 GB）。<br>⇒ 3.71% 激活率意味着 96.29% 的参数在任意单个 token 上都不参与计算。它是仓库，不是流水线。</p>
+<p>【容量账】HF 仓库合计 1561GB；MXFP4 压到 1.56TB；BF16 需 5.6TB。按单卡 141GB 算，仅权重就要 12 张卡，还没算 KV 与计算缓冲。本机 122GB vs 1.56TB → 差 1439GB，需 13 台才装得下。且 12 张 141GB 的卡一台 8 卡机箱装不下，得两台。</p>
+<p>【反证：小模型上两笔账是同一件事】65B 稠密模型 FP8 权重约 65GB，一张 80GB 卡就能装下，每 token 读 65GB —— 「装得下」和「跑得动」在这里重合。到 2800B 就分家了：容量要 12 张卡，速度只相当于稠密 104B 的水平。</p>
+<p>【为什么会有两种误判】「2.8T 太大跑不动」把总参当成了每 token 读取量；「MoE 只激活 104B 所以还好」忽略了容量需求完全不变。两句话各自只覆盖了一半事实。</p>
+<pre><code>【Kimi K3.1 Pro 结构】93 层 = 69 层 KDA 线性注意力 + 24 层 Gated DSA；896 专家每次激活 16 个 + 2 个共享；1M 上下文；原生多模态；MXFP4 权重 + MXFP8 激活。</code></pre>
+<p>【本文唯一一条本机实测数】PLaMo 3 Translate 0.8B 档官方 GGUF Q4_K_M，实测 573,116,288 B —— 这是全文唯一在本机下过、校验过的数字，其余全是按参数推算。</p>
+<pre><code>【倍率写清】Kimi 总参 2800B 是 Ripple-65B（65B 稠密）的 43 倍；每 token 读取量 104 GB 对 65 GB = 1.6 倍。43 倍对 1.6 倍，这就是「参数大 ≠ 慢」的全部含义。</code></pre>
+<div class="caveat"><strong>失效边界</strong><br>全部为按官方参数与公开报道体积推算，非本机实测 —— Kimi K3.1 Pro 因 1.56TB 远超本机 122GB 内存，未做任何加载或推理实测。FP8 每 token 读取量按 1 字节/参数粗算，实际量化格式（MXFP4 / W4A16 / W4AFP8）会改变这个值，MXFP4 不是 1 字节/参数。激活率只决定带宽开销，不改变容量需求。KV 缓存与计算缓冲的精确占用未计入（本方案只算权重），实际显存需求会高于 12 张卡的权重下限。1561GB 为二手核实口径（社区按单卡 141GB 反算 12 张），非本体系直采。不同上下文长度、量化档位、并行策略下结论都会移动，判断顺序不变。</div>
+<div class="pager"><a href="/fix/models-dir-file-vs-size-20261028/">← 模型库 278GB，真正的权重只有 58 个文件</a><a href="/fix/ernie55-kv-compress-real-number-20261107/" style="text-align:right">「37 层压缩省 99%」到底省多少：按 config 逐层算一遍 →</a></div>
+<p style="margin-top:30px"><a href="/fix/">← 返回全部排错方案</a></p>
+
+</main>
+<footer><div class="wrap">
+<p>本站数字均为真机实测，逐条标注验证等级（<span class="lv lv-L1">L1</span> 多次复测取中位 /
+<span class="lv lv-L0">L0</span> 单次测量）。查不到的写「未采集」，不估算。</p>
+<p>数据源自丘山录硬件实测库 · 本页生成于 2026-11-15 · <a href="/about/">数据口径与方法</a></p>
+</div></footer>
+</body>
+</html>

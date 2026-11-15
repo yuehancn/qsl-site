@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>CPU02 计算 实测数据 · 23 条</title>
+<meta name="description" content="CPU02 计算 的真机实测记录：2 条跑分与显存数据。">
+<link rel="canonical" href="https://361365365.xyz/machines/cpu02-compute/">
+
+<style>
+:root{--ink:#1a1a1a;--sub:#5b6570;--line:#e3e6ea;--bg:#fff;--soft:#f7f8fa;
+--accent:#b03a2e;--ok:#1e7b45;--warn:#9a6b00;--danger:#a11b1b;--none:#6b7280}
+*{box-sizing:border-box}
+body{margin:0;font:16px/1.75 -apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC",
+"Hiragino Sans GB","Microsoft YaHei",sans-serif;color:var(--ink);background:var(--bg)}
+a{color:#1a4f8a;text-decoration:none}a:hover{text-decoration:underline}
+.wrap{max-width:820px;margin:0 auto;padding:0 20px}
+header.site{border-bottom:1px solid var(--line);padding:18px 0;margin-bottom:32px}
+header.site .wrap{display:flex;align-items:baseline;gap:18px;flex-wrap:wrap}
+header.site .logo{font-weight:700;font-size:18px;color:var(--ink)}
+header.site nav{font-size:14px}
+header.site nav a{color:var(--sub);margin-right:16px}
+h1{font-size:27px;line-height:1.4;margin:0 0 10px;letter-spacing:-.2px}
+h2{font-size:19px;margin:34px 0 12px;padding-top:6px}
+h3{font-size:16px;margin:22px 0 8px}
+p{margin:0 0 14px}
+.meta{color:var(--sub);font-size:13px;margin-bottom:22px;line-height:1.9}
+.meta span{margin-right:14px;white-space:nowrap}
+.lede{font-size:17px;line-height:1.8;background:var(--soft);border-left:3px solid var(--accent);
+padding:16px 18px;margin:0 0 26px}
+table{width:100%;border-collapse:collapse;margin:16px 0;font-size:14px}
+th,td{border:1px solid var(--line);padding:9px 11px;text-align:left;vertical-align:top}
+th{background:var(--soft);font-weight:600}
+td.num{font-variant-numeric:tabular-nums;white-space:nowrap}
+.tag{display:inline-block;font-size:12px;padding:1px 7px;border:1px solid var(--line);
+border-radius:3px;color:var(--sub);margin:0 6px 6px 0;background:#fff}
+.card{border:1px solid var(--line);border-radius:5px;padding:17px 19px;margin:0 0 14px}
+.card h3{margin:0 0 7px;font-size:16px;line-height:1.5}
+.card h3 a{color:var(--ink)}
+.card p{font-size:14px;color:var(--sub);margin:0 0 8px}
+.card .kv{font-size:12.5px;color:var(--sub)}
+ul,ol{padding-left:22px}li{margin-bottom:7px}
+code{background:var(--soft);padding:1px 5px;border-radius:3px;font-size:13.5px;
+font-family:ui-monospace,Consolas,monospace}
+pre{background:var(--soft);padding:14px;border-radius:4px;overflow-x:auto;font-size:13px;
+line-height:1.6}
+pre code{background:none;padding:0}
+.lv{display:inline-block;font-size:11.5px;padding:0 6px;border-radius:3px;
+border:1px solid currentColor;font-weight:600}
+.lv-L1{color:var(--ok)}.lv-L0{color:var(--warn)}.lv-none{color:var(--none)}
+.v-ok{color:var(--ok)}.v-warn{color:var(--warn)}.v-danger{color:var(--danger)}
+.v-limited{color:#7a4b00}.v-none{color:var(--none)}
+.note{border-left:3px solid var(--warn);background:#fffdf5;padding:13px 16px;
+margin:18px 0;font-size:14.5px}
+.caveat{border-left:3px solid var(--accent);background:#fdf7f6;padding:13px 16px;margin:18px 0}
+.caveat strong{color:var(--accent)}
+footer{border-top:1px solid var(--line);margin-top:56px;padding:26px 0 44px;
+font-size:13px;color:var(--sub)}
+footer a{color:var(--sub)}
+.pager{display:flex;justify-content:space-between;gap:16px;margin:36px 0 0;
+padding-top:20px;border-top:1px solid var(--line);font-size:14px}
+.pager a{max-width:46%}
+.count{color:var(--sub);font-size:13.5px;margin:-8px 0 18px}
+.tw{width:100%;overflow-x:auto;-webkit-overflow-scrolling:touch;margin:16px 0}
+.tw table{margin:0;min-width:100%}
+body{overflow-x:hidden}
+@media(max-width:600px){h1{font-size:22px}.wrap{padding:0 15px}table{font-size:13px}
+th,td{padding:7px 9px}pre{font-size:12px}}
+</style>
+</head>
+<body>
+<body>
+<header class="site"><div class="wrap">
+<a class="logo" href="/">丘山录实测库</a>
+<nav><a href="/bench/">跑分</a><a href="/fix/">排错</a><a href="/license/">许可证</a><a href="/machines/">机器</a><a href="/about/">口径</a></nav>
+</div></header>
+<main class="wrap">
+
+<h1>CPU02 计算</h1>
+<div class="meta"><span>存储与调度</span><span>23 条实测</span></div>
+<div class="tw"><div class="tw"><table><tr><th>GPU</th><td>—（无独立显卡）</td></tr><tr><th>显存</th><td>无独显</td></tr><tr><th>CPU</th><td>Intel Xeon E5-2673 v4 @ 2.30GHz（2×20C / 80 线程，双 NUMA）</td></tr><tr><th>内存</th><td>125 GB（实测 125 GiB，可用 109 GiB）</td></tr><tr><th>磁盘</th><td>系统盘 937 GB（余 885 GB）</td></tr><tr><th>系统</th><td>Ubuntu 26.04.1 LTS</td></tr><tr><th>驱动</th><td>—</td></tr><tr><th>CUDA</th><td>—</td></tr><tr><th>架构</th><td>x86_64</td></tr></table></div></div>
+<div class="caveat"><strong>这台机器的坑</strong><br>2026-11-06 实测：2×20C/80T 双 NUMA / 125 GiB / Ubuntu 26.04.1。无独立显卡（nvidia-smi 不可用，正常）。🔴 这是纯 CPU 推理的主力测试机：2026-11-06 在它上面测出 llama.cpp 跑 PLaMo 0.8B Q4_K_M 的 decode 曲线（1/2/4/8/16/20 线程 = 14.68/24.42/36.56/40.64/42.04/41.72 tok/s，8 线程饱和），prefill 同期从 49.43 涨到 701.39 t/s —— decode 吃内存带宽、prefill 吃算力，同一台机器两个最优线程数。⚠️ 双路机器必须先用 taskset 或 numactl 绑单 NUMA 再测线程，否则线程跨节点访问远程内存，测出来的数每次都不一样。⚠️ 纯 CPU 机，不参与显存类跑分对照。</div>
+纯 CPU 计算节点（原 xcz）：NAS + 大内存批处理 + 取材任务宿主
+<h2>与选型相关的实测（2 条）</h2>
+<div class="tw"><div class="tw"><table><tr><th>任务</th><th>数值</th><th>等级</th></tr><tr><td>pnpm install 安装耗时</td><td class="num">25.6 秒</td><td><span class="lv lv-L0">L0</span></td></tr><tr><td>智能体单工单端到端耗时（1 字符改动）</td><td class="num">50 秒</td><td><span class="lv lv-L0">L0</span></td></tr></table></div></div>
+<h2>部署与运维相关（21 条）</h2>
+<p class="count">磁盘、缓存、网络层面的数据，决定「能不能装下、传得快不快」，
+不代表算力强弱。</p>
+<div class="tw"><div class="tw"><table><tr><th>任务</th><th>数值</th><th>等级</th></tr><tr><td>Xeon E5-2673 v4 单线程内存 copy 带宽</td><td class="num">17.09 GB/s</td><td><span class="lv lv-L1">L1</span></td></tr><tr><td>Xeon E5-2673 v4 双线程内存 copy 带宽</td><td class="num">30.7 GB/s</td><td><span class="lv lv-L1">L1</span></td></tr><tr><td>Xeon E5-2673 v4 四线程内存 copy 带宽</td><td class="num">56.96 GB/s</td><td><span class="lv lv-L1">L1</span></td></tr><tr><td>gh 包下载不完整时的体积（11MB vs 正常 15MB）</td><td class="num">11 MB</td><td><span class="lv lv-L0">L0</span></td></tr><tr><td>内存 copy 带宽（8 线程）</td><td class="num">74.9 GB/s</td><td><span class="lv lv-L1">L1</span></td></tr><tr><td>单线程 decode 吃到内存带宽的比例</td><td class="num">49.6 %</td><td><span class="lv lv-L1">L1</span></td></tr><tr><td>单线程 decode 相对端侧老机器的倍数（Xeon 基准）</td><td class="num">7.3 倍</td><td><span class="lv lv-L1">L1</span></td></tr><tr><td>四个坑的卡时合计</td><td class="num">195 分钟</td><td><span class="lv lv-L0">L0</span></td></tr><tr><td>坑1 面板绑 0.0.0.0 / 网卡 IP 的卡时</td><td class="num">20 分钟</td><td><span class="lv lv-L0">L0</span></td></tr><tr><td>坑2 pnpm build 缺 unrun 的卡时</td><td class="num">15 分钟</td><td><span class="lv lv-L0">L0</span></td></tr><tr><td>坑3 GitHub 必须两个账号的卡时</td><td class="num">40 分钟</td><td><span class="lv lv-L0">L0</span></td></tr><tr><td>坑4 模型 provider 缺 apiKey 的卡时</td><td class="num">120 分钟</td><td><span class="lv lv-L0">L0</span></td></tr><tr><td>构建产物 lib/ 体积</td><td class="num">693.5 kB</td><td><span class="lv lv-L0">L0</span></td></tr><tr><td>样例工单的 PR 改动行数</td><td class="num">1 行</td><td><span class="lv lv-L0">L0</span></td></tr><tr><td>每 token 有效带宽（decode 实测反算）</td><td class="num">23.29 GB/s</td><td><span class="lv lv-L1">L1</span></td></tr><tr><td>真实翻译任务整轮耗时（英译中，PLaMo 0.8B）</td><td class="num">4.18 秒</td><td><span class="lv lv-L1">L1</span></td></tr><tr><td>纯 CPU 8 线程 decode（饱和点，PLaMo 0.8B）</td><td class="num">40.64 tok/s</td><td><span class="lv lv-L1">L1</span></td></tr><tr><td>纯 CPU prefill 吞吐（8 线程，PLaMo 0.8B）</td><td class="num">343.24 tok/s</td><td><span class="lv lv-L1">L1</span></td></tr><tr><td>纯 CPU 单线程 decode（PLaMo 0.8B Q4_K_M）</td><td class="num">14.68 tok/s</td><td><span class="lv lv-L1">L1</span></td></tr><tr><td>项目要求的 gh 最低版本</td><td class="num">2.48 版本号</td><td><span class="lv lv-L0">L0</span></td></tr><tr><td>首次跑通总耗时（从零到能提 PR）</td><td class="num">5 小时</td><td><span class="lv lv-L0">L0</span></td></tr></table></div></div>
+<p style="margin-top:30px"><a href="/machines/">← 返回机器清单</a></p>
+
+</main>
+<footer><div class="wrap">
+<p>本站数字均为真机实测，逐条标注验证等级（<span class="lv lv-L1">L1</span> 多次复测取中位 /
+<span class="lv lv-L0">L0</span> 单次测量）。查不到的写「未采集」，不估算。</p>
+<p>数据源自丘山录硬件实测库 · 本页生成于 2026-11-15 · <a href="/about/">数据口径与方法</a></p>
+</div></footer>
+</body>
+</html>

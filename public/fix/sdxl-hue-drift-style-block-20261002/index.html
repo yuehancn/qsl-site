@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>SDXL 批量出图跑色：加一段风格块把色相漂移压掉四成 · 丘山录实测库</title>
+<meta name="description" content="同一提示词只换 seed，SDXL 出的 8 张图跨了 4 个色系（青绿山水/红枫版画/暖米复古/宣纸留白），跨图色相极差 80.35°、圆标准差 23.36°。根因不是模型不稳定，是提示词只写了&quot;平涂/海报风&quot;却没写用什么颜色 —— 模型在没被约束的维度上每次重新抽签。">
+<link rel="canonical" href="https://361365365.xyz/fix/sdxl-hue-drift-style-block-20261002/">
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"TechArticle","headline":"SDXL 批量出图跑色：加一段风格块把色相漂移压掉四成","datePublished":"2026-10-02","description":"同一提示词只换 seed，SDXL 出的 8 张图跨了 4 个色系（青绿山水/红枫版画/暖米复古/宣纸留白），跨图色相极差 80.35°、圆标准差 23.36°。根因不是模型不稳定，是提示词只写了\"平涂/海报风\"却没写用什么颜色 —— 模型在没被约束的维度上每次重新抽签。修法：每条提示词开头逐字粘同一段风格块（含锁定色盘），尾部补一条硬命令，负面词扩一轮。","author":{"@type":"Person","name":"丘山录"}}</script>
+<style>
+:root{--ink:#1a1a1a;--sub:#5b6570;--line:#e3e6ea;--bg:#fff;--soft:#f7f8fa;
+--accent:#b03a2e;--ok:#1e7b45;--warn:#9a6b00;--danger:#a11b1b;--none:#6b7280}
+*{box-sizing:border-box}
+body{margin:0;font:16px/1.75 -apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC",
+"Hiragino Sans GB","Microsoft YaHei",sans-serif;color:var(--ink);background:var(--bg)}
+a{color:#1a4f8a;text-decoration:none}a:hover{text-decoration:underline}
+.wrap{max-width:820px;margin:0 auto;padding:0 20px}
+header.site{border-bottom:1px solid var(--line);padding:18px 0;margin-bottom:32px}
+header.site .wrap{display:flex;align-items:baseline;gap:18px;flex-wrap:wrap}
+header.site .logo{font-weight:700;font-size:18px;color:var(--ink)}
+header.site nav{font-size:14px}
+header.site nav a{color:var(--sub);margin-right:16px}
+h1{font-size:27px;line-height:1.4;margin:0 0 10px;letter-spacing:-.2px}
+h2{font-size:19px;margin:34px 0 12px;padding-top:6px}
+h3{font-size:16px;margin:22px 0 8px}
+p{margin:0 0 14px}
+.meta{color:var(--sub);font-size:13px;margin-bottom:22px;line-height:1.9}
+.meta span{margin-right:14px;white-space:nowrap}
+.lede{font-size:17px;line-height:1.8;background:var(--soft);border-left:3px solid var(--accent);
+padding:16px 18px;margin:0 0 26px}
+table{width:100%;border-collapse:collapse;margin:16px 0;font-size:14px}
+th,td{border:1px solid var(--line);padding:9px 11px;text-align:left;vertical-align:top}
+th{background:var(--soft);font-weight:600}
+td.num{font-variant-numeric:tabular-nums;white-space:nowrap}
+.tag{display:inline-block;font-size:12px;padding:1px 7px;border:1px solid var(--line);
+border-radius:3px;color:var(--sub);margin:0 6px 6px 0;background:#fff}
+.card{border:1px solid var(--line);border-radius:5px;padding:17px 19px;margin:0 0 14px}
+.card h3{margin:0 0 7px;font-size:16px;line-height:1.5}
+.card h3 a{color:var(--ink)}
+.card p{font-size:14px;color:var(--sub);margin:0 0 8px}
+.card .kv{font-size:12.5px;color:var(--sub)}
+ul,ol{padding-left:22px}li{margin-bottom:7px}
+code{background:var(--soft);padding:1px 5px;border-radius:3px;font-size:13.5px;
+font-family:ui-monospace,Consolas,monospace}
+pre{background:var(--soft);padding:14px;border-radius:4px;overflow-x:auto;font-size:13px;
+line-height:1.6}
+pre code{background:none;padding:0}
+.lv{display:inline-block;font-size:11.5px;padding:0 6px;border-radius:3px;
+border:1px solid currentColor;font-weight:600}
+.lv-L1{color:var(--ok)}.lv-L0{color:var(--warn)}.lv-none{color:var(--none)}
+.v-ok{color:var(--ok)}.v-warn{color:var(--warn)}.v-danger{color:var(--danger)}
+.v-limited{color:#7a4b00}.v-none{color:var(--none)}
+.note{border-left:3px solid var(--warn);background:#fffdf5;padding:13px 16px;
+margin:18px 0;font-size:14.5px}
+.caveat{border-left:3px solid var(--accent);background:#fdf7f6;padding:13px 16px;margin:18px 0}
+.caveat strong{color:var(--accent)}
+footer{border-top:1px solid var(--line);margin-top:56px;padding:26px 0 44px;
+font-size:13px;color:var(--sub)}
+footer a{color:var(--sub)}
+.pager{display:flex;justify-content:space-between;gap:16px;margin:36px 0 0;
+padding-top:20px;border-top:1px solid var(--line);font-size:14px}
+.pager a{max-width:46%}
+.count{color:var(--sub);font-size:13.5px;margin:-8px 0 18px}
+.tw{width:100%;overflow-x:auto;-webkit-overflow-scrolling:touch;margin:16px 0}
+.tw table{margin:0;min-width:100%}
+body{overflow-x:hidden}
+@media(max-width:600px){h1{font-size:22px}.wrap{padding:0 15px}table{font-size:13px}
+th,td{padding:7px 9px}pre{font-size:12px}}
+</style>
+</head>
+<body>
+<body>
+<header class="site"><div class="wrap">
+<a class="logo" href="/">丘山录实测库</a>
+<nav><a href="/bench/">跑分</a><a href="/fix/">排错</a><a href="/license/">许可证</a><a href="/machines/">机器</a><a href="/about/">口径</a></nav>
+</div></header>
+<main class="wrap">
+
+<h1>SDXL 批量出图跑色：加一段风格块把色相漂移压掉四成</h1>
+<div class="meta"><span>产出质量 · 4 步 / 10 分钟</span><span><span class="lv lv-L1">L1</span></span><span>整理于 2026-10-02</span>
+<span>有效期 180d</span></div>
+<p class="lede">同一提示词只换 seed，SDXL 出的 8 张图跨了 4 个色系（青绿山水/红枫版画/暖米复古/宣纸留白），跨图色相极差 80.35°、圆标准差 23.36°。根因不是模型不稳定，是提示词只写了&quot;平涂/海报风&quot;却没写用什么颜色 —— 模型在没被约束的维度上每次重新抽签。修法：每条提示词开头逐字粘同一段风格块（含锁定色盘），尾部补一条硬命令，负面词扩一轮。实测色相漂移降 41.4%，单张耗时只涨 1.0%。</p>
+<span class="tag">SDXL</span><span class="tag">画风漂移</span><span class="tag">风格锁定</span><span class="tag">批量出图</span><span class="tag">提示词工程</span><span class="tag">ComfyUI</span><span class="tag">色相</span><span class="tag">一致性</span><span class="tag">产线</span>
+<h2>这条适用于</h2><ul><li>用 SDXL base 1.0 批量出图（同提示词只换 seed）</li><li>关注的是跨图色相一致性，不是单张观感</li></ul>
+<h2>版本指纹</h2><p><code>ComfyUI 0.33.0 / torch 2.11.0+cu128 / SDXL base 1.0 / 1024×1024 / 20 步 / CFG 7.0 / euler+normal</code></p>
+<h2>具体做法</h2>
+<p>原提示词（A 组·裸）：a chinese landscape painting, mountain and pine trees, flat color, poster style<br>负面词：text, watermark, blurry, low quality<br>→ 8 张色相均值（度）：122.6 / 69.61 / 69.51 / 98.39 / 42.26 / 67.62 / 66.51 / 94.54（绿→黄绿→黄→橙黄，极差 80.35°）</p>
+<p>修好后（B 组·风格锁定）：<br>开头粘：[STYLE] flat 2D vector illustration, pure flat color fill, minimal geometric shapes, poster art, limited palette: navy blue, vermilion red, cream white, charcoal black. [END STYLE]<br>尾部加：必须纯2D平涂！绝对不要阴影、不要渐变、不要3D体积感！必须大面积留白！<br>负面词追加：photorealistic, skin texture, 3d render, volumetric lighting, gradient, soft glow, bloom, airbrush, shading, shadows, warm tones, amber, sepia<br>→ 8 张色相均值全部落在 225–270°（蓝→紫蓝，海军蓝主导）</p>
+<div class="tw"><div class="tw"><table><tr><th>指标</th><th>裸提示词</th><th>风格锁定</th><th>变化</th></tr><tr><td>跨图色相圆标准差</td><td>23.36°</td><td>13.69°</td><td>↓41.4%</td></tr><tr><td>跨图色相极差</td><td>80.35°</td><td>45.25°</td><td>↓43.7%</td></tr><tr><td>饱和度相对离散</td><td class="num">30.28%</td><td class="num">36.55%</td><td>↑20.7%</td></tr><tr><td>亮度极差</td><td class="num">0.0533</td><td class="num">0.1487</td><td>↑179%</td></tr><tr><td>稳态单张耗时</td><td>5.10s</td><td>5.15s</td><td class="num">+1.0%</td></tr></table></div></div>
+<pre><code>测量条件：RTX 5090D 32GB / ComfyUI 0.33.0 / torch 2.11.0+cu128 / SDXL base 1.0 / 1024×1024 / 20 步 / CFG 7.0 / euler+normal。
+两组各 8 张，同 seed 序列，唯一差别 = 有没有风格锁定层。图像缩至 256×256，取饱和度&gt;0.18 的像素做环形统计。
+A 组耗时 8.75（首张含加载）+ 4.94/5.08/5.12/5.02/5.13/5.10/5.11，中位 5.10s；
+B 组耗时 5.84（首张）+ 5.44/5.06/5.11/5.21/5.16/5.15/5.15，中位 5.15s。
+16 张全部成功，0 失败。（2026-10-02 本机一手采集）</code></pre>
+<div class="caveat"><strong>失效边界</strong><br>① 风格块锁的是色相，锁不住面积 —— 实测饱和度离散反而升高 20.7%、亮度极差涨 179%，因为色盘里的颜色名是枚举不是配比，模型不知道&quot;朱红只能占 5%&quot;。要更严须再补一层面积约束或上 LoRA/IPAdapter。<br>② 固定 seed 只能保证同一次生成一致，管不了跨批次一致 —— 跨批次稳靠的是逐字复制的风格块。<br>③ 以上为 SDXL base 1.0 单机单模型实测，换模型/换采样器/换分辨率须重测。<br>④ 数据仅 8 张/组，样本量小，结论方向可信、精确数值仅供参考。</div>
+<div class="pager"><a href="/fix/dsh-superagent-four-pits-20261113/">← DeepSeek 智能体跑通实录：四个坑，最狠那个报错不在日志里</a><a href="/fix/tts-duration-formula-three-errors-20261003/" style="text-align:right">口播稿时长换算：我那个公式错了三处（rate 系数 / 计量单位 / 口径错配） →</a></div>
+<p style="margin-top:30px"><a href="/fix/">← 返回全部排错方案</a></p>
+
+</main>
+<footer><div class="wrap">
+<p>本站数字均为真机实测，逐条标注验证等级（<span class="lv lv-L1">L1</span> 多次复测取中位 /
+<span class="lv lv-L0">L0</span> 单次测量）。查不到的写「未采集」，不估算。</p>
+<p>数据源自丘山录硬件实测库 · 本页生成于 2026-11-15 · <a href="/about/">数据口径与方法</a></p>
+</div></footer>
+</body>
+</html>

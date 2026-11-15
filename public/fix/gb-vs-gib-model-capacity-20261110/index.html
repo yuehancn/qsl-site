@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>下大模型前先算 GB 与 GiB：同一个权重两种口径差一百多 GiB · 丘山录实测库</title>
+<meta name="description" content="Kimi K3.1 Pro 权重 1,561,355,966,953 字节 = 1561.36 GB = 1454.13 GiB，换算系数 1.0737。">
+<link rel="canonical" href="https://361365365.xyz/fix/gb-vs-gib-model-capacity-20261110/">
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"TechArticle","headline":"下大模型前先算 GB 与 GiB：同一个权重两种口径差一百多 GiB","datePublished":"2026-11-10","description":"Kimi K3.1 Pro 权重 1,561,355,966,953 字节 = 1561.36 GB = 1454.13 GiB，换算系数 1.0737。四个模型放同一张表看：PLaMo 0.8B 0.53 GiB / Arete-27B 50.98 GiB / Qwen3.8 335.30 GiB / Kimi K3.1 Pro 1454.13 GiB。","author":{"@type":"Person","name":"丘山录"}}</script>
+<style>
+:root{--ink:#1a1a1a;--sub:#5b6570;--line:#e3e6ea;--bg:#fff;--soft:#f7f8fa;
+--accent:#b03a2e;--ok:#1e7b45;--warn:#9a6b00;--danger:#a11b1b;--none:#6b7280}
+*{box-sizing:border-box}
+body{margin:0;font:16px/1.75 -apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC",
+"Hiragino Sans GB","Microsoft YaHei",sans-serif;color:var(--ink);background:var(--bg)}
+a{color:#1a4f8a;text-decoration:none}a:hover{text-decoration:underline}
+.wrap{max-width:820px;margin:0 auto;padding:0 20px}
+header.site{border-bottom:1px solid var(--line);padding:18px 0;margin-bottom:32px}
+header.site .wrap{display:flex;align-items:baseline;gap:18px;flex-wrap:wrap}
+header.site .logo{font-weight:700;font-size:18px;color:var(--ink)}
+header.site nav{font-size:14px}
+header.site nav a{color:var(--sub);margin-right:16px}
+h1{font-size:27px;line-height:1.4;margin:0 0 10px;letter-spacing:-.2px}
+h2{font-size:19px;margin:34px 0 12px;padding-top:6px}
+h3{font-size:16px;margin:22px 0 8px}
+p{margin:0 0 14px}
+.meta{color:var(--sub);font-size:13px;margin-bottom:22px;line-height:1.9}
+.meta span{margin-right:14px;white-space:nowrap}
+.lede{font-size:17px;line-height:1.8;background:var(--soft);border-left:3px solid var(--accent);
+padding:16px 18px;margin:0 0 26px}
+table{width:100%;border-collapse:collapse;margin:16px 0;font-size:14px}
+th,td{border:1px solid var(--line);padding:9px 11px;text-align:left;vertical-align:top}
+th{background:var(--soft);font-weight:600}
+td.num{font-variant-numeric:tabular-nums;white-space:nowrap}
+.tag{display:inline-block;font-size:12px;padding:1px 7px;border:1px solid var(--line);
+border-radius:3px;color:var(--sub);margin:0 6px 6px 0;background:#fff}
+.card{border:1px solid var(--line);border-radius:5px;padding:17px 19px;margin:0 0 14px}
+.card h3{margin:0 0 7px;font-size:16px;line-height:1.5}
+.card h3 a{color:var(--ink)}
+.card p{font-size:14px;color:var(--sub);margin:0 0 8px}
+.card .kv{font-size:12.5px;color:var(--sub)}
+ul,ol{padding-left:22px}li{margin-bottom:7px}
+code{background:var(--soft);padding:1px 5px;border-radius:3px;font-size:13.5px;
+font-family:ui-monospace,Consolas,monospace}
+pre{background:var(--soft);padding:14px;border-radius:4px;overflow-x:auto;font-size:13px;
+line-height:1.6}
+pre code{background:none;padding:0}
+.lv{display:inline-block;font-size:11.5px;padding:0 6px;border-radius:3px;
+border:1px solid currentColor;font-weight:600}
+.lv-L1{color:var(--ok)}.lv-L0{color:var(--warn)}.lv-none{color:var(--none)}
+.v-ok{color:var(--ok)}.v-warn{color:var(--warn)}.v-danger{color:var(--danger)}
+.v-limited{color:#7a4b00}.v-none{color:var(--none)}
+.note{border-left:3px solid var(--warn);background:#fffdf5;padding:13px 16px;
+margin:18px 0;font-size:14.5px}
+.caveat{border-left:3px solid var(--accent);background:#fdf7f6;padding:13px 16px;margin:18px 0}
+.caveat strong{color:var(--accent)}
+footer{border-top:1px solid var(--line);margin-top:56px;padding:26px 0 44px;
+font-size:13px;color:var(--sub)}
+footer a{color:var(--sub)}
+.pager{display:flex;justify-content:space-between;gap:16px;margin:36px 0 0;
+padding-top:20px;border-top:1px solid var(--line);font-size:14px}
+.pager a{max-width:46%}
+.count{color:var(--sub);font-size:13.5px;margin:-8px 0 18px}
+.tw{width:100%;overflow-x:auto;-webkit-overflow-scrolling:touch;margin:16px 0}
+.tw table{margin:0;min-width:100%}
+body{overflow-x:hidden}
+@media(max-width:600px){h1{font-size:22px}.wrap{padding:0 15px}table{font-size:13px}
+th,td{padding:7px 9px}pre{font-size:12px}}
+</style>
+</head>
+<body>
+<body>
+<header class="site"><div class="wrap">
+<a class="logo" href="/">丘山录实测库</a>
+<nav><a href="/bench/">跑分</a><a href="/fix/">排错</a><a href="/license/">许可证</a><a href="/machines/">机器</a><a href="/about/">口径</a></nav>
+</div></header>
+<main class="wrap">
+
+<h1>下大模型前先算 GB 与 GiB：同一个权重两种口径差一百多 GiB</h1>
+<div class="meta"><span>性能 · 1 步 / 约 30 秒（一条 df 命令）</span><span><span class="lv lv-none">未标注</span></span><span>整理于 2026-11-10</span>
+<span>有效期 180d</span></div>
+<p class="lede">Kimi K3.1 Pro 权重 1,561,355,966,953 字节 = 1561.36 GB = 1454.13 GiB，换算系数 1.0737。四个模型放同一张表看：PLaMo 0.8B 0.53 GiB / Arete-27B 50.98 GiB / Qwen3.8 335.30 GiB / Kimi K3.1 Pro 1454.13 GiB。1463.0 GiB 的 D 盘装完只剩 8.87 GiB —— 装得下，但什么都干不了。附 30 秒自测命令与「加盘 vs 放 NAS」的成本对比。</p>
+<span class="tag">容量口径</span><span class="tag">GB</span><span class="tag">GiB</span><span class="tag">硬盘</span><span class="tag">本地部署</span><span class="tag">Kimi</span><span class="tag">模型体积</span><span class="tag">选型</span><span class="tag">存储</span><span class="tag">算账</span>
+<h2>这条适用于</h2><ul><li>目标机可执行 df 命令</li><li>已知要下的模型仓库地址（能取到真实字节数，不是参数量估算）</li></ul>
+<h2>版本指纹</h2><p><code>df (GNU coreutils) / 2026-11-10</code></p>
+<h2>具体做法</h2>
+<pre><code>【四个仓库的真实字节（hf-mirror 模型 API 逐文件相加，非按参数量估算）】
+· PLaMo 0.8B Q4_K_M：573,126,848 B = 0.57 GB = 0.53 GiB
+· Arete-27B BF16：54,743,825,646 B = 54.74 GB = 50.98 GiB
+· Qwen3.8-Flash-Next：360,023,343,554 B = 360.02 GB = 335.30 GiB（144 文件 / 131 分片）
+· Kimi K3.1 Pro：1,561,355,966,953 B = 1561.36 GB = 1454.13 GiB（96 分片）</code></pre>
+<p>【本机三块盘（2026-11-10 实测）】C 盘 1539.6 GiB（装完剩 85.47）/ D 盘 1463.0 GiB（装完剩 8.87）/ NAS 15T 12634.0 GiB（装完剩 11179.87）。</p>
+<pre><code>【换算系数为什么是 1.0737】2^30 ÷ 10^9 = 1.073741824。厂商标称按十进制（1 TB = 1000 GB），操作系统按二进制显示（1 TiB = 1024 GiB）。2TB 盘厂商标 2000 GB，系统里显示 1862.6 GiB；4TB 盘标 4000 GB，显示 3725.3 GiB。差异随容量线性放大：0.5 GiB 的模型差 0.03 GiB 无所谓，1454 GiB 的模型差 107 GiB 就是生死线。</code></pre>
+<p>【典型误判】某盘 1463.0 GiB 可用，看到模型标「1.5TB」，算成「还差 37GB，清一下就够」。实际 1454.13 与 1463.0 只差 8.87 GiB 余量，装下去系统还要留 10% 空闲，必爆。</p>
+<p>【加盘 vs 放 NAS 的成本结构】<br>· 加 4TB NVMe：系统内 3725.3 GiB，减 1454.13 剩 2271.2 GiB。一次性约一千五。<br>· 放 NAS：空间 11179.87 GiB 够，但千兆 SMB 顺序读 99.96 MB/s，1454.13 GiB 读一遍 4.34 小时 —— 每次加载都付一次。一个模型一个月重启 1 次，一年 50 小时以上。<br>结论：能用本地盘就不用 NAS，能加盘就别省那一千五。</p>
+<div class="caveat"><strong>失效边界</strong><br>GB→GiB 统一按 ÷1.0737 换算，未区分厂商实际标称差异（不同品牌 2TB 盘在系统内可能是 1862 或 1863 GiB）。NAS 4.34 小时按 99.96 MB/s 线性折算，未计网络波动与 SMB 开销，实际更长。「系统需留 10% 空闲」是经验值，非硬性规范。四个仓库体积取自平台 API 逐文件相加，若仓库后续增删文件需重取。未实测「装完只剩 8.87 GiB 时系统具体表现」，是按经验推断。</div>
+<div class="pager"><a href="/fix/bandwidth-before-toks-ceiling-20261102/">← 算 tok/s 上限之前先量带宽：标称 273 GB/s 的机器，四台实测只到 233.6</a><a href="/fix/hf-download-parallel-bandwidth-20261027/" style="text-align:right">本地部署拉模型权重：8 线程只快 1.77 倍，卡的是链路不是线程 →</a></div>
+<p style="margin-top:30px"><a href="/fix/">← 返回全部排错方案</a></p>
+
+</main>
+<footer><div class="wrap">
+<p>本站数字均为真机实测，逐条标注验证等级（<span class="lv lv-L1">L1</span> 多次复测取中位 /
+<span class="lv lv-L0">L0</span> 单次测量）。查不到的写「未采集」，不估算。</p>
+<p>数据源自丘山录硬件实测库 · 本页生成于 2026-11-15 · <a href="/about/">数据口径与方法</a></p>
+</div></footer>
+</body>
+</html>

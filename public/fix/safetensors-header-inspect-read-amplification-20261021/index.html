@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>模型文件先读头再加载：260 KB 看清 1438 个张量，别让加载器替你全读 16 GiB · 丘山录实测库</title>
+<meta name="description" content="safetensors 的文件结构是「8 字节头长度 + 一段 JSON + 权重数据」，JSON 里写明每个张量的名字、形状、精度和字节偏移。所以想查清一个模型到底装了什么、精度是不是它标的那样、值不值得重下，只需要读那一段 JSON，不用碰权重。">
+<link rel="canonical" href="https://361365365.xyz/fix/safetensors-header-inspect-read-amplification-20261021/">
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"TechArticle","headline":"模型文件先读头再加载：260 KB 看清 1438 个张量，别让加载器替你全读 16 GiB","datePublished":"2026-10-21","description":"safetensors 的文件结构是「8 字节头长度 + 一段 JSON + 权重数据」，JSON 里写明每个张量的名字、形状、精度和字节偏移。所以想查清一个模型到底装了什么、精度是不是它标的那样、值不值得重下，只需要读那一段 JSON，不用碰权重。","author":{"@type":"Person","name":"丘山录"}}</script>
+<style>
+:root{--ink:#1a1a1a;--sub:#5b6570;--line:#e3e6ea;--bg:#fff;--soft:#f7f8fa;
+--accent:#b03a2e;--ok:#1e7b45;--warn:#9a6b00;--danger:#a11b1b;--none:#6b7280}
+*{box-sizing:border-box}
+body{margin:0;font:16px/1.75 -apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC",
+"Hiragino Sans GB","Microsoft YaHei",sans-serif;color:var(--ink);background:var(--bg)}
+a{color:#1a4f8a;text-decoration:none}a:hover{text-decoration:underline}
+.wrap{max-width:820px;margin:0 auto;padding:0 20px}
+header.site{border-bottom:1px solid var(--line);padding:18px 0;margin-bottom:32px}
+header.site .wrap{display:flex;align-items:baseline;gap:18px;flex-wrap:wrap}
+header.site .logo{font-weight:700;font-size:18px;color:var(--ink)}
+header.site nav{font-size:14px}
+header.site nav a{color:var(--sub);margin-right:16px}
+h1{font-size:27px;line-height:1.4;margin:0 0 10px;letter-spacing:-.2px}
+h2{font-size:19px;margin:34px 0 12px;padding-top:6px}
+h3{font-size:16px;margin:22px 0 8px}
+p{margin:0 0 14px}
+.meta{color:var(--sub);font-size:13px;margin-bottom:22px;line-height:1.9}
+.meta span{margin-right:14px;white-space:nowrap}
+.lede{font-size:17px;line-height:1.8;background:var(--soft);border-left:3px solid var(--accent);
+padding:16px 18px;margin:0 0 26px}
+table{width:100%;border-collapse:collapse;margin:16px 0;font-size:14px}
+th,td{border:1px solid var(--line);padding:9px 11px;text-align:left;vertical-align:top}
+th{background:var(--soft);font-weight:600}
+td.num{font-variant-numeric:tabular-nums;white-space:nowrap}
+.tag{display:inline-block;font-size:12px;padding:1px 7px;border:1px solid var(--line);
+border-radius:3px;color:var(--sub);margin:0 6px 6px 0;background:#fff}
+.card{border:1px solid var(--line);border-radius:5px;padding:17px 19px;margin:0 0 14px}
+.card h3{margin:0 0 7px;font-size:16px;line-height:1.5}
+.card h3 a{color:var(--ink)}
+.card p{font-size:14px;color:var(--sub);margin:0 0 8px}
+.card .kv{font-size:12.5px;color:var(--sub)}
+ul,ol{padding-left:22px}li{margin-bottom:7px}
+code{background:var(--soft);padding:1px 5px;border-radius:3px;font-size:13.5px;
+font-family:ui-monospace,Consolas,monospace}
+pre{background:var(--soft);padding:14px;border-radius:4px;overflow-x:auto;font-size:13px;
+line-height:1.6}
+pre code{background:none;padding:0}
+.lv{display:inline-block;font-size:11.5px;padding:0 6px;border-radius:3px;
+border:1px solid currentColor;font-weight:600}
+.lv-L1{color:var(--ok)}.lv-L0{color:var(--warn)}.lv-none{color:var(--none)}
+.v-ok{color:var(--ok)}.v-warn{color:var(--warn)}.v-danger{color:var(--danger)}
+.v-limited{color:#7a4b00}.v-none{color:var(--none)}
+.note{border-left:3px solid var(--warn);background:#fffdf5;padding:13px 16px;
+margin:18px 0;font-size:14.5px}
+.caveat{border-left:3px solid var(--accent);background:#fdf7f6;padding:13px 16px;margin:18px 0}
+.caveat strong{color:var(--accent)}
+footer{border-top:1px solid var(--line);margin-top:56px;padding:26px 0 44px;
+font-size:13px;color:var(--sub)}
+footer a{color:var(--sub)}
+.pager{display:flex;justify-content:space-between;gap:16px;margin:36px 0 0;
+padding-top:20px;border-top:1px solid var(--line);font-size:14px}
+.pager a{max-width:46%}
+.count{color:var(--sub);font-size:13.5px;margin:-8px 0 18px}
+.tw{width:100%;overflow-x:auto;-webkit-overflow-scrolling:touch;margin:16px 0}
+.tw table{margin:0;min-width:100%}
+body{overflow-x:hidden}
+@media(max-width:600px){h1{font-size:22px}.wrap{padding:0 15px}table{font-size:13px}
+th,td{padding:7px 9px}pre{font-size:12px}}
+</style>
+</head>
+<body>
+<body>
+<header class="site"><div class="wrap">
+<a class="logo" href="/">丘山录实测库</a>
+<nav><a href="/bench/">跑分</a><a href="/fix/">排错</a><a href="/license/">许可证</a><a href="/machines/">机器</a><a href="/about/">口径</a></nav>
+</div></header>
+<main class="wrap">
+
+<h1>模型文件先读头再加载：260 KB 看清 1438 个张量，别让加载器替你全读 16 GiB</h1>
+<div class="meta"><span>排障 · 260 KB · 5,671× · 省 36.7%</span><span><span class="lv lv-L0">L0</span></span><span>整理于 2026-10-21</span>
+<span>有效期 30d</span></div>
+<p class="lede">safetensors 的文件结构是「8 字节头长度 + 一段 JSON + 权重数据」，JSON 里写明每个张量的名字、形状、精度和字节偏移。所以想查清一个模型到底装了什么、精度是不是它标的那样、值不值得重下，只需要读那一段 JSON，不用碰权重。本机实测：FLUX schnell fp8 单文件 16.05 GiB，头仅 260,000 字节（占 0.0015%），读头 0.96 毫秒，读全量 5.46 秒，比值 5,671 倍；最极端的是 minimax_h3 int8（19.53 GiB，头仅 95,416 字节），比值 16,302 倍。反过来，ComfyUI 0.33.0 的 UNETLoader 走 load_diffusion_model → load_torch_file，用 `for k in f.keys()` 无过滤把整个打包文件全读进内存——FLUX 那 1438 个张量里只有 776 个（model.diffusion_model，11.07 GiB）真正参与建模，另外 418 个 text_encoders（4.67 GiB）与 244 个 vae（319.75 MiB）读进来就被前缀过滤扔了。只读 UNet 段 vs 全量：FLUX 省 36.7%、SDXL 省 27.6%；但 Wan2.2 三个纯 UNet 文件为 3.1% / −2.0% / −1.7%（无收益）——读放大只在「把不相干的东西打进同一个文件」时才发生。</p>
+<span class="tag">模型文件</span><span class="tag">safetensors</span><span class="tag">文件头</span><span class="tag">ComfyUI</span><span class="tag">加载器</span><span class="tag">读放大</span><span class="tag">精度分布</span><span class="tag">显存</span><span class="tag">FLUX</span><span class="tag">SDXL</span><span class="tag">Wan2.2</span><span class="tag">本地部署</span><span class="tag">查重</span>
+<h2>这条适用于</h2><ul><li>模型文件是 safetensors 格式（.safetensors / .sft）</li><li>能直接读文件（本地磁盘或已下载完成，不是流式）</li><li>想查的是文件构成/精度分布/是否重复，而不是画质或效果</li></ul>
+<h2>版本指纹</h2><p><code>ComfyUI 0.33.0；D:\models 57 个权重文件；RTX 5090D 32GB / D 盘 NVMe / Windows 11</code></p>
+<h2>具体做法</h2>
+<p>环境：本机 RTX 5090D 32GB / D 盘 NVMe / Windows 11 / ComfyUI 0.33.0，2026-10-21。测量方式：每个文件读头 7 次取中位、读全量 3 次取中位；文件均已在系统页缓存中，故该组数字反映「已缓存后的解析开销」，不是冷盘首读（冷盘会更慢，但比值方向一致）。</p>
+<p>【5 个 diffusion_models 文件的头 vs 全量】<br>· wan2.2_ti2v_5B_fp16｜9.31 GiB｜头 83,416 B｜读头 0.41 ms｜全量 3.37 s｜7,493×<br>· wan2.2_t2v_14B_fp8｜13.31 GiB｜头 180,728 B｜0.90 ms｜4.61 s｜5,104×<br>· wan2.2_s2v_14B_fp8｜15.27 GiB｜头 212,232 B｜0.99 ms｜5.46 s｜5,512×<br>· flux1-schnell-fp8｜16.05 GiB｜头 260,000 B｜0.96 ms｜5.46 s｜5,671×<br>· minimax_h3_int8｜19.53 GiB｜头 95,416 B｜0.44 ms｜7.17 s｜16,302×<br>· NVMe 顺序读实测 3057 / 3087 / 3106 / 3120 / 3346 MB/s（六次落在 3057–3110 窄带）</p>
+<pre><code>【FLUX schnell fp8 内部构成（头直读）】
+· model.diffusion_model 11.07 GiB / 776 张量（全 F8_E4M3）
+· text_encoders 4.67 GiB / 418 张量（T5 4.44 GiB + clip_l 235.84 MiB）
+· vae 319.75 MiB / 244 张量（全 F32）
+· 精度分布：995 个 F8_E4M3 = 96.62% 字节；246 个 F32 = 1.95%；197 个 F16 = 1.43%</code></pre>
+<p>【只读 UNet 段 vs 全量（省多少）】<br>· sd_xl_base_1.0：2.31 s → 1.67 s，省 27.6%<br>· flux1-schnell-fp8：5.46 s → 3.46 s，省 36.7%<br>· wan2.2_ti2v_5B_fp16：3.37 → 3.27，省 3.1%<br>· minimax_h3_int8：7.17 → 7.00，省 2.3%<br>· wan2.2_t2v_14B_fp8：4.61 → 4.70，−2.0%<br>· wan2.2_s2v_14B_fp8：5.46 → 5.55，−1.7%</p>
+<p>【ComfyUI 0.33.0 源码链路】<br>· nodes.py:982 UNETLoader.load_unet → comfy.sd.load_diffusion_model<br>· comfy/sd.py:2335 load_diffusion_model → comfy.utils.load_torch_file(unet_path)<br>· comfy/utils.py:158 load_torch_file → safetensors.safe_open，<code></code> 无过滤<br>· 后续 unet_prefix_from_state_dict 按前缀过滤，非 UNet 张量被丢弃</p>
+<pre><code>【T5 版本差定位（打包版 vs 独立文件）】
+· 打包版 text_encoders.t5xxl 合计 4.44 GiB / 220 张量；独立 t5xxl_fp8_e4m3fn 4.56 GiB / 220 张量，差 125.5 MiB
+· 差异不在精度：打包版存 text_encoders.t5xxl.transformer.shared.weight [32128,4096] F8_E4M3 = 131,596,288 B
+· 独立文件同时存 shared.weight 与 encoder.embed_tokens.weight，各 131,596,288 B，偏移相差 131,600,384 B（两份独立物理数据）
+· ⇒ 打包版把重复词表合并了，反而更省 125.5 MiB</code></pre>
+<div class="caveat"><strong>失效边界</strong><br>本结论为本机实测（2026-10-21；RTX 5090D / D 盘 NVMe / ComfyUI 0.33.0）。读头与读全量耗时均在文件已进入系统页缓存的条件下测得，代表解析开销而非冷盘首读。只读 UNet 段实验用绝对偏移直接 seek 读取，跳过了非 UNet 张量，因此负收益档位（Wan2.2 三个）的差异来自多次 seek 的额外开销，属测量误差量级，不代表「分开读更慢」的结论。本文只讨论文件结构、读取量与内存占用，不含任何画质或生成质量判断。T5 词表两份是否逐字节相同未做全量比对（1.3 亿字节），故只用「很可能相同」表述。</div>
+<div class="pager"><a href="/fix/ollama-cold-load-fixed-cost-20261019/">← Ollama 冷加载的时间大头不在读盘：小模型 93% 花在固定开销上</a><a href="/fix/uma-vram-four-gauges-20261031/" style="text-align:right">统一内存机器查显存，四个命令给出四个答案，最大差 17.5 倍 →</a></div>
+<p style="margin-top:30px"><a href="/fix/">← 返回全部排错方案</a></p>
+
+</main>
+<footer><div class="wrap">
+<p>本站数字均为真机实测，逐条标注验证等级（<span class="lv lv-L1">L1</span> 多次复测取中位 /
+<span class="lv lv-L0">L0</span> 单次测量）。查不到的写「未采集」，不估算。</p>
+<p>数据源自丘山录硬件实测库 · 本页生成于 2026-11-15 · <a href="/about/">数据口径与方法</a></p>
+</div></footer>
+</body>
+</html>

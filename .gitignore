@@ -1,0 +1,5 @@
+.workbuddy/
+_shots/
+__pycache__/
+*.pyc
+_patch.py

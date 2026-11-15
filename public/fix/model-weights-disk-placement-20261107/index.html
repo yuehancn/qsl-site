@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>本地部署模型放哪块盘：三介质同一套方法测出来的配盘顺序 · 丘山录实测库</title>
+<meta name="description" content="同一份 288.46GB 权重，DGX Spark #1 板载 NVMe 读进去 25 秒，NAS 上 0.93 小时，差 135 倍。三种介质用同一套方法（绕页缓存 / 每线程 1GB / 栅栏同步 / 缓冲区预置在计时外）各测一遍，得到三条形状完全不同的曲线：本地盘加线程反而变慢（0.">
+<link rel="canonical" href="https://361365365.xyz/fix/model-weights-disk-placement-20261107/">
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"TechArticle","headline":"本地部署模型放哪块盘：三介质同一套方法测出来的配盘顺序","datePublished":"2026-11-07","description":"同一份 288.46GB 权重，DGX Spark #1 板载 NVMe 读进去 25 秒，NAS 上 0.93 小时，差 135 倍。三种介质用同一套方法（绕页缓存 / 每线程 1GB / 栅栏同步 / 缓冲区预置在计时外）各测一遍，得到三条形状完全不同的曲线：本地盘加线程反而变慢（0.87 倍），NAS 2 线程就饱和（1.37 倍）。附可复现的四步链路与两个必踩的测量坑。","author":{"@type":"Person","name":"丘山录"}}</script>
+<style>
+:root{--ink:#1a1a1a;--sub:#5b6570;--line:#e3e6ea;--bg:#fff;--soft:#f7f8fa;
+--accent:#b03a2e;--ok:#1e7b45;--warn:#9a6b00;--danger:#a11b1b;--none:#6b7280}
+*{box-sizing:border-box}
+body{margin:0;font:16px/1.75 -apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC",
+"Hiragino Sans GB","Microsoft YaHei",sans-serif;color:var(--ink);background:var(--bg)}
+a{color:#1a4f8a;text-decoration:none}a:hover{text-decoration:underline}
+.wrap{max-width:820px;margin:0 auto;padding:0 20px}
+header.site{border-bottom:1px solid var(--line);padding:18px 0;margin-bottom:32px}
+header.site .wrap{display:flex;align-items:baseline;gap:18px;flex-wrap:wrap}
+header.site .logo{font-weight:700;font-size:18px;color:var(--ink)}
+header.site nav{font-size:14px}
+header.site nav a{color:var(--sub);margin-right:16px}
+h1{font-size:27px;line-height:1.4;margin:0 0 10px;letter-spacing:-.2px}
+h2{font-size:19px;margin:34px 0 12px;padding-top:6px}
+h3{font-size:16px;margin:22px 0 8px}
+p{margin:0 0 14px}
+.meta{color:var(--sub);font-size:13px;margin-bottom:22px;line-height:1.9}
+.meta span{margin-right:14px;white-space:nowrap}
+.lede{font-size:17px;line-height:1.8;background:var(--soft);border-left:3px solid var(--accent);
+padding:16px 18px;margin:0 0 26px}
+table{width:100%;border-collapse:collapse;margin:16px 0;font-size:14px}
+th,td{border:1px solid var(--line);padding:9px 11px;text-align:left;vertical-align:top}
+th{background:var(--soft);font-weight:600}
+td.num{font-variant-numeric:tabular-nums;white-space:nowrap}
+.tag{display:inline-block;font-size:12px;padding:1px 7px;border:1px solid var(--line);
+border-radius:3px;color:var(--sub);margin:0 6px 6px 0;background:#fff}
+.card{border:1px solid var(--line);border-radius:5px;padding:17px 19px;margin:0 0 14px}
+.card h3{margin:0 0 7px;font-size:16px;line-height:1.5}
+.card h3 a{color:var(--ink)}
+.card p{font-size:14px;color:var(--sub);margin:0 0 8px}
+.card .kv{font-size:12.5px;color:var(--sub)}
+ul,ol{padding-left:22px}li{margin-bottom:7px}
+code{background:var(--soft);padding:1px 5px;border-radius:3px;font-size:13.5px;
+font-family:ui-monospace,Consolas,monospace}
+pre{background:var(--soft);padding:14px;border-radius:4px;overflow-x:auto;font-size:13px;
+line-height:1.6}
+pre code{background:none;padding:0}
+.lv{display:inline-block;font-size:11.5px;padding:0 6px;border-radius:3px;
+border:1px solid currentColor;font-weight:600}
+.lv-L1{color:var(--ok)}.lv-L0{color:var(--warn)}.lv-none{color:var(--none)}
+.v-ok{color:var(--ok)}.v-warn{color:var(--warn)}.v-danger{color:var(--danger)}
+.v-limited{color:#7a4b00}.v-none{color:var(--none)}
+.note{border-left:3px solid var(--warn);background:#fffdf5;padding:13px 16px;
+margin:18px 0;font-size:14.5px}
+.caveat{border-left:3px solid var(--accent);background:#fdf7f6;padding:13px 16px;margin:18px 0}
+.caveat strong{color:var(--accent)}
+footer{border-top:1px solid var(--line);margin-top:56px;padding:26px 0 44px;
+font-size:13px;color:var(--sub)}
+footer a{color:var(--sub)}
+.pager{display:flex;justify-content:space-between;gap:16px;margin:36px 0 0;
+padding-top:20px;border-top:1px solid var(--line);font-size:14px}
+.pager a{max-width:46%}
+.count{color:var(--sub);font-size:13.5px;margin:-8px 0 18px}
+.tw{width:100%;overflow-x:auto;-webkit-overflow-scrolling:touch;margin:16px 0}
+.tw table{margin:0;min-width:100%}
+body{overflow-x:hidden}
+@media(max-width:600px){h1{font-size:22px}.wrap{padding:0 15px}table{font-size:13px}
+th,td{padding:7px 9px}pre{font-size:12px}}
+</style>
+</head>
+<body>
+<body>
+<header class="site"><div class="wrap">
+<a class="logo" href="/">丘山录实测库</a>
+<nav><a href="/bench/">跑分</a><a href="/fix/">排错</a><a href="/license/">许可证</a><a href="/machines/">机器</a><a href="/about/">口径</a></nav>
+</div></header>
+<main class="wrap">
+
+<h1>本地部署模型放哪块盘：三介质同一套方法测出来的配盘顺序</h1>
+<div class="meta"><span>环境与安装 · 4 步 / 约 20 分钟（含造测试文件）</span><span><span class="lv lv-L0">L0</span></span><span>整理于 2026-11-07</span>
+<span>有效期 180d</span></div>
+<p class="lede">同一份 288.46GB 权重，DGX Spark #1 板载 NVMe 读进去 25 秒，NAS 上 0.93 小时，差 135 倍。三种介质用同一套方法（绕页缓存 / 每线程 1GB / 栅栏同步 / 缓冲区预置在计时外）各测一遍，得到三条形状完全不同的曲线：本地盘加线程反而变慢（0.87 倍），NAS 2 线程就饱和（1.37 倍）。附可复现的四步链路与两个必踩的测量坑。</p>
+<span class="tag">磁盘</span><span class="tag">IO</span><span class="tag">本地部署</span><span class="tag">NVMe</span><span class="tag">NAS</span><span class="tag">SMB</span><span class="tag">顺序读</span><span class="tag">并发</span><span class="tag">显存</span><span class="tag">模型加载</span><span class="tag">选型</span><span class="tag">O_DIRECT</span>
+<h2>这条适用于</h2><ul><li>能对目标介质做无缓冲读（Linux: O_DIRECT；Windows: FILE_FLAG_NO_BUFFERING）</li><li>有一个够大的真实文件或分片（≥1GB）</li><li>NAS 场景需要 SMB/NFS 已挂载且可读</li></ul>
+<h2>版本指纹</h2><p><code>Linux ext4 + NVMe（INTEL SSDPF2KX019T1M、DGX GB10 板载盘）+ SMB</code></p>
+<h2>具体做法</h2>
+<p>【实测环境与口径】三种介质，同一套方法：每线程读 1GB（NAS 给 512MB）、绕页缓存、threading.Barrier 栅栏同步起跑、目标缓冲区预分配在计时区间外。文件用真实模型分片（DGX Spark #1 侧 48 个真实 safetensors，最大 101.54GB；NAS 与本机侧各建 8 个等大文件）。</p>
+<pre><code>【DGX Spark #1 板载 NVMe】aarch64、3.7T ext4。T=1/2/4/8/16 聚合带宽 11.546 / 10.089 / 9.688 / 10.005 / 10.037 GB/s → 对单流 1.00 / 0.87 / 0.84 / 0.87 / 0.87 倍。单流已打满盘的上限，加线程不仅无益还略降。</code></pre>
+<pre><code>【本机 D 盘 NVMe】Intel SSDPF2KX019T1M。T=1/2/4/8 = 5.579 / 6.707 / 6.766 / 6.865 GB/s → 1.00 / 1.20 / 1.21 / 1.23 倍。2 线程基本饱和。</code></pre>
+<pre><code>【NAS（SMB 挂载）】T=1/2/4/8 = 85.7 / 117.1 / 115.6 / 116.0 MB/s → 1.00 / 1.37 / 1.35 / 1.35 倍。2 线程到顶。写侧 8 个 671MB 文件 87.3 / 86.7 / 86.6 / 86.5 / 84.7 / 86.6 / 86.6 / 86.0 MB/s，离差 3%，链路决定。</code></pre>
+<pre><code>【换成时间】288.46GB 落盘：DGX Spark #1 单流 25.0 秒 / 16 线程 28.7 秒；本机单流 51.7 秒 / 8 线程 42.0 秒；NAS 单流 3365.9 秒（0.93 小时）/ 2 线程 2463.4 秒（0.68 小时）。板载盘 vs NAS = 135 倍。</code></pre>
+<pre><code>【为什么 NAS 不能当显存】ERNIE 5.5 Flash Base 每 token 读 14.0GB 权重。NAS 85.7 MB/s 要 99.39% 命中率才换 1 tok/s，10 tok/s 要 99.94%。命中率 99.39% = 288GB 里只能有 1.8GB 没缓存住 = 要一个 286GB 的缓存。本机 D 盘只要 60.15%，DGX Spark #1 板载只要 17.53%。完全不命中的理论上限：板载 0.825 / 本机 0.399 / NAS 0.006 tok/s。</code></pre>
+<pre><code>【四步自测链路】① 从仓库 API 取真实字节总和；② dd if=目标文件 of=/dev/null bs=1M count=1024 iflag=direct 单流；③ 加线程看扩展比（注意上面两个坑）；④ 带宽 ÷ 总字节数 = 你的落盘时间。</code></pre>
+<div class="caveat"><strong>失效边界</strong><br>三种介质的带宽全部为本机实测，但 ERNIE 5.5 Flash Base 本体未下载未运行 —— 288.46GB 在时间盒内不可能下完（镜像站单流 97KB/s、8 路并行 3.16MB/s，要 25 小时），所以文中所有 tok/s 都是按「每 token 读取 14.0GB 权重」推导的数学上限，不是跑出来的速度。288GB 落盘时间同样是实测带宽的直接除法，不是独立计时。NAS 硬件规格未知（22 端口关闭，无 SSH），85.7 MB/s 只能归因到「1G 链路 + SMB 单流」，拆不到盘或控制器。只测了顺序读，没测随机读 —— safetensors 加载是顺序的所以够用，但 MoE 按专家路由取权重是随机读，用顺序带宽会高估。DGX Spark #1 每档只跑一轮，没有误差棒（数值稳定在 9.7-10.1 之间）。本机三块盘型号不同，文中「本机 NVMe」专指 D 盘那块 INTEL，不代表 C 盘或 E 盘。</div>
+<div class="pager"><a href="/fix/plamo-cpu-llamacpp-tutorial-20261106/">← llama.cpp 纯 CPU 跑 PLaMo 0.8B：五步命令 + 线程扫到饱和点</a><a href="/fix/model-weight-move-verify-path-20261108/" style="text-align:right">模型权重从下载到上机：四跳链路 + 校验一跳的完整计时 →</a></div>
+<p style="margin-top:30px"><a href="/fix/">← 返回全部排错方案</a></p>
+
+</main>
+<footer><div class="wrap">
+<p>本站数字均为真机实测，逐条标注验证等级（<span class="lv lv-L1">L1</span> 多次复测取中位 /
+<span class="lv lv-L0">L0</span> 单次测量）。查不到的写「未采集」，不估算。</p>
+<p>数据源自丘山录硬件实测库 · 本页生成于 2026-11-15 · <a href="/about/">数据口径与方法</a></p>
+</div></footer>
+</body>
+</html>

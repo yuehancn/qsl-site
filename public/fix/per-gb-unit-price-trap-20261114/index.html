@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>每 GB 单价一个价，但 5060Ti 和 DGX Spark 卖的不是同一样东西 · 丘山录实测库</title>
+<meta name="description" content="把二手挂牌价做一次除法，四类硬件的每 GB 单价几乎撞在一起：RTX 5060Ti 16GB 中位 ¥5,300（13 条）折 ¥331/GB、DGX Spark 128GB ¥41,450（8 条）折 ¥324/GB、Mac Studio 512GB ¥181…">
+<link rel="canonical" href="https://361365365.xyz/fix/per-gb-unit-price-trap-20261114/">
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"TechArticle","headline":"每 GB 单价一个价，但 5060Ti 和 DGX Spark 卖的不是同一样东西","datePublished":"2026-11-14","description":"把二手挂牌价做一次除法，四类硬件的每 GB 单价几乎撞在一起：RTX 5060Ti 16GB 中位 ¥5,300（13 条）折 ¥331/GB、DGX Spark 128GB ¥41,450（8 条）折 ¥324/GB、Mac Studio 512GB ¥181,888（17 条）折 ¥355/GB，三者只差几十块；","author":{"@type":"Person","name":"丘山录"}}</script>
+<style>
+:root{--ink:#1a1a1a;--sub:#5b6570;--line:#e3e6ea;--bg:#fff;--soft:#f7f8fa;
+--accent:#b03a2e;--ok:#1e7b45;--warn:#9a6b00;--danger:#a11b1b;--none:#6b7280}
+*{box-sizing:border-box}
+body{margin:0;font:16px/1.75 -apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC",
+"Hiragino Sans GB","Microsoft YaHei",sans-serif;color:var(--ink);background:var(--bg)}
+a{color:#1a4f8a;text-decoration:none}a:hover{text-decoration:underline}
+.wrap{max-width:820px;margin:0 auto;padding:0 20px}
+header.site{border-bottom:1px solid var(--line);padding:18px 0;margin-bottom:32px}
+header.site .wrap{display:flex;align-items:baseline;gap:18px;flex-wrap:wrap}
+header.site .logo{font-weight:700;font-size:18px;color:var(--ink)}
+header.site nav{font-size:14px}
+header.site nav a{color:var(--sub);margin-right:16px}
+h1{font-size:27px;line-height:1.4;margin:0 0 10px;letter-spacing:-.2px}
+h2{font-size:19px;margin:34px 0 12px;padding-top:6px}
+h3{font-size:16px;margin:22px 0 8px}
+p{margin:0 0 14px}
+.meta{color:var(--sub);font-size:13px;margin-bottom:22px;line-height:1.9}
+.meta span{margin-right:14px;white-space:nowrap}
+.lede{font-size:17px;line-height:1.8;background:var(--soft);border-left:3px solid var(--accent);
+padding:16px 18px;margin:0 0 26px}
+table{width:100%;border-collapse:collapse;margin:16px 0;font-size:14px}
+th,td{border:1px solid var(--line);padding:9px 11px;text-align:left;vertical-align:top}
+th{background:var(--soft);font-weight:600}
+td.num{font-variant-numeric:tabular-nums;white-space:nowrap}
+.tag{display:inline-block;font-size:12px;padding:1px 7px;border:1px solid var(--line);
+border-radius:3px;color:var(--sub);margin:0 6px 6px 0;background:#fff}
+.card{border:1px solid var(--line);border-radius:5px;padding:17px 19px;margin:0 0 14px}
+.card h3{margin:0 0 7px;font-size:16px;line-height:1.5}
+.card h3 a{color:var(--ink)}
+.card p{font-size:14px;color:var(--sub);margin:0 0 8px}
+.card .kv{font-size:12.5px;color:var(--sub)}
+ul,ol{padding-left:22px}li{margin-bottom:7px}
+code{background:var(--soft);padding:1px 5px;border-radius:3px;font-size:13.5px;
+font-family:ui-monospace,Consolas,monospace}
+pre{background:var(--soft);padding:14px;border-radius:4px;overflow-x:auto;font-size:13px;
+line-height:1.6}
+pre code{background:none;padding:0}
+.lv{display:inline-block;font-size:11.5px;padding:0 6px;border-radius:3px;
+border:1px solid currentColor;font-weight:600}
+.lv-L1{color:var(--ok)}.lv-L0{color:var(--warn)}.lv-none{color:var(--none)}
+.v-ok{color:var(--ok)}.v-warn{color:var(--warn)}.v-danger{color:var(--danger)}
+.v-limited{color:#7a4b00}.v-none{color:var(--none)}
+.note{border-left:3px solid var(--warn);background:#fffdf5;padding:13px 16px;
+margin:18px 0;font-size:14.5px}
+.caveat{border-left:3px solid var(--accent);background:#fdf7f6;padding:13px 16px;margin:18px 0}
+.caveat strong{color:var(--accent)}
+footer{border-top:1px solid var(--line);margin-top:56px;padding:26px 0 44px;
+font-size:13px;color:var(--sub)}
+footer a{color:var(--sub)}
+.pager{display:flex;justify-content:space-between;gap:16px;margin:36px 0 0;
+padding-top:20px;border-top:1px solid var(--line);font-size:14px}
+.pager a{max-width:46%}
+.count{color:var(--sub);font-size:13.5px;margin:-8px 0 18px}
+.tw{width:100%;overflow-x:auto;-webkit-overflow-scrolling:touch;margin:16px 0}
+.tw table{margin:0;min-width:100%}
+body{overflow-x:hidden}
+@media(max-width:600px){h1{font-size:22px}.wrap{padding:0 15px}table{font-size:13px}
+th,td{padding:7px 9px}pre{font-size:12px}}
+</style>
+</head>
+<body>
+<body>
+<header class="site"><div class="wrap">
+<a class="logo" href="/">丘山录实测库</a>
+<nav><a href="/bench/">跑分</a><a href="/fix/">排错</a><a href="/license/">许可证</a><a href="/machines/">机器</a><a href="/about/">口径</a></nav>
+</div></header>
+<main class="wrap">
+
+<h1>每 GB 单价一个价，但 5060Ti 和 DGX Spark 卖的不是同一样东西</h1>
+<div class="meta"><span>成本账 · 4 类硬件 / 39 条有效挂单 / 每 GB 259–1,108 元</span><span><span class="lv lv-none">未标注</span></span><span>整理于 2026-11-14</span>
+<span>有效期 30d</span></div>
+<p class="lede">把二手挂牌价做一次除法，四类硬件的每 GB 单价几乎撞在一起：RTX 5060Ti 16GB 中位 ¥5,300（13 条）折 ¥331/GB、DGX Spark 128GB ¥41,450（8 条）折 ¥324/GB、Mac Studio 512GB ¥181,888（17 条）折 ¥355/GB，三者只差几十块；而 RTX 5090D 32GB ¥35,450（1 条）折 ¥1,108/GB，是前三者的三倍多。单价对齐不等于等价：5060Ti 与 5090D 卖的是带宽，DGX Spark 与 Mac Studio 卖的是容量。同样一万元，DGX Spark 换 30.9GB 内存、5090D 只换 9.0GB 显存（3.4 倍容量），代价是带宽差 7.7 倍。</p>
+<span class="tag">显卡选型</span><span class="tag">每GB单价</span><span class="tag">回本</span><span class="tag">带宽</span><span class="tag">DGX Spark</span><span class="tag">5090D</span><span class="tag">5060Ti</span><span class="tag">Mac Studio</span><span class="tag">二手</span><span class="tag">挂牌价</span><span class="tag">选型</span>
+<h2>这条适用于</h2><ul><li>会做一次除法（价格 ÷ 可用容量）</li><li>知道你看的是显存还是统一内存（两个口径不能混）</li><li>能接受「挂牌价 ≠ 成交价」这个前提</li></ul>
+<h2>版本指纹</h2><p><code>闲鱼挂牌价 2026-11-13 23:31 快照 / DGX Spark 四台带宽复测</code></p>
+<h2>具体做法</h2>
+<pre><code>【四类硬件每 GB 单价（二手挂牌价，2026-11-13 23:31 采集，口径 = ask）】
+RTX 5060Ti 16GB    中位 ¥5,300   13 条   ¥331/GB   区间 4,650–6,666
+DGX Spark 128GB    中位 ¥41,450   8 条   ¥324/GB   区间 33,199–400,000（p25 36,999 / p75 81,249 / cv 1.24）
+Mac Studio 512GB   中位 ¥181,888  17 条   ¥355/GB   区间 135,888–200,000
+RTX 5090D 32GB     中位 ¥35,450   1 条   ¥1,108/GB （样本 1 条，不给分位数）</code></pre>
+<pre><code>【这张表最该看的两点】
+一、前三者单价撞在一起（324 / 331 / 355），但它们是三种完全不同的东西：
+    5060Ti = 16GB 独占显存，1792 GB/s 系那一档的高速 GDDR7；
+    DGX Spark = 128GB 统一内存，实测 copy 233.6 GB/s；
+    Mac Studio = 512GB 统一内存，容量最大、单价也不高。
+二、5090D 的单价是前三者的三倍多，而它的容量只有 32GB —— 它卖的是带宽，不是容量。</code></pre>
+<pre><code>【同样一万元能换多少】
+DGX Spark：10,000 ÷ 324 = 30.9 GB
+RTX 5090D：10,000 ÷ 1,108 = 9.0 GB
+→ 3.4 倍容量差，换 7.7 倍带宽差（233.6 / 1792 的倒数口径：5090D 带宽是 DGX Spark 实测值的 7.7 倍）。</code></pre>
+<p>【DGX Spark 统一内存的实测口径（四台独立复测）】<br>copy 512MB：224.5 / 226.9 / 230.5 / 233.6 GB/s（四台离散度 3.4%）<br>标称 273 GB/s → 四台达成率 82.7%–85.6%<br>MemTotal：121.69 GiB/台（厂商标称 128GB 是十进制口径）<br>容器内 nvidia-smi 占用：94.43 GiB（≠ 128，也 ≠ 121.69，三个数都不是一回事）</p>
+<p>【RTX 5090D 的 1792 GB/s 是官方公开规格，不是本机实测】<br>NVIDIA 官方页与多方资料一致：32GB GDDR7、512bit 位宽、1792 GB/s 总带宽、建议零售价 16,499 元起。<br>本文只用它做「带宽 vs 容量」的换算，未在本机跑带宽基准。</p>
+<p>【样本量的坑】<br>DGX Spark 8 条挂单里，最高的 400,000 是「4t 老黄版 ×8 + 迈洛思 SN3700 整套」，<br>最低 33,199 是单机实价（新华三 H3C MegaCube 128G 1T）。<br>按最低价算每 GB 是 259 块，比 5060Ti 的 331 还便宜 72 块。<br>同一批挂单，单价能从 259 算到 3,125 —— 样本这么散时，中位数比均值可信，但都不如自己去看那几条具体写了什么。</p>
+<div class="caveat"><strong>失效边界</strong><br>全部价格为二手挂牌价（卖方要价），不是成交价、不是销量；「有挂单」只证明供给存在。RTX 5090D 仅 1 条、A100 80G 租仅 2 条，按规则不给分位数，其单价不可外推。5090D 的 1792 GB/s 是 NVIDIA 官方公开规格，本机未做带宽基准。DGX Spark 的 233.6 GB/s 是 copy 512MB 实测，与「只读带宽」不是同一口径，跨口径比较会偏差约 11%。统一内存与显存是两种不同口径，本文已分别标注，未做等价处理；「DGX Spark 装得下某模型」只表示容量够，不代表推理速度可接受。价格随行情波动，本文快照仅代表 2026-11-13 23:31 这一时刻。</div>
+<div class="pager"><a href="/fix/dgx-spark-roi-ledger-20261024/">← 本地部署回本账怎么算：四台 DGX Spark 满产 7.3 年，利用率 5% 就是 145.6 年</a><a href="/fix/praxis1-download-gate-before-vram-20261113/" style="text-align:right">本地部署 Praxis-1 卡在 80GB 之前：真正拦住你的是 11.6 天 →</a></div>
+<p style="margin-top:30px"><a href="/fix/">← 返回全部排错方案</a></p>
+
+</main>
+<footer><div class="wrap">
+<p>本站数字均为真机实测，逐条标注验证等级（<span class="lv lv-L1">L1</span> 多次复测取中位 /
+<span class="lv lv-L0">L0</span> 单次测量）。查不到的写「未采集」，不估算。</p>
+<p>数据源自丘山录硬件实测库 · 本页生成于 2026-11-15 · <a href="/about/">数据口径与方法</a></p>
+</div></footer>
+</body>
+</html>

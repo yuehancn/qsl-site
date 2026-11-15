@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>模型权重从下载到上机：四跳链路 + 校验一跳的完整计时 · 丘山录实测库</title>
+<meta name="description" content="同一份 54.74GB 权重，公网单流 56.7 天、千兆内网 7.8 分钟、200G 环网 4.14 秒，差 118 万倍。但搬完还有一跳没人提：校验。">
+<link rel="canonical" href="https://361365365.xyz/fix/model-weight-move-verify-path-20261108/">
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"TechArticle","headline":"模型权重从下载到上机：四跳链路 + 校验一跳的完整计时","datePublished":"2026-11-08","description":"同一份 54.74GB 权重，公网单流 56.7 天、千兆内网 7.8 分钟、200G 环网 4.14 秒，差 118 万倍。但搬完还有一跳没人提：校验。同一个 7.39GB 分片，绕缓存纯读 0.64 秒，加 sha256 变 4.81 秒（7.51 倍），54.74GB 口径要 36.7 秒 —— 校验占整条链路九成。","author":{"@type":"Person","name":"丘山录"}}</script>
+<style>
+:root{--ink:#1a1a1a;--sub:#5b6570;--line:#e3e6ea;--bg:#fff;--soft:#f7f8fa;
+--accent:#b03a2e;--ok:#1e7b45;--warn:#9a6b00;--danger:#a11b1b;--none:#6b7280}
+*{box-sizing:border-box}
+body{margin:0;font:16px/1.75 -apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC",
+"Hiragino Sans GB","Microsoft YaHei",sans-serif;color:var(--ink);background:var(--bg)}
+a{color:#1a4f8a;text-decoration:none}a:hover{text-decoration:underline}
+.wrap{max-width:820px;margin:0 auto;padding:0 20px}
+header.site{border-bottom:1px solid var(--line);padding:18px 0;margin-bottom:32px}
+header.site .wrap{display:flex;align-items:baseline;gap:18px;flex-wrap:wrap}
+header.site .logo{font-weight:700;font-size:18px;color:var(--ink)}
+header.site nav{font-size:14px}
+header.site nav a{color:var(--sub);margin-right:16px}
+h1{font-size:27px;line-height:1.4;margin:0 0 10px;letter-spacing:-.2px}
+h2{font-size:19px;margin:34px 0 12px;padding-top:6px}
+h3{font-size:16px;margin:22px 0 8px}
+p{margin:0 0 14px}
+.meta{color:var(--sub);font-size:13px;margin-bottom:22px;line-height:1.9}
+.meta span{margin-right:14px;white-space:nowrap}
+.lede{font-size:17px;line-height:1.8;background:var(--soft);border-left:3px solid var(--accent);
+padding:16px 18px;margin:0 0 26px}
+table{width:100%;border-collapse:collapse;margin:16px 0;font-size:14px}
+th,td{border:1px solid var(--line);padding:9px 11px;text-align:left;vertical-align:top}
+th{background:var(--soft);font-weight:600}
+td.num{font-variant-numeric:tabular-nums;white-space:nowrap}
+.tag{display:inline-block;font-size:12px;padding:1px 7px;border:1px solid var(--line);
+border-radius:3px;color:var(--sub);margin:0 6px 6px 0;background:#fff}
+.card{border:1px solid var(--line);border-radius:5px;padding:17px 19px;margin:0 0 14px}
+.card h3{margin:0 0 7px;font-size:16px;line-height:1.5}
+.card h3 a{color:var(--ink)}
+.card p{font-size:14px;color:var(--sub);margin:0 0 8px}
+.card .kv{font-size:12.5px;color:var(--sub)}
+ul,ol{padding-left:22px}li{margin-bottom:7px}
+code{background:var(--soft);padding:1px 5px;border-radius:3px;font-size:13.5px;
+font-family:ui-monospace,Consolas,monospace}
+pre{background:var(--soft);padding:14px;border-radius:4px;overflow-x:auto;font-size:13px;
+line-height:1.6}
+pre code{background:none;padding:0}
+.lv{display:inline-block;font-size:11.5px;padding:0 6px;border-radius:3px;
+border:1px solid currentColor;font-weight:600}
+.lv-L1{color:var(--ok)}.lv-L0{color:var(--warn)}.lv-none{color:var(--none)}
+.v-ok{color:var(--ok)}.v-warn{color:var(--warn)}.v-danger{color:var(--danger)}
+.v-limited{color:#7a4b00}.v-none{color:var(--none)}
+.note{border-left:3px solid var(--warn);background:#fffdf5;padding:13px 16px;
+margin:18px 0;font-size:14.5px}
+.caveat{border-left:3px solid var(--accent);background:#fdf7f6;padding:13px 16px;margin:18px 0}
+.caveat strong{color:var(--accent)}
+footer{border-top:1px solid var(--line);margin-top:56px;padding:26px 0 44px;
+font-size:13px;color:var(--sub)}
+footer a{color:var(--sub)}
+.pager{display:flex;justify-content:space-between;gap:16px;margin:36px 0 0;
+padding-top:20px;border-top:1px solid var(--line);font-size:14px}
+.pager a{max-width:46%}
+.count{color:var(--sub);font-size:13.5px;margin:-8px 0 18px}
+.tw{width:100%;overflow-x:auto;-webkit-overflow-scrolling:touch;margin:16px 0}
+.tw table{margin:0;min-width:100%}
+body{overflow-x:hidden}
+@media(max-width:600px){h1{font-size:22px}.wrap{padding:0 15px}table{font-size:13px}
+th,td{padding:7px 9px}pre{font-size:12px}}
+</style>
+</head>
+<body>
+<body>
+<header class="site"><div class="wrap">
+<a class="logo" href="/">丘山录实测库</a>
+<nav><a href="/bench/">跑分</a><a href="/fix/">排错</a><a href="/license/">许可证</a><a href="/machines/">机器</a><a href="/about/">口径</a></nav>
+</div></header>
+<main class="wrap">
+
+<h1>模型权重从下载到上机：四跳链路 + 校验一跳的完整计时</h1>
+<div class="meta"><span>环境与安装 · 54.74GB 权重 / 四跳链路</span><span><span class="lv lv-none">未标注</span></span><span>整理于 2026-11-08</span>
+<span>有效期 180d</span></div>
+<p class="lede">同一份 54.74GB 权重，公网单流 56.7 天、千兆内网 7.8 分钟、200G 环网 4.14 秒，差 118 万倍。但搬完还有一跳没人提：校验。同一个 7.39GB 分片，绕缓存纯读 0.64 秒，加 sha256 变 4.81 秒（7.51 倍），54.74GB 口径要 36.7 秒 —— 校验占整条链路九成。8 进程并行 3.95 倍能救回来，MD5 比 SHA-256 慢 2.5 倍。每一跳都给秒数和可复制命令，照着算自己的账。</p>
+<span class="tag">本地部署</span><span class="tag">模型下载</span><span class="tag">校验</span><span class="tag">sha256</span><span class="tag">环网</span><span class="tag">千兆</span><span class="tag">带宽</span><span class="tag">部署</span><span class="tag">选型</span><span class="tag">运维</span>
+<h2>这条适用于</h2><ul><li>两台以上机器同处一个局域网，或目标机有可达的模型副本来源</li><li>目标机有足够存储容纳全量权重（本文口径 54.74 GB）</li><li>只需能跑 curl 与 sha256sum，不需要显卡</li></ul>
+<h2>版本指纹</h2><p><code>dsvd-20261108</code></p>
+<h2>具体做法</h2>
+<p>这条链路的四跳是：公网 → 内网 → 目标机盘 → 加载。多数部署笔记写到「文件下完了」就结束，但其实真正决定你今晚能不能跑起来的是第三跳到第四跳之间那一步：校验。</p>
+<p>本文全部数字来自同一份真实生产权重分片 7,389,759,032 B，在 DGX Spark #1 上实测。54.74GB 的口径是 Arete-27B BF16 全量，来自仓库 API 逐文件累加，不是估算。</p>
+<p>四跳耗时（54.74GB）：公网单流 56.7 天 / 公网 8 路并行更慢（0.3 倍）/ 千兆内网 7.8 分钟 / 200G 环网 8 线程 4.14 秒。最慢和最快差 118 万倍。</p>
+<p>校验一跳（同一 7.39GB 分片）：绕缓存纯读 0.64 秒；冷读+sha256 4.81 秒；纯算力口径 3.35 秒。折算到 54.74GB，单核校验 36.7 秒，8 进程 8 秒左右。</p>
+<p>所以「部署慢」这件事，先别怪显卡。把这条路量一遍，你会发现自己卡在哪一跳。</p>
+<div class="caveat"><strong>失效边界</strong><br>① 所有 54.74GB 与 510.30GB 的耗时都是实测吞吐的直接除法，不是独立计时；② 所有接收端都是 recv 丢弃数据，没有写盘，所以上表是纯网络/纯计算数字，真实搬完还要加写盘时间；③ Arete-27B 本体未下载未运行，本方案不存在任何该模型的推理速度或 tok/s 数据；④ 200G 单流只有 12.9% 的成因未定位 —— 只证明了「接收缓冲加到 16MB 能从 4.9% 提到 12.9%」，没做窗口梯度扫描，不能说缓冲是唯一原因；⑤ 环网 T=2 档未测，8 线程是甜点这句话只能说 8 比 4 好、比 16 好。</div>
+<div class="pager"><a href="/fix/model-weights-disk-placement-20261107/">← 本地部署模型放哪块盘：三介质同一套方法测出来的配盘顺序</a><a href="/fix/arm-edge-deploy-prereq-20261109/" style="text-align:right">ARM 小机跑端侧模型的三个前置门槛：指令集、glibc、cmake →</a></div>
+<p style="margin-top:30px"><a href="/fix/">← 返回全部排错方案</a></p>
+
+</main>
+<footer><div class="wrap">
+<p>本站数字均为真机实测，逐条标注验证等级（<span class="lv lv-L1">L1</span> 多次复测取中位 /
+<span class="lv lv-L0">L0</span> 单次测量）。查不到的写「未采集」，不估算。</p>
+<p>数据源自丘山录硬件实测库 · 本页生成于 2026-11-15 · <a href="/about/">数据口径与方法</a></p>
+</div></footer>
+</body>
+</html>

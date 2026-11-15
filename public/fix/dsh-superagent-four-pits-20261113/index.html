@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>DeepSeek 智能体跑通实录：四个坑，最狠那个报错不在日志里 · 丘山录实测库</title>
+<meta name="description" content="从零把 DeepSeek dsh-superagent（MIT，约 3.7 万行 TypeScript）跑到能自己提 PR，花了约 5 小时，最久的一段卡了 2 小时。">
+<link rel="canonical" href="https://361365365.xyz/fix/dsh-superagent-four-pits-20261113/">
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"TechArticle","headline":"DeepSeek 智能体跑通实录：四个坑，最狠那个报错不在日志里","datePublished":"2026-11-13","description":"从零把 DeepSeek dsh-superagent（MIT，约 3.7 万行 TypeScript）跑到能自己提 PR，花了约 5 小时，最久的一段卡了 2 小时。四个坑里前三个都有明确报错、照着搜就能解决：面板不能绑 0.0.0.","author":{"@type":"Person","name":"丘山录"}}</script>
+<style>
+:root{--ink:#1a1a1a;--sub:#5b6570;--line:#e3e6ea;--bg:#fff;--soft:#f7f8fa;
+--accent:#b03a2e;--ok:#1e7b45;--warn:#9a6b00;--danger:#a11b1b;--none:#6b7280}
+*{box-sizing:border-box}
+body{margin:0;font:16px/1.75 -apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC",
+"Hiragino Sans GB","Microsoft YaHei",sans-serif;color:var(--ink);background:var(--bg)}
+a{color:#1a4f8a;text-decoration:none}a:hover{text-decoration:underline}
+.wrap{max-width:820px;margin:0 auto;padding:0 20px}
+header.site{border-bottom:1px solid var(--line);padding:18px 0;margin-bottom:32px}
+header.site .wrap{display:flex;align-items:baseline;gap:18px;flex-wrap:wrap}
+header.site .logo{font-weight:700;font-size:18px;color:var(--ink)}
+header.site nav{font-size:14px}
+header.site nav a{color:var(--sub);margin-right:16px}
+h1{font-size:27px;line-height:1.4;margin:0 0 10px;letter-spacing:-.2px}
+h2{font-size:19px;margin:34px 0 12px;padding-top:6px}
+h3{font-size:16px;margin:22px 0 8px}
+p{margin:0 0 14px}
+.meta{color:var(--sub);font-size:13px;margin-bottom:22px;line-height:1.9}
+.meta span{margin-right:14px;white-space:nowrap}
+.lede{font-size:17px;line-height:1.8;background:var(--soft);border-left:3px solid var(--accent);
+padding:16px 18px;margin:0 0 26px}
+table{width:100%;border-collapse:collapse;margin:16px 0;font-size:14px}
+th,td{border:1px solid var(--line);padding:9px 11px;text-align:left;vertical-align:top}
+th{background:var(--soft);font-weight:600}
+td.num{font-variant-numeric:tabular-nums;white-space:nowrap}
+.tag{display:inline-block;font-size:12px;padding:1px 7px;border:1px solid var(--line);
+border-radius:3px;color:var(--sub);margin:0 6px 6px 0;background:#fff}
+.card{border:1px solid var(--line);border-radius:5px;padding:17px 19px;margin:0 0 14px}
+.card h3{margin:0 0 7px;font-size:16px;line-height:1.5}
+.card h3 a{color:var(--ink)}
+.card p{font-size:14px;color:var(--sub);margin:0 0 8px}
+.card .kv{font-size:12.5px;color:var(--sub)}
+ul,ol{padding-left:22px}li{margin-bottom:7px}
+code{background:var(--soft);padding:1px 5px;border-radius:3px;font-size:13.5px;
+font-family:ui-monospace,Consolas,monospace}
+pre{background:var(--soft);padding:14px;border-radius:4px;overflow-x:auto;font-size:13px;
+line-height:1.6}
+pre code{background:none;padding:0}
+.lv{display:inline-block;font-size:11.5px;padding:0 6px;border-radius:3px;
+border:1px solid currentColor;font-weight:600}
+.lv-L1{color:var(--ok)}.lv-L0{color:var(--warn)}.lv-none{color:var(--none)}
+.v-ok{color:var(--ok)}.v-warn{color:var(--warn)}.v-danger{color:var(--danger)}
+.v-limited{color:#7a4b00}.v-none{color:var(--none)}
+.note{border-left:3px solid var(--warn);background:#fffdf5;padding:13px 16px;
+margin:18px 0;font-size:14.5px}
+.caveat{border-left:3px solid var(--accent);background:#fdf7f6;padding:13px 16px;margin:18px 0}
+.caveat strong{color:var(--accent)}
+footer{border-top:1px solid var(--line);margin-top:56px;padding:26px 0 44px;
+font-size:13px;color:var(--sub)}
+footer a{color:var(--sub)}
+.pager{display:flex;justify-content:space-between;gap:16px;margin:36px 0 0;
+padding-top:20px;border-top:1px solid var(--line);font-size:14px}
+.pager a{max-width:46%}
+.count{color:var(--sub);font-size:13.5px;margin:-8px 0 18px}
+.tw{width:100%;overflow-x:auto;-webkit-overflow-scrolling:touch;margin:16px 0}
+.tw table{margin:0;min-width:100%}
+body{overflow-x:hidden}
+@media(max-width:600px){h1{font-size:22px}.wrap{padding:0 15px}table{font-size:13px}
+th,td{padding:7px 9px}pre{font-size:12px}}
+</style>
+</head>
+<body>
+<body>
+<header class="site"><div class="wrap">
+<a class="logo" href="/">丘山录实测库</a>
+<nav><a href="/bench/">跑分</a><a href="/fix/">排错</a><a href="/license/">许可证</a><a href="/machines/">机器</a><a href="/about/">口径</a></nav>
+</div></header>
+<main class="wrap">
+
+<h1>DeepSeek 智能体跑通实录：四个坑，最狠那个报错不在日志里</h1>
+<div class="meta"><span>排障 · 约 3.7 万行 TypeScript（MIT）/ 单工单 50 秒</span><span><span class="lv lv-none">未标注</span></span><span>整理于 2026-11-13</span>
+<span>有效期 180d</span></div>
+<p class="lede">从零把 DeepSeek dsh-superagent（MIT，约 3.7 万行 TypeScript）跑到能自己提 PR，花了约 5 小时，最久的一段卡了 2 小时。四个坑里前三个都有明确报错、照着搜就能解决：面板不能绑 0.0.0.0 也不能绑网卡 IP（必须 loopback + SSH 隧道）、pnpm build 缺 unrun 这个 peerDependency、GitHub 必须两个账号且智能体账号要 watch 仓库。第四个坑报错根本不在日志里——它藏在 zstd 压缩的 Session 事件流中，内容是「No API key for provider」，而前面所有 timeout 记录都是假象。所有健康检查全绿，唯一异常是工单表空的。</p>
+<span class="tag">本地部署</span><span class="tag">智能体</span><span class="tag">DeepSeek</span><span class="tag">GitHub</span><span class="tag">PR</span><span class="tag">排错</span><span class="tag">日志</span><span class="tag">API key</span><span class="tag">SGLang</span><span class="tag">peerDependency</span><span class="tag">部署</span><span class="tag">部署前置</span>
+<h2>这条适用于</h2><ul><li>一台 Linux 主机（4C8G 起，本例 80 线程 / 125GiB）</li><li>一个废弃的测试仓库 + 一个专用 GitHub 小号（不可省，省了会卡在坑三）</li><li>一个 OpenAI 兼容的模型服务（本例本地 SGLang 起 deepseek-v4.1-flash）</li></ul>
+<h2>版本指纹</h2><p><code>dsh-superagent-prototype（2026-10-31 开源 / MIT）/ pnpm / Node ESM / Ubuntu 26.04</code></p>
+<h2>具体做法</h2>
+<p>【效果实录（2026-11-12 21:21）】<br>21:21:48 决策 accept、创建工单 → 21:21:49 Worker 开始 → 21:22:39 报告 ready、PR 已推送 → 21:22:48 idle。<br>50 秒完成一个 1 字符改动的工单，全链路走完：拉代码、建 worktree、建分支、改文件、验证 diff、commit、push、开 PR、写描述、回 Issue 评论。<br>PR 描述自动带一行：This is by an automated agent, not a human.<br>它还拒绝了多余操作：指令只让改一处，bug.md 里其实有两个错字，它明确写了第二处故意没动并 flag 给你；另外两个内容重复的 Issue 被判 duplicate work 而 ignore。</p>
+<p>【四个坑的卡时与报错位置】<br>坑1 面板不能绑 0.0.0.0 / 也不能绑网卡 IP —— 20 分钟 —— 启动日志，有明确报错<br>坑2 pnpm build 缺 unrun —— 15 分钟 —— 构建输出，有明确报错<br>坑3 GitHub 必须两个账号 —— 40 分钟 —— 没有任何报错，只是不触发<br>坑4 模型 provider 缺 apiKey —— 120 分钟 —— 不在日志里，藏在 Session 事件流<br>合计 195 分钟，其中坑四一项占 61.5%。</p>
+<pre><code>【坑四的排查路径（这才是重点）】
+误判一：以为是模型太慢。库里一堆 {&quot;kind&quot;:&quot;unavailable&quot;,&quot;reason&quot;:[{&quot;code&quot;:&quot;timeout&quot;}]}，把 eval.timeoutSeconds 从 120 调到 600，无效。实测模型单次请求 1.1 秒、并发 3 个各 1.4 秒——模型没问题。
+误判二：以为进程卡死。`ss -tnp | grep 8888` 是空的，一条到模型服务的 TCP 连接都没有；进程 STAT=Ss、%CPU=0.0，日志只有一行 listening，零错误输出。请求压根没发出去。
+真相：session.v4.jsonl.zstd 解压后找 turn/end，拿到 {&quot;kind&quot;:&quot;error&quot;,&quot;error&quot;:{&quot;message&quot;:&quot;No API key for provider: local-sglang&quot;,&quot;code&quot;:&quot;PI_AI_ERROR&quot;}}。
+前面所有 timeout 记录都是假象——评估压根没开始，请求在发出前就被拒了。</code></pre>
+<pre><code>【修复后的配置要点】
+webserver: host 127.0.0.1 / port 3082（必须 loopback）
+llm-pi-ai.providers.local-sglang: api openai-completions、apiKeyEnv SGLANG_API_KEY、defaultContextWindow 131072、defaultMaxTokens 32768、compat.thinkingFormat deepseek
+agent-default-model: provider local-sglang / model deepseek-v4.1-flash
+Executor prepare：每个工单独立 worktree + 独立分支（git worktree add --detach + checkout -b agent/&lt;name&gt;）</code></pre>
+<p>【架构为什么这么设计】<br>双层：Router（常驻主 Session）收消息、判权限、派活、统一对外说话，刻意不执行具体任务；Worker（每工单一个）写代码、跑测试、提 PR，上下文隔离且不直接对外说话。<br>官方图文里有个数字说明为什么不用提示词分工：中性提示下「主 Agent + subagent」5 次运行 0 次委派。想靠提示词劝模型自己分工劝不动，于是用架构强制分开。</p>
+<p>【这笔账的真实结构】<br>模型 API 成本 0（本地）。成本换成了形态：一台常驻机器（已有）+ 电费（按 300-600W 估）+ 你的时间。<br>第一次跑通约 5 小时，其中 2 小时在坑四上；第二次部署 30 分钟到 2 小时能交付——这个差值就是经验的价格。<br>省的是 API 账单，付的是那一晚的四个报错；而报错只收一次费。</p>
+<div class="caveat"><strong>失效边界</strong><br>本文是单机单次跑通记录（L0），报错原文、时间戳与 token 计数来自当晚会话实录，未做跨机器复现。「50 秒完成工单」是 1 字符改动的极简任务，复杂工单要跑十几分钟，不能当平均性能。dsh-superagent 是 DeepSeek Harness 团队放出的 research prototype，README 第一行写明「非官方产品、非生产级」，用前请自行 review 代码，别拿核心仓库试。2,323 万 token 与「完成时间压短 10-30%」引自官方公开实验结果，不是本机实测。电费按 300-600W 估算，未实测功耗。文中的部署机规格与机型表比对后归到「Xeon E5-2673 v4 / 80 线程 / 125GiB」这一档，若实际部署机不同，相关跑分应重新归属。</div>
+<div class="pager"><a href="/fix/flash-4k-vs-block-size-20261112/">← 端侧选盘别只看顺序读：同一块闪存 4K 读 32.2、64MB 读 557 MB/s，差 17 倍</a><a href="/fix/sdxl-hue-drift-style-block-20261002/" style="text-align:right">SDXL 批量出图跑色：加一段风格块把色相漂移压掉四成 →</a></div>
+<p style="margin-top:30px"><a href="/fix/">← 返回全部排错方案</a></p>
+
+</main>
+<footer><div class="wrap">
+<p>本站数字均为真机实测，逐条标注验证等级（<span class="lv lv-L1">L1</span> 多次复测取中位 /
+<span class="lv lv-L0">L0</span> 单次测量）。查不到的写「未采集」，不估算。</p>
+<p>数据源自丘山录硬件实测库 · 本页生成于 2026-11-15 · <a href="/about/">数据口径与方法</a></p>
+</div></footer>
+</body>
+</html>

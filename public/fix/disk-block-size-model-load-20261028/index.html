@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>本地部署模型加载慢：块大小差 12.7 倍，mmap 其实只读了 0.08% · 丘山录实测库</title>
+<meta name="description" content="加载慢先别换盘。本机对同一 9.4 GiB GGUF 做无缓冲直读（FILE_FLAG_NO_BUFFERING），块大小从 4KB 到 16MB 共 13 档：4KB 只有 243.9 MiB/s，16MB 到 3090.7 MiB/s，差 12.7 倍；">
+<link rel="canonical" href="https://361365365.xyz/fix/disk-block-size-model-load-20261028/">
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"TechArticle","headline":"本地部署模型加载慢：块大小差 12.7 倍，mmap 其实只读了 0.08%","datePublished":"2026-10-28","description":"加载慢先别换盘。本机对同一 9.4 GiB GGUF 做无缓冲直读（FILE_FLAG_NO_BUFFERING），块大小从 4KB 到 16MB 共 13 档：4KB 只有 243.9 MiB/s，16MB 到 3090.7 MiB/s，差 12.7 倍；曲线不单调，512KB 是最低点 503.1 MiB/s。","author":{"@type":"Person","name":"丘山录"}}</script>
+<style>
+:root{--ink:#1a1a1a;--sub:#5b6570;--line:#e3e6ea;--bg:#fff;--soft:#f7f8fa;
+--accent:#b03a2e;--ok:#1e7b45;--warn:#9a6b00;--danger:#a11b1b;--none:#6b7280}
+*{box-sizing:border-box}
+body{margin:0;font:16px/1.75 -apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC",
+"Hiragino Sans GB","Microsoft YaHei",sans-serif;color:var(--ink);background:var(--bg)}
+a{color:#1a4f8a;text-decoration:none}a:hover{text-decoration:underline}
+.wrap{max-width:820px;margin:0 auto;padding:0 20px}
+header.site{border-bottom:1px solid var(--line);padding:18px 0;margin-bottom:32px}
+header.site .wrap{display:flex;align-items:baseline;gap:18px;flex-wrap:wrap}
+header.site .logo{font-weight:700;font-size:18px;color:var(--ink)}
+header.site nav{font-size:14px}
+header.site nav a{color:var(--sub);margin-right:16px}
+h1{font-size:27px;line-height:1.4;margin:0 0 10px;letter-spacing:-.2px}
+h2{font-size:19px;margin:34px 0 12px;padding-top:6px}
+h3{font-size:16px;margin:22px 0 8px}
+p{margin:0 0 14px}
+.meta{color:var(--sub);font-size:13px;margin-bottom:22px;line-height:1.9}
+.meta span{margin-right:14px;white-space:nowrap}
+.lede{font-size:17px;line-height:1.8;background:var(--soft);border-left:3px solid var(--accent);
+padding:16px 18px;margin:0 0 26px}
+table{width:100%;border-collapse:collapse;margin:16px 0;font-size:14px}
+th,td{border:1px solid var(--line);padding:9px 11px;text-align:left;vertical-align:top}
+th{background:var(--soft);font-weight:600}
+td.num{font-variant-numeric:tabular-nums;white-space:nowrap}
+.tag{display:inline-block;font-size:12px;padding:1px 7px;border:1px solid var(--line);
+border-radius:3px;color:var(--sub);margin:0 6px 6px 0;background:#fff}
+.card{border:1px solid var(--line);border-radius:5px;padding:17px 19px;margin:0 0 14px}
+.card h3{margin:0 0 7px;font-size:16px;line-height:1.5}
+.card h3 a{color:var(--ink)}
+.card p{font-size:14px;color:var(--sub);margin:0 0 8px}
+.card .kv{font-size:12.5px;color:var(--sub)}
+ul,ol{padding-left:22px}li{margin-bottom:7px}
+code{background:var(--soft);padding:1px 5px;border-radius:3px;font-size:13.5px;
+font-family:ui-monospace,Consolas,monospace}
+pre{background:var(--soft);padding:14px;border-radius:4px;overflow-x:auto;font-size:13px;
+line-height:1.6}
+pre code{background:none;padding:0}
+.lv{display:inline-block;font-size:11.5px;padding:0 6px;border-radius:3px;
+border:1px solid currentColor;font-weight:600}
+.lv-L1{color:var(--ok)}.lv-L0{color:var(--warn)}.lv-none{color:var(--none)}
+.v-ok{color:var(--ok)}.v-warn{color:var(--warn)}.v-danger{color:var(--danger)}
+.v-limited{color:#7a4b00}.v-none{color:var(--none)}
+.note{border-left:3px solid var(--warn);background:#fffdf5;padding:13px 16px;
+margin:18px 0;font-size:14.5px}
+.caveat{border-left:3px solid var(--accent);background:#fdf7f6;padding:13px 16px;margin:18px 0}
+.caveat strong{color:var(--accent)}
+footer{border-top:1px solid var(--line);margin-top:56px;padding:26px 0 44px;
+font-size:13px;color:var(--sub)}
+footer a{color:var(--sub)}
+.pager{display:flex;justify-content:space-between;gap:16px;margin:36px 0 0;
+padding-top:20px;border-top:1px solid var(--line);font-size:14px}
+.pager a{max-width:46%}
+.count{color:var(--sub);font-size:13.5px;margin:-8px 0 18px}
+.tw{width:100%;overflow-x:auto;-webkit-overflow-scrolling:touch;margin:16px 0}
+.tw table{margin:0;min-width:100%}
+body{overflow-x:hidden}
+@media(max-width:600px){h1{font-size:22px}.wrap{padding:0 15px}table{font-size:13px}
+th,td{padding:7px 9px}pre{font-size:12px}}
+</style>
+</head>
+<body>
+<body>
+<header class="site"><div class="wrap">
+<a class="logo" href="/">丘山录实测库</a>
+<nav><a href="/bench/">跑分</a><a href="/fix/">排错</a><a href="/license/">许可证</a><a href="/machines/">机器</a><a href="/about/">口径</a></nav>
+</div></header>
+<main class="wrap">
+
+<h1>本地部署模型加载慢：块大小差 12.7 倍，mmap 其实只读了 0.08%</h1>
+<div class="meta"><span>性能 · 13 档块大小 · 3 块 NVMe</span><span><span class="lv lv-L0">L0</span></span><span>整理于 2026-10-28</span>
+<span>有效期 180d</span></div>
+<p class="lede">加载慢先别换盘。本机对同一 9.4 GiB GGUF 做无缓冲直读（FILE_FLAG_NO_BUFFERING），块大小从 4KB 到 16MB 共 13 档：4KB 只有 243.9 MiB/s，16MB 到 3090.7 MiB/s，差 12.7 倍；曲线不单调，512KB 是最低点 503.1 MiB/s。更关键的是 llama.cpp 默认 mmap 走惰性映射：进程级 ReadTransferCount 只有 8,011,776 B = 文件的 0.08%，而 -lm dio 真读 10,075,410,432 B = 100.04%，两者墙钟都是 5 秒左右。</p>
+<span class="tag">本地部署</span><span class="tag">模型加载</span><span class="tag">硬盘</span><span class="tag">SSD</span><span class="tag">选型</span><span class="tag">llama.cpp</span><span class="tag">mmap</span><span class="tag">GGUF</span>
+<h2>这条适用于</h2><ul><li>需要一块能放 9.4 GiB 以上模型文件的 NVMe</li><li>llama.cpp build 11901（含 -lm 加载模式参数）</li></ul>
+<h2>版本指纹</h2><p><code>llama.cpp b11901-5320c87ff; Windows 10.0.26200</code></p>
+<h2>具体做法</h2>
+<p>先给结论：本机这块 1.79TB 企业级 NVMe 在 4MB 顺序读这一档，比同机 931GB 消费级慢 1.66 倍。企业级的钱花在掉电保护、DWPD 耐久、稳态一致性上，不在「读得快」。你一个人跑模型看重读，这笔溢价就用不上。</p>
+<pre><code>测量口径：CreateFileW + FILE_FLAG_NO_BUFFERING | FILE_FLAG_SEQUENTIAL_SCAN 绕过页缓存，ReadFile 循环，perf_counter 计时；进程级读量用 GetProcessIoCounters 的 ReadTransferCount。文件 Nanbeige4.3-33B-IQ2_XXS.gguf = 10,071,403,648 B。</code></pre>
+<pre><code>三块盘对照（全部协商 PCIe 4.0 x4，CurrentLinkSpeed=4 / CurrentLinkWidth=4）：
+· WD_BLACK SN850X 1.86TB 消费级：4MB 4263–4954 MiB/s
+· Intel SSDPF2KX019T1M 1.79TB 企业级：4KB 243.9 / 4MB 1562.8（碎片）至 2703.6（连续）/ 16MB 3037.2 MiB/s
+· 致态 Ti600 931GB 消费级：4KB 177.1 / 4MB 4476.8 / 16MB 5640.0 MiB/s</code></pre>
+<p>复现性：4KB 243.9/244.1/249.4；256KB 609.2/608.7/609.4；512KB 503.1/503.0/502.6；16MB 3037.2/3037.4/3038.9 —— 极差均小于 3%，不是测量噪声。</p>
+<div class="caveat"><strong>失效边界</strong><br>未测项如实标：① GPU 侧没测，本机 5090D 当时被后台任务占满（利用率 100%、已占 20.9GB），llama-cli --list-devices 返回 (none)，全部数字是 CPU 后端 + 磁盘 I/O 口径；② 没做出文件碎片区段计数，FSCTL_GET_RETRIEVAL_POINTERS 调 DeviceIoControl 一直报 errno 87，所以「1.73 倍来自碎片」是同盘复制对照推出的强相关，不是直接数出来的 extents 数。</div>
+<div class="pager"><a href="/fix/cpu-decode-memory-bandwidth-ceiling-20261020/">← CPU 跑 14B 只到 9.5 token/s：核数翻 6 倍只快 1.88 倍，卡的是内存带宽</a><a href="/fix/cpu-thread-scaling-20261030/" style="text-align:right">CPU 跑本地大模型，线程数配错会让 80 核输给 8 核 →</a></div>
+<p style="margin-top:30px"><a href="/fix/">← 返回全部排错方案</a></p>
+
+</main>
+<footer><div class="wrap">
+<p>本站数字均为真机实测，逐条标注验证等级（<span class="lv lv-L1">L1</span> 多次复测取中位 /
+<span class="lv lv-L0">L0</span> 单次测量）。查不到的写「未采集」，不估算。</p>
+<p>数据源自丘山录硬件实测库 · 本页生成于 2026-11-15 · <a href="/about/">数据口径与方法</a></p>
+</div></footer>
+</body>
+</html>

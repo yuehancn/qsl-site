@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>1.2B 的模型，697MB，3.9G 盒子上只能开官方一半的上下文 · 丘山录实测库</title>
+<meta name="description" content="LFM2.5-1.2B-Instruct 的 16 层里只有 6 层存 KV（位置 2/5/8/10/12/14），另 10 层是卷积层，压根没有 KV cache。">
+<link rel="canonical" href="https://361365365.xyz/fix/lfm25-endside-ctx-boundary-20261115/">
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"TechArticle","headline":"1.2B 的模型，697MB，3.9G 盒子上只能开官方一半的上下文","datePublished":"2026-11-15","description":"LFM2.5-1.2B-Instruct 的 16 层里只有 6 层存 KV（位置 2/5/8/10/12/14），另 10 层是卷积层，压根没有 KV cache。按官方 config 手算每 token 12,288 字节，实测六档上下文下进程 RSS 斜率得 12,339.5 字节，比值 1.004。","author":{"@type":"Person","name":"丘山录"}}</script>
+<style>
+:root{--ink:#1a1a1a;--sub:#5b6570;--line:#e3e6ea;--bg:#fff;--soft:#f7f8fa;
+--accent:#b03a2e;--ok:#1e7b45;--warn:#9a6b00;--danger:#a11b1b;--none:#6b7280}
+*{box-sizing:border-box}
+body{margin:0;font:16px/1.75 -apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC",
+"Hiragino Sans GB","Microsoft YaHei",sans-serif;color:var(--ink);background:var(--bg)}
+a{color:#1a4f8a;text-decoration:none}a:hover{text-decoration:underline}
+.wrap{max-width:820px;margin:0 auto;padding:0 20px}
+header.site{border-bottom:1px solid var(--line);padding:18px 0;margin-bottom:32px}
+header.site .wrap{display:flex;align-items:baseline;gap:18px;flex-wrap:wrap}
+header.site .logo{font-weight:700;font-size:18px;color:var(--ink)}
+header.site nav{font-size:14px}
+header.site nav a{color:var(--sub);margin-right:16px}
+h1{font-size:27px;line-height:1.4;margin:0 0 10px;letter-spacing:-.2px}
+h2{font-size:19px;margin:34px 0 12px;padding-top:6px}
+h3{font-size:16px;margin:22px 0 8px}
+p{margin:0 0 14px}
+.meta{color:var(--sub);font-size:13px;margin-bottom:22px;line-height:1.9}
+.meta span{margin-right:14px;white-space:nowrap}
+.lede{font-size:17px;line-height:1.8;background:var(--soft);border-left:3px solid var(--accent);
+padding:16px 18px;margin:0 0 26px}
+table{width:100%;border-collapse:collapse;margin:16px 0;font-size:14px}
+th,td{border:1px solid var(--line);padding:9px 11px;text-align:left;vertical-align:top}
+th{background:var(--soft);font-weight:600}
+td.num{font-variant-numeric:tabular-nums;white-space:nowrap}
+.tag{display:inline-block;font-size:12px;padding:1px 7px;border:1px solid var(--line);
+border-radius:3px;color:var(--sub);margin:0 6px 6px 0;background:#fff}
+.card{border:1px solid var(--line);border-radius:5px;padding:17px 19px;margin:0 0 14px}
+.card h3{margin:0 0 7px;font-size:16px;line-height:1.5}
+.card h3 a{color:var(--ink)}
+.card p{font-size:14px;color:var(--sub);margin:0 0 8px}
+.card .kv{font-size:12.5px;color:var(--sub)}
+ul,ol{padding-left:22px}li{margin-bottom:7px}
+code{background:var(--soft);padding:1px 5px;border-radius:3px;font-size:13.5px;
+font-family:ui-monospace,Consolas,monospace}
+pre{background:var(--soft);padding:14px;border-radius:4px;overflow-x:auto;font-size:13px;
+line-height:1.6}
+pre code{background:none;padding:0}
+.lv{display:inline-block;font-size:11.5px;padding:0 6px;border-radius:3px;
+border:1px solid currentColor;font-weight:600}
+.lv-L1{color:var(--ok)}.lv-L0{color:var(--warn)}.lv-none{color:var(--none)}
+.v-ok{color:var(--ok)}.v-warn{color:var(--warn)}.v-danger{color:var(--danger)}
+.v-limited{color:#7a4b00}.v-none{color:var(--none)}
+.note{border-left:3px solid var(--warn);background:#fffdf5;padding:13px 16px;
+margin:18px 0;font-size:14.5px}
+.caveat{border-left:3px solid var(--accent);background:#fdf7f6;padding:13px 16px;margin:18px 0}
+.caveat strong{color:var(--accent)}
+footer{border-top:1px solid var(--line);margin-top:56px;padding:26px 0 44px;
+font-size:13px;color:var(--sub)}
+footer a{color:var(--sub)}
+.pager{display:flex;justify-content:space-between;gap:16px;margin:36px 0 0;
+padding-top:20px;border-top:1px solid var(--line);font-size:14px}
+.pager a{max-width:46%}
+.count{color:var(--sub);font-size:13.5px;margin:-8px 0 18px}
+.tw{width:100%;overflow-x:auto;-webkit-overflow-scrolling:touch;margin:16px 0}
+.tw table{margin:0;min-width:100%}
+body{overflow-x:hidden}
+@media(max-width:600px){h1{font-size:22px}.wrap{padding:0 15px}table{font-size:13px}
+th,td{padding:7px 9px}pre{font-size:12px}}
+</style>
+</head>
+<body>
+<body>
+<header class="site"><div class="wrap">
+<a class="logo" href="/">丘山录实测库</a>
+<nav><a href="/bench/">跑分</a><a href="/fix/">排错</a><a href="/license/">许可证</a><a href="/machines/">机器</a><a href="/about/">口径</a></nav>
+</div></header>
+<main class="wrap">
+
+<h1>1.2B 的模型，697MB，3.9G 盒子上只能开官方一半的上下文</h1>
+<div class="meta"><span>环境与安装 · 697.0 MiB（Q4_K_M 单档；仓库 24 文件合计 14.5GB）</span><span><span class="lv lv-none">未标注</span></span><span>整理于 2026-11-15</span>
+<span>有效期 180d</span></div>
+<p class="lede">LFM2.5-1.2B-Instruct 的 16 层里只有 6 层存 KV（位置 2/5/8/10/12/14），另 10 层是卷积层，压根没有 KV cache。按官方 config 手算每 token 12,288 字节，实测六档上下文下进程 RSS 斜率得 12,339.5 字节，比值 1.004。一台 3,900MB、零 swap 的 ARM 盒子 available 只有 2,121MB，扣掉 1,433MiB 的权重后余 688MiB，只够 5.8 万 token；官方标 12.8 万需要 2.87GiB，差 818MiB。无 swap 意味着超了不是变慢，是进程被杀。</p>
+<span class="tag">端侧推理</span><span class="tag">上下文长度</span><span class="tag">llama.cpp</span><span class="tag">KV cache</span><span class="tag">ARM</span><span class="tag">内存边界</span><span class="tag">混合卷积</span><span class="tag">大模型</span><span class="tag">部署前置</span>
+<h2>这条适用于</h2><ul><li>拿到目标模型的 config.json（尤其 layer_types 与 num_key_value_heads）</li><li>一个能跑 llama-cli 的环境，以及 /usr/bin/time 或同类能取到进程峰值 RSS 的工具</li><li>知道目标机器 available 内存与有无 swap</li></ul>
+<h2>版本指纹</h2><p><code>LFM2.5-1.2B config 原值 / llama.cpp b12128 / 2026-11-15 实测</code></p>
+<h2>具体做法</h2>
+<pre><code>实测环境：
+  · 主测点：DGX Spark #1，aarch64 20 核 / 122G 统一内存，llama.cpp b12128 原生 arm64 构建，taskset 绑核
+  · 端侧考场：ARM Cortex-A55 四核 aarch64 / 3,900 MB 总内存 / 零 swap / Debian 12
+  · 模型：LiquidAI/LFM2.5-1.2B-Instruct-GGUF，Q4_K_M 730,895,168 B、Q8_0 1,246,253,888 B</code></pre>
+<pre><code>【逐层结构（官方 config.json 原值）】
+num_hidden_layers 16；layer_types = 6 层 full_attention + 10 层 conv
+全注意力层位置（0 起）：2, 5, 8, 10, 12, 14
+hidden_size 2048 / num_attention_heads 32 / num_key_value_heads 8 / head_dim 64
+max_position_embeddings 128,000；vocab_size 65,536；tie_embedding true</code></pre>
+<pre><code>【KV 实测（-c 六档，/usr/bin/time -v 取 Maximum resident set size）】
+ctx       Q4_K_M RSS(KB)   比上一档多(MiB)
+4,096     1,509,012        —
+8,192     1,558,316        48.1
+16,384    1,657,576        145.1
+32,768    1,855,024        337.9
+65,536    2,248,784        722.4
+131,072   3,039,116        1,494.2
+端点相减 1,566,826,496 B 除以 126,976 token = 12,339.5 B/token
+手算 2×8×64×2×6 = 12,288 B/token，比值 1.004</code></pre>
+<p>【Q8_0 对照（同法）】<br>4,096 2,507,568 / 16,384 2,655,576 / 65,536 3,247,180 / 131,072 4,037,584 KB<br>斜率 12,338.8 B/token，与 Q4 差 −0.01%，KV 与权重量化档无关</p>
+<p>【纯权重开销（-c 512，KV 几乎为零）】<br>Q4_K_M：文件 697.0 MiB 到 RSS 1,432.6 MiB（+105.5%）<br>Q8_0  ：文件 1,188.5 MiB 到 RSS 2,415.7 MiB（+103.3%）<br>RSS 约为文件 2 倍，是 mmap 权重页与工作副本的共同读数，不是「模型要两倍内存」</p>
+<p>【端侧边界（3,900 MB 总内存 / 零 swap / available 2,121 MB / free 134 MB）】<br>Q4_K_M：1,432.6 + 需 KV 688 MiB，上限 ctx 约 58,474（5.8 万）<br>Q8_0  ：光权重 2,415.7 MiB 大于 available 2,121 MB，装不下<br>开满 12.8 万需 2.87 GiB，实测 available 2.07 GiB，差 818 MiB<br>保守口径（只给 1,500 MB 可用）：只剩 67 MiB，ctx 约 5,700</p>
+<p>【反事实：若 16 层全是全注意力】<br>32,768 B/token，128K 需 3.91 GiB；实测结构 1.47 GiB，省 62.3%（约 10/16）</p>
+<pre><code>【为什么这台盒子零 tok/s（连续第 4 天）】
+把官方 arm64 预编译包（18,753,070 B）经内网分发到盒子后直接报：
+  llama-bench: /lib/aarch64-linux-gnu/libc.so.6: version GLIBC_2.38 not found
+  ldd (Debian GLIBC 2.36-9+deb12u13) 2.36
+架构对、文件完整、字节数一分不差，差 0.02 个版本就是跑不起来。glibc 是硬墙，不是下载路径。</code></pre>
+<div class="caveat"><strong>失效边界</strong><br>LFM2.5-1.2B 本体在端侧盒子上从未跑起来（glibc 2.38 门槛），因此本文没有任何 tok/s、没有首 token 延迟、没有端侧实测速度。5.8 万与 818MiB 是按实测 RSS 斜率与 available 外推的边界，不是在盒子上真开到 12.8 万得到的。KV 字节数由进程 RSS 斜率反推，未读 llama.cpp 自报的 KV self size，两者本应交叉验证但本次没做。预填充长度梯度（长 prompt 下的峰值）未测。同批的 BotPsy-0.8B 因镜像源返回空内容与半截下载，本体完全没跑成，其 KV 只能按 config 推算、不可当实测引用。x86 对照未做，跨架构同模型差异仍是空白。20 线程档位受生产容器污染（loadavg 1.04 到 4.08），该组数据已整组判废。</div>
+<div class="pager"><a href="/fix/block-size-16m-sweet-spot-20261113/">← 读盘块大小设错，475 GiB 权重多等 85 秒：16MB 是拐点，NAS 上怎么调都没用</a><span></span></div>
+<p style="margin-top:30px"><a href="/fix/">← 返回全部排错方案</a></p>
+
+</main>
+<footer><div class="wrap">
+<p>本站数字均为真机实测，逐条标注验证等级（<span class="lv lv-L1">L1</span> 多次复测取中位 /
+<span class="lv lv-L0">L0</span> 单次测量）。查不到的写「未采集」，不估算。</p>
+<p>数据源自丘山录硬件实测库 · 本页生成于 2026-11-15 · <a href="/about/">数据口径与方法</a></p>
+</div></footer>
+</body>
+</html>

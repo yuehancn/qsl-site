@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>显存明明够却 OOM：先看报错里 reserved but unallocated 是不是大于 1GB · 丘山录实测库</title>
+<meta name="description" content="按计算显存明明够，还是报 CUDA out of memory —— 但报错里那句「If reserved but unallocated memory is large」暴露了真相：显存被缓存分配器预留成碎片了，空闲总量够、却没有连续的一大块。">
+<link rel="canonical" href="https://361365365.xyz/fix/vram-fragmentation-vs-oom-20261006/">
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"TechArticle","headline":"显存明明够却 OOM：先看报错里 reserved but unallocated 是不是大于 1GB","datePublished":"2026-10-06","description":"按计算显存明明够，还是报 CUDA out of memory —— 但报错里那句「If reserved but unallocated memory is large」暴露了真相：显存被缓存分配器预留成碎片了，空闲总量够、却没有连续的一大块。这和「真显存不足」的处置方向不同：真不足要降负载，碎片要调分配器（expandable_segments）或重启进程。","author":{"@type":"Person","name":"丘山录"}}</script>
+<style>
+:root{--ink:#1a1a1a;--sub:#5b6570;--line:#e3e6ea;--bg:#fff;--soft:#f7f8fa;
+--accent:#b03a2e;--ok:#1e7b45;--warn:#9a6b00;--danger:#a11b1b;--none:#6b7280}
+*{box-sizing:border-box}
+body{margin:0;font:16px/1.75 -apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC",
+"Hiragino Sans GB","Microsoft YaHei",sans-serif;color:var(--ink);background:var(--bg)}
+a{color:#1a4f8a;text-decoration:none}a:hover{text-decoration:underline}
+.wrap{max-width:820px;margin:0 auto;padding:0 20px}
+header.site{border-bottom:1px solid var(--line);padding:18px 0;margin-bottom:32px}
+header.site .wrap{display:flex;align-items:baseline;gap:18px;flex-wrap:wrap}
+header.site .logo{font-weight:700;font-size:18px;color:var(--ink)}
+header.site nav{font-size:14px}
+header.site nav a{color:var(--sub);margin-right:16px}
+h1{font-size:27px;line-height:1.4;margin:0 0 10px;letter-spacing:-.2px}
+h2{font-size:19px;margin:34px 0 12px;padding-top:6px}
+h3{font-size:16px;margin:22px 0 8px}
+p{margin:0 0 14px}
+.meta{color:var(--sub);font-size:13px;margin-bottom:22px;line-height:1.9}
+.meta span{margin-right:14px;white-space:nowrap}
+.lede{font-size:17px;line-height:1.8;background:var(--soft);border-left:3px solid var(--accent);
+padding:16px 18px;margin:0 0 26px}
+table{width:100%;border-collapse:collapse;margin:16px 0;font-size:14px}
+th,td{border:1px solid var(--line);padding:9px 11px;text-align:left;vertical-align:top}
+th{background:var(--soft);font-weight:600}
+td.num{font-variant-numeric:tabular-nums;white-space:nowrap}
+.tag{display:inline-block;font-size:12px;padding:1px 7px;border:1px solid var(--line);
+border-radius:3px;color:var(--sub);margin:0 6px 6px 0;background:#fff}
+.card{border:1px solid var(--line);border-radius:5px;padding:17px 19px;margin:0 0 14px}
+.card h3{margin:0 0 7px;font-size:16px;line-height:1.5}
+.card h3 a{color:var(--ink)}
+.card p{font-size:14px;color:var(--sub);margin:0 0 8px}
+.card .kv{font-size:12.5px;color:var(--sub)}
+ul,ol{padding-left:22px}li{margin-bottom:7px}
+code{background:var(--soft);padding:1px 5px;border-radius:3px;font-size:13.5px;
+font-family:ui-monospace,Consolas,monospace}
+pre{background:var(--soft);padding:14px;border-radius:4px;overflow-x:auto;font-size:13px;
+line-height:1.6}
+pre code{background:none;padding:0}
+.lv{display:inline-block;font-size:11.5px;padding:0 6px;border-radius:3px;
+border:1px solid currentColor;font-weight:600}
+.lv-L1{color:var(--ok)}.lv-L0{color:var(--warn)}.lv-none{color:var(--none)}
+.v-ok{color:var(--ok)}.v-warn{color:var(--warn)}.v-danger{color:var(--danger)}
+.v-limited{color:#7a4b00}.v-none{color:var(--none)}
+.note{border-left:3px solid var(--warn);background:#fffdf5;padding:13px 16px;
+margin:18px 0;font-size:14.5px}
+.caveat{border-left:3px solid var(--accent);background:#fdf7f6;padding:13px 16px;margin:18px 0}
+.caveat strong{color:var(--accent)}
+footer{border-top:1px solid var(--line);margin-top:56px;padding:26px 0 44px;
+font-size:13px;color:var(--sub)}
+footer a{color:var(--sub)}
+.pager{display:flex;justify-content:space-between;gap:16px;margin:36px 0 0;
+padding-top:20px;border-top:1px solid var(--line);font-size:14px}
+.pager a{max-width:46%}
+.count{color:var(--sub);font-size:13.5px;margin:-8px 0 18px}
+.tw{width:100%;overflow-x:auto;-webkit-overflow-scrolling:touch;margin:16px 0}
+.tw table{margin:0;min-width:100%}
+body{overflow-x:hidden}
+@media(max-width:600px){h1{font-size:22px}.wrap{padding:0 15px}table{font-size:13px}
+th,td{padding:7px 9px}pre{font-size:12px}}
+</style>
+</head>
+<body>
+<body>
+<header class="site"><div class="wrap">
+<a class="logo" href="/">丘山录实测库</a>
+<nav><a href="/bench/">跑分</a><a href="/fix/">排错</a><a href="/license/">许可证</a><a href="/machines/">机器</a><a href="/about/">口径</a></nav>
+</div></header>
+<main class="wrap">
+
+<h1>显存明明够却 OOM：先看报错里 reserved but unallocated 是不是大于 1GB</h1>
+<div class="meta"><span>排障 · 4 步 / 5 分钟</span><span><span class="lv lv-L1">L1</span></span><span>整理于 2026-10-06</span>
+<span>有效期 180d</span></div>
+<p class="lede">按计算显存明明够，还是报 CUDA out of memory —— 但报错里那句「If reserved but unallocated memory is large」暴露了真相：显存被缓存分配器预留成碎片了，空闲总量够、却没有连续的一大块。这和「真显存不足」的处置方向不同：真不足要降负载，碎片要调分配器（expandable_segments）或重启进程。判据是报错里 reserved but unallocated 的数值，大于 1GB 就是碎片。</p>
+<span class="tag">显存</span><span class="tag">排错</span><span class="tag">推理优化</span><span class="tag">长跑服务</span><span class="tag">PyTorch</span>
+<h2>这条适用于</h2><ul><li>长跑推理服务 / 反复加载卸载模型（短任务一般不碎片化）</li><li>显存显示还有空余却 OOM</li></ul>
+<h2>版本指纹</h2><p><code>PyTorch 报错原文判据；expandable_segments 需 PyTorch 2.1+</code></p>
+<h2>具体做法</h2>
+<pre><code># —— ① 判据：读报错全文，找这一句 ——
+# CUDA out of memory. Tried to allocate ...
+# If reserved but unallocated memory is large try setting
+#   PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True to avoid fragmentation.
+# 关键看 reserved but unallocated 的数值：&gt; 1GB = 碎片，不是真不够</code></pre>
+<pre><code>$ python -c &quot;import torch; print(torch.__version__)&quot;   # 需 2.1+ 才支持该选项</code></pre>
+<pre><code># —— ② 修法 A：开可扩展段（缓解碎片，官方推荐）——
+$ set PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True     # Windows
+$ export PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True  # Linux/macOS</code></pre>
+<h3>—— ③ 修法 B：重启进程（最直接，清空显存池）——</h3><p>长跑服务建议加定期重启，或把「加载模型」与「推理」拆成常驻 + 重载两级</p>
+<pre><code># —— ④ 减少碎片产生的习惯 ——
+# · 模型一次加载、多次推理，别来回切模型
+# · 避免忽大忽小的 batch（固定 batch 更利于分配器复用）
+$ nvidia-smi -l 1        # 实时观察：Used 是否反复在某个水位抖动</code></pre>
+<div class="caveat"><strong>失效边界</strong><br>适用边界：本机实测多见于长跑推理服务与反复加载/卸载模型的场景；短任务、一次性出图一般不会碎片化。判据（reserved but unallocated 大于 1GB）来自 PyTorch 官方报错提示原文。expandable_segments 需 PyTorch 2.1+ 才支持，老版本设了无效——这种情况下重启进程是更可靠的解法。换环境请以报错原文与 torch.__version__ 为准。</div>
+<div class="pager"><a href="/fix/multi-node-ring-topology-check-20261103/">← 多机推理先认清拓扑：环上 rank 顺序就是物理顺序，加机器不加带宽</a><a href="/fix/openai-compatible-api-401-404-20261006/" style="text-align:right">本地服务起来了、API 却调不通：先 curl，curl 通就是客户端的事 →</a></div>
+<p style="margin-top:30px"><a href="/fix/">← 返回全部排错方案</a></p>
+
+</main>
+<footer><div class="wrap">
+<p>本站数字均为真机实测，逐条标注验证等级（<span class="lv lv-L1">L1</span> 多次复测取中位 /
+<span class="lv lv-L0">L0</span> 单次测量）。查不到的写「未采集」，不估算。</p>
+<p>数据源自丘山录硬件实测库 · 本页生成于 2026-11-15 · <a href="/about/">数据口径与方法</a></p>
+</div></footer>
+</body>
+</html>

@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>「装不上就重装」之前，先看四种「装不上」各要多少代价 · 丘山录实测库</title>
+<meta name="description" content="「装不上就重装环境」在大多数情况下是白做的。四种「装不上」代价完全不同：真正装不上（红字依赖冲突）重装有效；装成功但程序看不见（装错环境）重装完全无效，修复成本只要一条 pip -V；只有某个功能报缺包是可选依赖缺失，单独装那一个；换机器才报错才轮到重装。判定「该不该重装」只有一行：装包时是否失败。">
+<link rel="canonical" href="https://361365365.xyz/fix/reinstall-decision-table-20261001/">
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"TechArticle","headline":"「装不上就重装」之前，先看四种「装不上」各要多少代价","datePublished":"2026-10-01","description":"「装不上就重装环境」在大多数情况下是白做的。四种「装不上」代价完全不同：真正装不上（红字依赖冲突）重装有效；装成功但程序看不见（装错环境）重装完全无效，修复成本只要一条 pip -V；只有某个功能报缺包是可选依赖缺失，单独装那一个；换机器才报错才轮到重装。判定「该不该重装」只有一行：装包时是否失败。","author":{"@type":"Person","name":"丘山录"}}</script>
+<style>
+:root{--ink:#1a1a1a;--sub:#5b6570;--line:#e3e6ea;--bg:#fff;--soft:#f7f8fa;
+--accent:#b03a2e;--ok:#1e7b45;--warn:#9a6b00;--danger:#a11b1b;--none:#6b7280}
+*{box-sizing:border-box}
+body{margin:0;font:16px/1.75 -apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC",
+"Hiragino Sans GB","Microsoft YaHei",sans-serif;color:var(--ink);background:var(--bg)}
+a{color:#1a4f8a;text-decoration:none}a:hover{text-decoration:underline}
+.wrap{max-width:820px;margin:0 auto;padding:0 20px}
+header.site{border-bottom:1px solid var(--line);padding:18px 0;margin-bottom:32px}
+header.site .wrap{display:flex;align-items:baseline;gap:18px;flex-wrap:wrap}
+header.site .logo{font-weight:700;font-size:18px;color:var(--ink)}
+header.site nav{font-size:14px}
+header.site nav a{color:var(--sub);margin-right:16px}
+h1{font-size:27px;line-height:1.4;margin:0 0 10px;letter-spacing:-.2px}
+h2{font-size:19px;margin:34px 0 12px;padding-top:6px}
+h3{font-size:16px;margin:22px 0 8px}
+p{margin:0 0 14px}
+.meta{color:var(--sub);font-size:13px;margin-bottom:22px;line-height:1.9}
+.meta span{margin-right:14px;white-space:nowrap}
+.lede{font-size:17px;line-height:1.8;background:var(--soft);border-left:3px solid var(--accent);
+padding:16px 18px;margin:0 0 26px}
+table{width:100%;border-collapse:collapse;margin:16px 0;font-size:14px}
+th,td{border:1px solid var(--line);padding:9px 11px;text-align:left;vertical-align:top}
+th{background:var(--soft);font-weight:600}
+td.num{font-variant-numeric:tabular-nums;white-space:nowrap}
+.tag{display:inline-block;font-size:12px;padding:1px 7px;border:1px solid var(--line);
+border-radius:3px;color:var(--sub);margin:0 6px 6px 0;background:#fff}
+.card{border:1px solid var(--line);border-radius:5px;padding:17px 19px;margin:0 0 14px}
+.card h3{margin:0 0 7px;font-size:16px;line-height:1.5}
+.card h3 a{color:var(--ink)}
+.card p{font-size:14px;color:var(--sub);margin:0 0 8px}
+.card .kv{font-size:12.5px;color:var(--sub)}
+ul,ol{padding-left:22px}li{margin-bottom:7px}
+code{background:var(--soft);padding:1px 5px;border-radius:3px;font-size:13.5px;
+font-family:ui-monospace,Consolas,monospace}
+pre{background:var(--soft);padding:14px;border-radius:4px;overflow-x:auto;font-size:13px;
+line-height:1.6}
+pre code{background:none;padding:0}
+.lv{display:inline-block;font-size:11.5px;padding:0 6px;border-radius:3px;
+border:1px solid currentColor;font-weight:600}
+.lv-L1{color:var(--ok)}.lv-L0{color:var(--warn)}.lv-none{color:var(--none)}
+.v-ok{color:var(--ok)}.v-warn{color:var(--warn)}.v-danger{color:var(--danger)}
+.v-limited{color:#7a4b00}.v-none{color:var(--none)}
+.note{border-left:3px solid var(--warn);background:#fffdf5;padding:13px 16px;
+margin:18px 0;font-size:14.5px}
+.caveat{border-left:3px solid var(--accent);background:#fdf7f6;padding:13px 16px;margin:18px 0}
+.caveat strong{color:var(--accent)}
+footer{border-top:1px solid var(--line);margin-top:56px;padding:26px 0 44px;
+font-size:13px;color:var(--sub)}
+footer a{color:var(--sub)}
+.pager{display:flex;justify-content:space-between;gap:16px;margin:36px 0 0;
+padding-top:20px;border-top:1px solid var(--line);font-size:14px}
+.pager a{max-width:46%}
+.count{color:var(--sub);font-size:13.5px;margin:-8px 0 18px}
+.tw{width:100%;overflow-x:auto;-webkit-overflow-scrolling:touch;margin:16px 0}
+.tw table{margin:0;min-width:100%}
+body{overflow-x:hidden}
+@media(max-width:600px){h1{font-size:22px}.wrap{padding:0 15px}table{font-size:13px}
+th,td{padding:7px 9px}pre{font-size:12px}}
+</style>
+</head>
+<body>
+<body>
+<header class="site"><div class="wrap">
+<a class="logo" href="/">丘山录实测库</a>
+<nav><a href="/bench/">跑分</a><a href="/fix/">排错</a><a href="/license/">许可证</a><a href="/machines/">机器</a><a href="/about/">口径</a></nav>
+</div></header>
+<main class="wrap">
+
+<h1>「装不上就重装」之前，先看四种「装不上」各要多少代价</h1>
+<div class="meta"><span>环境与安装 · 4 类症状 / 3 张判定表</span><span><span class="lv lv-L1">L1</span></span><span>整理于 2026-10-01</span>
+<span>有效期 180d</span></div>
+<p class="lede">「装不上就重装环境」在大多数情况下是白做的。四种「装不上」代价完全不同：真正装不上（红字依赖冲突）重装有效；装成功但程序看不见（装错环境）重装完全无效，修复成本只要一条 pip -V；只有某个功能报缺包是可选依赖缺失，单独装那一个；换机器才报错才轮到重装。判定「该不该重装」只有一行：装包时是否失败。</p>
+<span class="tag">排错</span><span class="tag">重装</span><span class="tag">依赖管理</span><span class="tag">Python环境</span><span class="tag">决策表</span>
+<h2>这条适用于</h2><ul><li>装包动作<strong></strong>（要能区分「装的时候就报错」与「装成功但程序看不见」）</li><li>机器上存在多个 Python 或 venv</li></ul>
+<h2>版本指纹</h2><p><code>Windows 11 + RTX 5090D；2026-10-01 本机环境拓扑</code></p>
+<h2>具体做法</h2>
+<p class="count">表一：四种「装不上」，代价完全不一样</p><div class="tw"><div class="tw"><table><tr><th>症状</th><th>真实原因</th><th>重装能解决吗</th><th>实际修复成本</th></tr><tr><td>装的时候报错（红字、依赖冲突）</td><td>真的装不上</td><td>✓ 能</td><td>几十分钟</td></tr><tr><td>装成功、import 通、程序说没有</td><td>装进了另一个环境</td><td>✗ 完全不能</td><td>一条 pip -V</td></tr><tr><td>只有某个功能报缺包</td><td>该功能的可选依赖没装</td><td>✗ 不能</td><td>装那一个包</td></tr><tr><td>换了台机器就报错</td><td>环境没跟着走</td><td>△ 重装是正解</td><td>几小时（先固定版本）</td></tr></table></div></div>
+<h3>本机实际花了一天半，而第二行的修复成本是一条命令 —— 这个反差就是本表存在的理由。</h3>
+<h3>表二：自检该看哪里（不要看「有没有报错」）</h3><p>&lt;python.exe&gt; -m pip -V                            看末尾括号里的解释器路径  与程序一致 -&gt; ✓<br>&lt;程序python.exe&gt; -c &quot;import 包; print(包.__file__)&quot;  看 __file__ 路径前缀      在程序环境 -&gt; ✓</p>
+<pre><code># 实测：pip 的反馈全部来自一个与程序无关的环境
+$ pip install onnxruntime
+# Successfully installed onnxruntime-1.24.1   &lt;- 没有红字，退出码 0
+$ python -c &quot;import onnxruntime; print(&#x27;OK&#x27;)&quot;
+# OK                                          &lt;- 也真的通过
+$ python -m pip -V
+# ... (python 3.13)                            &lt;- 括号里是 3.13，而 ComfyUI 跑在 3.12
+# 两处都是真话 —— 它们只是在说另一套环境的事。</code></pre>
+<p class="count">表三：把你的情况往里对</p><div class="tw"><div class="tw"><table><tr><th>装包无报错、程序报 ModuleNotFoundError</th><th>-&gt; 别重装，先跑 pip -V</th></tr><tr><td>装包时就报冲突、红字一片</td><td>-&gt; 可以重装，但先导出依赖清单固定版本</td></tr><tr><td>只有某个功能报缺包</td><td>-&gt; 别重装，单独装那一个</td></tr><tr><td>机器上有两个以上 Python</td><td>-&gt; 别重装，先列清单，搞清哪个是程序在用的</td></tr><tr><td>换了机器才报错</td><td>-&gt; 重装合理，但把版本写进文件</td></tr></table></div></div>
+<h3>一句实话：重装之所以被反复推荐，不只因为省力气，还因为它让你停止思考。</h3>
+<div class="caveat"><strong>失效边界</strong><br>适用边界：本表为 2026-10-01 本机（Windows 11 + RTX 5090D）实测的经验总结，不是通用规范，不同安装顺序与操作系统下环境拓扑会变；表中「修复成本」为量级估计，非精确工时。但一条判据通用：装包动作是否失败，是「该不该重装」唯一值得花时间的分界线；「装成功但程序看不见」这类问题，重装永远无效。</div>
+<div class="pager"><a href="/fix/pip-wrong-env-silent-mismatch-20261001/">← pip 装成功了程序还是缺包：多 Python 环境的静默错配</a><a href="/fix/docker-wsl-gpu-passthrough-20261006/" style="text-align:right">Docker / WSL2 里 GPU 用不了：驱动在宿主机，容器里只装 runtime →</a></div>
+<p style="margin-top:30px"><a href="/fix/">← 返回全部排错方案</a></p>
+
+</main>
+<footer><div class="wrap">
+<p>本站数字均为真机实测，逐条标注验证等级（<span class="lv lv-L1">L1</span> 多次复测取中位 /
+<span class="lv lv-L0">L0</span> 单次测量）。查不到的写「未采集」，不估算。</p>
+<p>数据源自丘山录硬件实测库 · 本页生成于 2026-11-15 · <a href="/about/">数据口径与方法</a></p>
+</div></footer>
+</body>
+</html>

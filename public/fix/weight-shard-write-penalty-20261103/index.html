@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>权重落盘慢 35 倍不是盘坏了，是分片太碎：每文件固定开销 3.7 毫秒 · 丘山录实测库</title>
+<meta name="description" content="同一块 NVMe、同一总量 1200MB，只改文件切法：1200 个 1MB 小文件 4.45 秒，3 个 400MB 大文件 0.12 秒，差 35-37 倍。中间两档单调递增（1049 / 3102 MB/s），是台阶不是抖动。">
+<link rel="canonical" href="https://361365365.xyz/fix/weight-shard-write-penalty-20261103/">
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"TechArticle","headline":"权重落盘慢 35 倍不是盘坏了，是分片太碎：每文件固定开销 3.7 毫秒","datePublished":"2026-11-03","description":"同一块 NVMe、同一总量 1200MB，只改文件切法：1200 个 1MB 小文件 4.45 秒，3 个 400MB 大文件 0.12 秒，差 35-37 倍。中间两档单调递增（1049 / 3102 MB/s），是台阶不是抖动。每文件固定开销在 1MB 档约 3.7 ms、400MB 档约 0.04 ms，与数据量无关。","author":{"@type":"Person","name":"丘山录"}}</script>
+<style>
+:root{--ink:#1a1a1a;--sub:#5b6570;--line:#e3e6ea;--bg:#fff;--soft:#f7f8fa;
+--accent:#b03a2e;--ok:#1e7b45;--warn:#9a6b00;--danger:#a11b1b;--none:#6b7280}
+*{box-sizing:border-box}
+body{margin:0;font:16px/1.75 -apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC",
+"Hiragino Sans GB","Microsoft YaHei",sans-serif;color:var(--ink);background:var(--bg)}
+a{color:#1a4f8a;text-decoration:none}a:hover{text-decoration:underline}
+.wrap{max-width:820px;margin:0 auto;padding:0 20px}
+header.site{border-bottom:1px solid var(--line);padding:18px 0;margin-bottom:32px}
+header.site .wrap{display:flex;align-items:baseline;gap:18px;flex-wrap:wrap}
+header.site .logo{font-weight:700;font-size:18px;color:var(--ink)}
+header.site nav{font-size:14px}
+header.site nav a{color:var(--sub);margin-right:16px}
+h1{font-size:27px;line-height:1.4;margin:0 0 10px;letter-spacing:-.2px}
+h2{font-size:19px;margin:34px 0 12px;padding-top:6px}
+h3{font-size:16px;margin:22px 0 8px}
+p{margin:0 0 14px}
+.meta{color:var(--sub);font-size:13px;margin-bottom:22px;line-height:1.9}
+.meta span{margin-right:14px;white-space:nowrap}
+.lede{font-size:17px;line-height:1.8;background:var(--soft);border-left:3px solid var(--accent);
+padding:16px 18px;margin:0 0 26px}
+table{width:100%;border-collapse:collapse;margin:16px 0;font-size:14px}
+th,td{border:1px solid var(--line);padding:9px 11px;text-align:left;vertical-align:top}
+th{background:var(--soft);font-weight:600}
+td.num{font-variant-numeric:tabular-nums;white-space:nowrap}
+.tag{display:inline-block;font-size:12px;padding:1px 7px;border:1px solid var(--line);
+border-radius:3px;color:var(--sub);margin:0 6px 6px 0;background:#fff}
+.card{border:1px solid var(--line);border-radius:5px;padding:17px 19px;margin:0 0 14px}
+.card h3{margin:0 0 7px;font-size:16px;line-height:1.5}
+.card h3 a{color:var(--ink)}
+.card p{font-size:14px;color:var(--sub);margin:0 0 8px}
+.card .kv{font-size:12.5px;color:var(--sub)}
+ul,ol{padding-left:22px}li{margin-bottom:7px}
+code{background:var(--soft);padding:1px 5px;border-radius:3px;font-size:13.5px;
+font-family:ui-monospace,Consolas,monospace}
+pre{background:var(--soft);padding:14px;border-radius:4px;overflow-x:auto;font-size:13px;
+line-height:1.6}
+pre code{background:none;padding:0}
+.lv{display:inline-block;font-size:11.5px;padding:0 6px;border-radius:3px;
+border:1px solid currentColor;font-weight:600}
+.lv-L1{color:var(--ok)}.lv-L0{color:var(--warn)}.lv-none{color:var(--none)}
+.v-ok{color:var(--ok)}.v-warn{color:var(--warn)}.v-danger{color:var(--danger)}
+.v-limited{color:#7a4b00}.v-none{color:var(--none)}
+.note{border-left:3px solid var(--warn);background:#fffdf5;padding:13px 16px;
+margin:18px 0;font-size:14.5px}
+.caveat{border-left:3px solid var(--accent);background:#fdf7f6;padding:13px 16px;margin:18px 0}
+.caveat strong{color:var(--accent)}
+footer{border-top:1px solid var(--line);margin-top:56px;padding:26px 0 44px;
+font-size:13px;color:var(--sub)}
+footer a{color:var(--sub)}
+.pager{display:flex;justify-content:space-between;gap:16px;margin:36px 0 0;
+padding-top:20px;border-top:1px solid var(--line);font-size:14px}
+.pager a{max-width:46%}
+.count{color:var(--sub);font-size:13.5px;margin:-8px 0 18px}
+.tw{width:100%;overflow-x:auto;-webkit-overflow-scrolling:touch;margin:16px 0}
+.tw table{margin:0;min-width:100%}
+body{overflow-x:hidden}
+@media(max-width:600px){h1{font-size:22px}.wrap{padding:0 15px}table{font-size:13px}
+th,td{padding:7px 9px}pre{font-size:12px}}
+</style>
+</head>
+<body>
+<body>
+<header class="site"><div class="wrap">
+<a class="logo" href="/">丘山录实测库</a>
+<nav><a href="/bench/">跑分</a><a href="/fix/">排错</a><a href="/license/">许可证</a><a href="/machines/">机器</a><a href="/about/">口径</a></nav>
+</div></header>
+<main class="wrap">
+
+<h1>权重落盘慢 35 倍不是盘坏了，是分片太碎：每文件固定开销 3.7 毫秒</h1>
+<div class="meta"><span>性能 · 约 5 个命令 / 3 分钟自查</span><span><span class="lv lv-L0">L0</span></span><span>整理于 2026-11-03</span>
+<span>有效期 180d</span></div>
+<p class="lede">同一块 NVMe、同一总量 1200MB，只改文件切法：1200 个 1MB 小文件 4.45 秒，3 个 400MB 大文件 0.12 秒，差 35-37 倍。中间两档单调递增（1049 / 3102 MB/s），是台阶不是抖动。每文件固定开销在 1MB 档约 3.7 ms、400MB 档约 0.04 ms，与数据量无关。换到 800GB 权重的场景，这笔固定开销就是 49.4 分钟 vs 1.4 分钟，差 48 分钟纯等，还很容易被误诊成下载坏了或盘坏了。</p>
+<span class="tag">权重</span><span class="tag">分片</span><span class="tag">safetensors</span><span class="tag">写盘</span><span class="tag">NVMe</span><span class="tag">落盘</span><span class="tag">模型下载</span><span class="tag">磁盘</span><span class="tag">O_DIRECT</span><span class="tag">fsync</span><span class="tag">部署</span>
+<h2>这条适用于</h2><ul><li>能 ssh 到存放权重的机器</li><li>该盘至少有 1.2GB 空闲（测完即删）</li><li>Python 或 dd 任一可用</li></ul>
+<h2>版本指纹</h2><p><code>Linux ext4 根分区；单进程 os.O_DIRECT + fsync；O_DIRECT 需 4K 对齐缓冲区</code></p>
+<h2>具体做法</h2>
+<p>【实测条件】单进程 Python，os.O_DIRECT 打开 + 每文件 fsync，同一块 NVMe（ext4 根分区），同一总量 1200MB，只改文件数与单文件大小，每档重复 2 次。2026-11-03 采集。</p>
+<p>【四档阶梯】<br>1200 个 × 1MB：4.450 / 4.448 秒 → 269.7 / 269.8 MB/s<br>300 个 × 4MB：1.144 / 1.184 秒 → 1049.3 / 1013.7 MB/s<br>75 个 × 16MB：0.387 / 0.394 秒 → 3102.5 / 3049.0 MB/s<br>3 个 × 400MB：0.125 / 0.120 秒 → 9577.0 / 9984.3 MB/s</p>
+<p>两端差 35-37 倍，两次重复读数几乎一样，中间两档单调递增 —— 这是台阶，不是抖动。</p>
+<p>【两档之间的换算】1MB→16MB 速率涨 11.5 倍（269.7→3102.5 MB/s），16MB→400MB 再涨 3.1 倍（3102.5→9577.0）。文件放大 400 倍、速率只涨 35 倍，所以台阶是「两级陡、中间平」的形态，不是线性。</p>
+<p>【每文件固定开销】1MB 档每文件摊约 3.7 ms，400MB 档只摊约 0.04 ms，相差两个数量级。这 3.7 ms 与数据量无关，是元数据、块分配、同步的固定成本。</p>
+<p>【已排除的两种解释】<br>① dd 进程 fork 开销：换成单进程 Python 循环不 fork，结果一样（4.448 秒 vs 0.120 秒），排除。<br>② 页缓存：全程 O_DIRECT + 每文件 fsync，绕过了页缓存，排除。</p>
+<p>【换成权重的账】800GB 权重（LongCat-2.5 按 W4A4 推算的体积）：<br>按 269.7 MB/s 落盘 → 49.4 分钟<br>按 9577 MB/s 落盘 → 1.4 分钟<br>差 48 分钟。这 48 分钟是纯等，叠加在下载时间之外；而且很容易误诊 —— 你会先怀疑下载坏了、校验没过、盘坏了，实际只是文件切得碎，盘在等你把上千个 inode 一个个建出来。</p>
+<p>【参考仓库形态】GLM-5.2 的发布形态是 295 个文件、合计 1506.69 GB，平均单文件约 5GB，落在阶梯右侧，不吃亏。但不是每个仓库都这样：很多模型按 2GB 或 4GB 切分片，再加 tokenizer 与 config 的一堆小文件，一个 800GB 的模型按 1GB 一片就是 800 个文件。</p>
+<p>【对照基准】⚠️ 400MB 档跑出 9577-9984 MB/s（约 9.5-10.0 GB/s），高于这块盘同机 4GB 单文件 sustained 写的 6.5-6.8 GB/s（约 9,600 MB/s 那一档要打折）。判断是 1200MB 总量太小、写进了盘上 SLC 缓存或 DRAM，没跑到掉速段 —— 所以「大文件 9.5 GB/s」这个绝对值要打折，但「小文件慢 35 倍」的比值稳（两场景总量与缓存条件相同，差异只来自切法）。</p>
+<p>【对照基准】同机 4GB 单文件（各 3 次）：direct 写 6.5-6.8 GB/s、读 9.6-9.9 GB/s（各 3 次）。第二台同条件写 3.7-4.7、读 8.6 GB/s，两台同型号读速差 15%，属硬件个体差异。</p>
+<div class="caveat"><strong>失效边界</strong><br>只测了一台机器（ext4 根分区），未在多台复跑四档。只测写不测读 —— 读侧测速时接口用错（返回 0 字节），数据作废，所以读侧是否有同样的台阶未验证。9577 MB/s 这个绝对值高于同机 4GB 单文件写的 6.8 GB/s，判断是 1200MB 总量偏小、写进盘上缓存区未跑到掉速段，绝对值需打折看；但「小文件慢 35 倍」的比值是稳的（两场景总量与缓存条件相同）。</div>
+<div class="pager"><a href="/fix/linear-attn-kv-estimate-20261101/">← 看到「KV 省 75%」别急着信：去 config 数层数，30 秒能验算完</a><a href="/fix/arete-27b-vram-kv-account-20261108/" style="text-align:right">Arete-27B 装得下吗：混合注意力省 75% KV，但省不动权重 →</a></div>
+<p style="margin-top:30px"><a href="/fix/">← 返回全部排错方案</a></p>
+
+</main>
+<footer><div class="wrap">
+<p>本站数字均为真机实测，逐条标注验证等级（<span class="lv lv-L1">L1</span> 多次复测取中位 /
+<span class="lv lv-L0">L0</span> 单次测量）。查不到的写「未采集」，不估算。</p>
+<p>数据源自丘山录硬件实测库 · 本页生成于 2026-11-15 · <a href="/about/">数据口径与方法</a></p>
+</div></footer>
+</body>
+</html>

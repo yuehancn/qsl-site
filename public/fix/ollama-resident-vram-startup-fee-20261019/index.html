@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>每个常驻模型都有一笔固定显存起步费：权重 262MB 的模型实占 815MB · 丘山录实测库</title>
+<meta name="description" content="本机 RTX 5090D 32GB 上对「多模型同时常驻」的显存增量做了 3 轮重复测量（基线含其他常驻负载约 15.2 GiB，故全部结论只用增量）。">
+<link rel="canonical" href="https://361365365.xyz/fix/ollama-resident-vram-startup-fee-20261019/">
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"TechArticle","headline":"每个常驻模型都有一笔固定显存起步费：权重 262MB 的模型实占 815MB","datePublished":"2026-10-19","description":"本机 RTX 5090D 32GB 上对「多模型同时常驻」的显存增量做了 3 轮重复测量（基线含其他常驻负载约 15.2 GiB，故全部结论只用增量）。只挂 embedding 模型（权重 261.6 MiB = 274,290,656 B）时，显存增量 811 / 821 / 814 MiB；","author":{"@type":"Person","name":"丘山录"}}</script>
+<style>
+:root{--ink:#1a1a1a;--sub:#5b6570;--line:#e3e6ea;--bg:#fff;--soft:#f7f8fa;
+--accent:#b03a2e;--ok:#1e7b45;--warn:#9a6b00;--danger:#a11b1b;--none:#6b7280}
+*{box-sizing:border-box}
+body{margin:0;font:16px/1.75 -apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC",
+"Hiragino Sans GB","Microsoft YaHei",sans-serif;color:var(--ink);background:var(--bg)}
+a{color:#1a4f8a;text-decoration:none}a:hover{text-decoration:underline}
+.wrap{max-width:820px;margin:0 auto;padding:0 20px}
+header.site{border-bottom:1px solid var(--line);padding:18px 0;margin-bottom:32px}
+header.site .wrap{display:flex;align-items:baseline;gap:18px;flex-wrap:wrap}
+header.site .logo{font-weight:700;font-size:18px;color:var(--ink)}
+header.site nav{font-size:14px}
+header.site nav a{color:var(--sub);margin-right:16px}
+h1{font-size:27px;line-height:1.4;margin:0 0 10px;letter-spacing:-.2px}
+h2{font-size:19px;margin:34px 0 12px;padding-top:6px}
+h3{font-size:16px;margin:22px 0 8px}
+p{margin:0 0 14px}
+.meta{color:var(--sub);font-size:13px;margin-bottom:22px;line-height:1.9}
+.meta span{margin-right:14px;white-space:nowrap}
+.lede{font-size:17px;line-height:1.8;background:var(--soft);border-left:3px solid var(--accent);
+padding:16px 18px;margin:0 0 26px}
+table{width:100%;border-collapse:collapse;margin:16px 0;font-size:14px}
+th,td{border:1px solid var(--line);padding:9px 11px;text-align:left;vertical-align:top}
+th{background:var(--soft);font-weight:600}
+td.num{font-variant-numeric:tabular-nums;white-space:nowrap}
+.tag{display:inline-block;font-size:12px;padding:1px 7px;border:1px solid var(--line);
+border-radius:3px;color:var(--sub);margin:0 6px 6px 0;background:#fff}
+.card{border:1px solid var(--line);border-radius:5px;padding:17px 19px;margin:0 0 14px}
+.card h3{margin:0 0 7px;font-size:16px;line-height:1.5}
+.card h3 a{color:var(--ink)}
+.card p{font-size:14px;color:var(--sub);margin:0 0 8px}
+.card .kv{font-size:12.5px;color:var(--sub)}
+ul,ol{padding-left:22px}li{margin-bottom:7px}
+code{background:var(--soft);padding:1px 5px;border-radius:3px;font-size:13.5px;
+font-family:ui-monospace,Consolas,monospace}
+pre{background:var(--soft);padding:14px;border-radius:4px;overflow-x:auto;font-size:13px;
+line-height:1.6}
+pre code{background:none;padding:0}
+.lv{display:inline-block;font-size:11.5px;padding:0 6px;border-radius:3px;
+border:1px solid currentColor;font-weight:600}
+.lv-L1{color:var(--ok)}.lv-L0{color:var(--warn)}.lv-none{color:var(--none)}
+.v-ok{color:var(--ok)}.v-warn{color:var(--warn)}.v-danger{color:var(--danger)}
+.v-limited{color:#7a4b00}.v-none{color:var(--none)}
+.note{border-left:3px solid var(--warn);background:#fffdf5;padding:13px 16px;
+margin:18px 0;font-size:14.5px}
+.caveat{border-left:3px solid var(--accent);background:#fdf7f6;padding:13px 16px;margin:18px 0}
+.caveat strong{color:var(--accent)}
+footer{border-top:1px solid var(--line);margin-top:56px;padding:26px 0 44px;
+font-size:13px;color:var(--sub)}
+footer a{color:var(--sub)}
+.pager{display:flex;justify-content:space-between;gap:16px;margin:36px 0 0;
+padding-top:20px;border-top:1px solid var(--line);font-size:14px}
+.pager a{max-width:46%}
+.count{color:var(--sub);font-size:13.5px;margin:-8px 0 18px}
+.tw{width:100%;overflow-x:auto;-webkit-overflow-scrolling:touch;margin:16px 0}
+.tw table{margin:0;min-width:100%}
+body{overflow-x:hidden}
+@media(max-width:600px){h1{font-size:22px}.wrap{padding:0 15px}table{font-size:13px}
+th,td{padding:7px 9px}pre{font-size:12px}}
+</style>
+</head>
+<body>
+<body>
+<header class="site"><div class="wrap">
+<a class="logo" href="/">丘山录实测库</a>
+<nav><a href="/bench/">跑分</a><a href="/fix/">排错</a><a href="/license/">许可证</a><a href="/machines/">机器</a><a href="/about/">口径</a></nav>
+</div></header>
+<main class="wrap">
+
+<h1>每个常驻模型都有一笔固定显存起步费：权重 262MB 的模型实占 815MB</h1>
+<div class="meta"><span>成本账 · 3 轮 · 262MB 权重实占 815MB</span><span><span class="lv lv-L0">L0</span></span><span>整理于 2026-10-19</span>
+<span>有效期 30d</span></div>
+<p class="lede">本机 RTX 5090D 32GB 上对「多模型同时常驻」的显存增量做了 3 轮重复测量（基线含其他常驻负载约 15.2 GiB，故全部结论只用增量）。只挂 embedding 模型（权重 261.6 MiB = 274,290,656 B）时，显存增量 811 / 821 / 814 MiB；Ollama 自报 size_vram 为 335,743,549 B（320.2 MiB），与显卡实占之间差 495 MiB 属于账外开销。再叠上 14B 对话模型（权重 8571.6 MiB）时，增量 9159 / 9220 / 9159 MiB；size_vram 9,075,834,223 B（8655.4 MiB），账外差 524 MiB。两个同时常驻时总增量 25176 / 25236 / 25183 MiB，等于两者相加（811+9159=9970），没有共享复用。全部卸载后显存归还 9923 / 10026 / 9974 MiB，无残留。倍数关系：embedding 815/262 = 3.1 倍，14B 9179/8572 = 1.07 倍——同一笔固定成本，摊在小模型上最难看待。</p>
+<span class="tag">Ollama</span><span class="tag">常驻</span><span class="tag">显存</span><span class="tag">起步费</span><span class="tag">多模型</span><span class="tag">size_vram</span><span class="tag">Vram</span><span class="tag">本地部署</span><span class="tag">算账</span><span class="tag">embedding</span>
+<h2>这条适用于</h2><ul><li>本地用 Ollama 常驻模型（keep_alive 大于 0）</li><li>同机可能同时常驻多个模型</li><li>显存余量需按增量估算，不能看总量</li></ul>
+<h2>版本指纹</h2><p><code>Windows 11 + RTX 5090D 32GB；Ollama 0.40.4；qwen2.5:14b Q4_K_M + nomic-embed-text F16</code></p>
+<h2>具体做法</h2>
+<p>环境：本机 RTX 5090D 32GB / Ollama 0.40.4，2026-10-19。</p>
+<p>【第 1 轮】基线 15206 MiB → 只挂 embedding 16017（+811）→ 再挂 14B 25176（+9159）→ 全卸 15253（归还 9923）<br>【第 2 轮】基线 15195 MiB → 只挂 embedding 16016（+821）→ 再挂 14B 25236（+9220）→ 全卸 15210（归还 10026）<br>【第 3 轮】基线 15210 MiB → 只挂 embedding 16024（+814）→ 再挂 14B 25183（+9159）→ 全卸 15209（归还 9974）</p>
+<p>【size_vram 与实占的差额】<br>· embedding：size_vram 335,743,549 B（320.2 MiB）｜显卡实占 +815 MiB｜账外 495 MiB<br>· 14B：size_vram 9,075,834,223 B（8655.4 MiB）｜显卡实占 +9179 MiB｜账外 524 MiB</p>
+<pre><code>【倍数】
+· embedding：815 / 262（权重 261.6 MiB）= 3.1 倍
+· 14B：9179 / 8572（权重 8571.6 MiB）= 1.07 倍</code></pre>
+<pre><code>【叠加性】
+· 811 + 9159 = 9970，实测合计 25176 − 15206 = 9970 → 完全相加，无共享</code></pre>
+<div class="caveat"><strong>失效边界</strong><br>本结论为本机实测（2026-10-19；RTX 5090D 32GB / Ollama 0.40.4）。测量期间本机另有常驻负载占用约 15 GiB 显存，因此所有结论均基于「增量」与「差额」，不使用显存绝对值。账外五百兆为实测增量与 size_vram 之差，其内部构成未进一步拆分，不同驱动版本可能不同。不同模型的层数、量化方式不同，固定成本占比不同，本文数字不外推到其他模型。</div>
+<div class="pager"><a href="/fix/local-14b-writing-cost-structure-20261018/">← 本地写稿成本分三层：每千字电费 0.0018 元，最贵的是重跑判断时间</a><a href="/fix/skill-md-token-tax-on-demand-20261020/" style="text-align:right">37 份技能说明书 27 万 token：按需加载撕掉七成，常驻描述只占 3.16% →</a></div>
+<p style="margin-top:30px"><a href="/fix/">← 返回全部排错方案</a></p>
+
+</main>
+<footer><div class="wrap">
+<p>本站数字均为真机实测，逐条标注验证等级（<span class="lv lv-L1">L1</span> 多次复测取中位 /
+<span class="lv lv-L0">L0</span> 单次测量）。查不到的写「未采集」，不估算。</p>
+<p>数据源自丘山录硬件实测库 · 本页生成于 2026-11-15 · <a href="/about/">数据口径与方法</a></p>
+</div></footer>
+</body>
+</html>
