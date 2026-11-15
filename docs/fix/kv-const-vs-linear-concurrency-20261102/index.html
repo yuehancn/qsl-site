@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>4B 模型显存别只算权重：权重决定装不装得下，KV 决定能挂几路 · 丘山录实测库</title>
 <meta name="description" content="EdgeRock-4B（2026-11-01 开源）把 KV 做成常数：每序列 attention KV 恒定 72 MiB、含循环矩阵的持久历史 97.76 MiB，与上下文长度无关。">
-<link rel="canonical" href="https://361365365.xyz/fix/kv-const-vs-linear-concurrency-20261102/">
+<link rel="canonical" href="https://88918888.xyz/fix/kv-const-vs-linear-concurrency-20261102/">
 <script type="application/ld+json">{"@context":"https://schema.org","@type":"TechArticle","headline":"4B 模型显存别只算权重：权重决定装不装得下，KV 决定能挂几路","datePublished":"2026-11-02","description":"EdgeRock-4B（2026-11-01 开源）把 KV 做成常数：每序列 attention KV 恒定 72 MiB、含循环矩阵的持久历史 97.76 MiB，与上下文长度无关。官方称 256K 上下文下比 Qwen3.5-4B 省 99.1%，据此反推对方一条 256K 序列要 10.61 GiB。","author":{"@type":"Person","name":"丘山录"}}</script>
 <style>
 :root{--ink:#1a1a1a;--sub:#5b6570;--line:#e3e6ea;--bg:#fff;--soft:#f7f8fa;

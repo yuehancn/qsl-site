@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>llama.cpp 纯 CPU 跑 PLaMo 0.8B：五步命令 + 线程扫到饱和点 · 丘山录实测库</title>
 <meta name="description" content="一台没有显卡的机器也能跑 0.8B 翻译模型：546.6 MiB 的 GGUF，4 核老机器全核 7.59 tok/s 已经能用，单线程只有 2.01。但 decode 在 8 线程就到顶 —— 因为瓶颈是内存带宽不是算力，同一台机器 prefill 却能一路涨到 20 线程。">
-<link rel="canonical" href="https://361365365.xyz/fix/plamo-cpu-llamacpp-tutorial-20261106/">
+<link rel="canonical" href="https://88918888.xyz/fix/plamo-cpu-llamacpp-tutorial-20261106/">
 <script type="application/ld+json">{"@context":"https://schema.org","@type":"TechArticle","headline":"llama.cpp 纯 CPU 跑 PLaMo 0.8B：五步命令 + 线程扫到饱和点","datePublished":"2026-11-06","description":"一台没有显卡的机器也能跑 0.8B 翻译模型：546.6 MiB 的 GGUF，4 核老机器全核 7.59 tok/s 已经能用，单线程只有 2.01。但 decode 在 8 线程就到顶 —— 因为瓶颈是内存带宽不是算力，同一台机器 prefill 却能一路涨到 20 线程。五步命令从零到出译文，附「什么机器在哪一档」的对号入座表。","author":{"@type":"Person","name":"丘山录"}}</script>
 <style>
 :root{--ink:#1a1a1a;--sub:#5b6570;--line:#e3e6ea;--bg:#fff;--soft:#f7f8fa;

@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>标称 4bit 其实是 4.9961，每参数多占 25% 内存 · 丘山录实测库</title>
 <meta name="description" content="把 GGUF 每个量化档的文件字节数除以官方参数量，得到真实位宽：Q4_K_M 4.9961、Q5_K_M 5.7649、Q6_K 6.5816、Q8_0 8.5189、F16 16.0181 bit/参。">
-<link rel="canonical" href="https://361365365.xyz/fix/gguf-real-bitwidth-account-20261115/">
+<link rel="canonical" href="https://88918888.xyz/fix/gguf-real-bitwidth-account-20261115/">
 <script type="application/ld+json">{"@context":"https://schema.org","@type":"TechArticle","headline":"标称 4bit 其实是 4.9961，每参数多占 25% 内存","datePublished":"2026-11-15","description":"把 GGUF 每个量化档的文件字节数除以官方参数量，得到真实位宽：Q4_K_M 4.9961、Q5_K_M 5.7649、Q6_K 6.5816、Q8_0 8.5189、F16 16.0181 bit/参。多出来的部分是量化块的缩放因子、最小值与对齐填充，而且按比例放大：每 10 亿参数 Q4_K_M 占 595.58MiB，按「4bit」算应是 476.8MiB，多 24.9%。","author":{"@type":"Person","name":"丘山录"}}</script>
 <style>
 :root{--ink:#1a1a1a;--sub:#5b6570;--line:#e3e6ea;--bg:#fff;--soft:#f7f8fa;

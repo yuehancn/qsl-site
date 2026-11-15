@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>看到「KV 省 75%」别急着信：去 config 数层数，30 秒能验算完 · 丘山录实测库</title>
 <meta name="description" content="Kimi Linear 48B-A3B 官方称 KV 最多省 75%。翻 config：27 层里 7 层全注意力、20 层是线性注意力，20/27 = 74.07% —— 节省比例恒等于线性层占比，因为线性层状态是固定大小不随序列增长。">
-<link rel="canonical" href="https://361365365.xyz/fix/linear-attn-kv-estimate-20261101/">
+<link rel="canonical" href="https://88918888.xyz/fix/linear-attn-kv-estimate-20261101/">
 <script type="application/ld+json">{"@context":"https://schema.org","@type":"TechArticle","headline":"看到「KV 省 75%」别急着信：去 config 数层数，30 秒能验算完","datePublished":"2026-11-01","description":"Kimi Linear 48B-A3B 官方称 KV 最多省 75%。翻 config：27 层里 7 层全注意力、20 层是线性注意力，20/27 = 74.07% —— 节省比例恒等于线性层占比，因为线性层状态是固定大小不随序列增长。但省的是 KV 不是权重：1M 上下文仍要 120.28 GB KV，权重仍是 98.25 GB。省 KV 换的是长上下文可行，不是小机器能跑。","author":{"@type":"Person","name":"丘山录"}}</script>
 <style>
 :root{--ink:#1a1a1a;--sub:#5b6570;--line:#e3e6ea;--bg:#fff;--soft:#f7f8fa;

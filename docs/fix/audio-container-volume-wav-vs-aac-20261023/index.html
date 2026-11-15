@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>降采样不省体积：24k MP3 降到 16k 存 WAV，反而胖 5.33 倍 · 丘山录实测库</title>
 <meta name="description" content="降采样降的是精度，不是体积；体积是容器说了算的。本机 43 部成片的配音从 24 kHz 单声道 MP3 转成 16 kHz 单声道 WAV，体积从 28.9 MiB 涨到 154.1 MiB，每一部都恰好是 5.33 倍。">
-<link rel="canonical" href="https://361365365.xyz/fix/audio-container-volume-wav-vs-aac-20261023/">
+<link rel="canonical" href="https://88918888.xyz/fix/audio-container-volume-wav-vs-aac-20261023/">
 <script type="application/ld+json">{"@context":"https://schema.org","@type":"TechArticle","headline":"降采样不省体积：24k MP3 降到 16k 存 WAV，反而胖 5.33 倍","datePublished":"2026-10-23","description":"降采样降的是精度，不是体积；体积是容器说了算的。本机 43 部成片的配音从 24 kHz 单声道 MP3 转成 16 kHz 单声道 WAV，体积从 28.9 MiB 涨到 154.1 MiB，每一部都恰好是 5.33 倍。原因不在采样率而在容器：MP3 48 kbps 每秒只写 6000 字节，WAV 的 pcm_s16le 每秒写 16000 × 16 ÷ 8 = 32000 字节。","author":{"@type":"Person","name":"丘山录"}}</script>
 <style>
 :root{--ink:#1a1a1a;--sub:#5b6570;--line:#e3e6ea;--bg:#fff;--soft:#f7f8fa;

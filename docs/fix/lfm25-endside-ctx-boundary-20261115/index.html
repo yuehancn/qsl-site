@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>1.2B 的模型，697MB，3.9G 盒子上只能开官方一半的上下文 · 丘山录实测库</title>
 <meta name="description" content="LFM2.5-1.2B-Instruct 的 16 层里只有 6 层存 KV（位置 2/5/8/10/12/14），另 10 层是卷积层，压根没有 KV cache。">
-<link rel="canonical" href="https://361365365.xyz/fix/lfm25-endside-ctx-boundary-20261115/">
+<link rel="canonical" href="https://88918888.xyz/fix/lfm25-endside-ctx-boundary-20261115/">
 <script type="application/ld+json">{"@context":"https://schema.org","@type":"TechArticle","headline":"1.2B 的模型，697MB，3.9G 盒子上只能开官方一半的上下文","datePublished":"2026-11-15","description":"LFM2.5-1.2B-Instruct 的 16 层里只有 6 层存 KV（位置 2/5/8/10/12/14），另 10 层是卷积层，压根没有 KV cache。按官方 config 手算每 token 12,288 字节，实测六档上下文下进程 RSS 斜率得 12,339.5 字节，比值 1.004。","author":{"@type":"Person","name":"丘山录"}}</script>
 <style>
 :root{--ink:#1a1a1a;--sub:#5b6570;--line:#e3e6ea;--bg:#fff;--soft:#f7f8fa;

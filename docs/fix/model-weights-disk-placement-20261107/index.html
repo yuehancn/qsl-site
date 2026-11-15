@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>本地部署模型放哪块盘：三介质同一套方法测出来的配盘顺序 · 丘山录实测库</title>
 <meta name="description" content="同一份 288.46GB 权重，DGX Spark #1 板载 NVMe 读进去 25 秒，NAS 上 0.93 小时，差 135 倍。三种介质用同一套方法（绕页缓存 / 每线程 1GB / 栅栏同步 / 缓冲区预置在计时外）各测一遍，得到三条形状完全不同的曲线：本地盘加线程反而变慢（0.">
-<link rel="canonical" href="https://361365365.xyz/fix/model-weights-disk-placement-20261107/">
+<link rel="canonical" href="https://88918888.xyz/fix/model-weights-disk-placement-20261107/">
 <script type="application/ld+json">{"@context":"https://schema.org","@type":"TechArticle","headline":"本地部署模型放哪块盘：三介质同一套方法测出来的配盘顺序","datePublished":"2026-11-07","description":"同一份 288.46GB 权重，DGX Spark #1 板载 NVMe 读进去 25 秒，NAS 上 0.93 小时，差 135 倍。三种介质用同一套方法（绕页缓存 / 每线程 1GB / 栅栏同步 / 缓冲区预置在计时外）各测一遍，得到三条形状完全不同的曲线：本地盘加线程反而变慢（0.87 倍），NAS 2 线程就饱和（1.37 倍）。附可复现的四步链路与两个必踩的测量坑。","author":{"@type":"Person","name":"丘山录"}}</script>
 <style>
 :root{--ink:#1a1a1a;--sub:#5b6570;--line:#e3e6ea;--bg:#fff;--soft:#f7f8fa;

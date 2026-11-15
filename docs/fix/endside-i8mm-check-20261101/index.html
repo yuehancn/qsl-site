@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>端侧设备选型先查指令集：缺 i8mm 的机器，int8 量化比 fp32 慢 47 倍 · 丘山录实测库</title>
 <meta name="description" content="一台 4 核 ARM 端侧机（Cortex-A55）实测：int8 512³ 矩阵乘 0.98182 秒，fp32 512³ 只要 0.02090 秒，int8 反而慢 47 倍。根因是 CPU 特性行有 asimd/asimddp/asimdhp 但缺 i8mm，量化推理只能走整数模拟路径。">
-<link rel="canonical" href="https://361365365.xyz/fix/endside-i8mm-check-20261101/">
+<link rel="canonical" href="https://88918888.xyz/fix/endside-i8mm-check-20261101/">
 <script type="application/ld+json">{"@context":"https://schema.org","@type":"TechArticle","headline":"端侧设备选型先查指令集：缺 i8mm 的机器，int8 量化比 fp32 慢 47 倍","datePublished":"2026-11-01","description":"一台 4 核 ARM 端侧机（Cortex-A55）实测：int8 512³ 矩阵乘 0.98182 秒，fp32 512³ 只要 0.02090 秒，int8 反而慢 47 倍。根因是 CPU 特性行有 asimd/asimddp/asimdhp 但缺 i8mm，量化推理只能走整数模拟路径。同一句标量循环，同核数跨架构差 2.4 倍。","author":{"@type":"Person","name":"丘山录"}}</script>
 <style>
 :root{--ink:#1a1a1a;--sub:#5b6570;--line:#e3e6ea;--bg:#fff;--soft:#f7f8fa;

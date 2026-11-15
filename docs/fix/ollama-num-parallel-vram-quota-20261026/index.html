@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>OLLAMA_NUM_PARALLEL 不是并发开关，是显存配额：一个槽位 6 GiB · 丘山录实测库</title>
 <meta name="description" content="把 NUM_PARALLEL 从 1 调到 2，KV cache 从 6144 变 12288 MiB（正好两倍），模型本体 8148 MiB 不动；调到 4 时总量预计 32877 MiB &gt; 卡上 32606 MiB，直接 500 崩溃并报 CUDA 初始化失败。">
-<link rel="canonical" href="https://361365365.xyz/fix/ollama-num-parallel-vram-quota-20261026/">
+<link rel="canonical" href="https://88918888.xyz/fix/ollama-num-parallel-vram-quota-20261026/">
 <script type="application/ld+json">{"@context":"https://schema.org","@type":"TechArticle","headline":"OLLAMA_NUM_PARALLEL 不是并发开关，是显存配额：一个槽位 6 GiB","datePublished":"2026-10-26","description":"把 NUM_PARALLEL 从 1 调到 2，KV cache 从 6144 变 12288 MiB（正好两倍），模型本体 8148 MiB 不动；调到 4 时总量预计 32877 MiB > 卡上 32606 MiB，直接 500 崩溃并报 CUDA 初始化失败。","author":{"@type":"Person","name":"丘山录"}}</script>
 <style>
 :root{--ink:#1a1a1a;--sub:#5b6570;--line:#e3e6ea;--bg:#fff;--soft:#f7f8fa;

@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>模型文件先读头再加载：260 KB 看清 1438 个张量，别让加载器替你全读 16 GiB · 丘山录实测库</title>
 <meta name="description" content="safetensors 的文件结构是「8 字节头长度 + 一段 JSON + 权重数据」，JSON 里写明每个张量的名字、形状、精度和字节偏移。所以想查清一个模型到底装了什么、精度是不是它标的那样、值不值得重下，只需要读那一段 JSON，不用碰权重。">
-<link rel="canonical" href="https://361365365.xyz/fix/safetensors-header-inspect-read-amplification-20261021/">
+<link rel="canonical" href="https://88918888.xyz/fix/safetensors-header-inspect-read-amplification-20261021/">
 <script type="application/ld+json">{"@context":"https://schema.org","@type":"TechArticle","headline":"模型文件先读头再加载：260 KB 看清 1438 个张量，别让加载器替你全读 16 GiB","datePublished":"2026-10-21","description":"safetensors 的文件结构是「8 字节头长度 + 一段 JSON + 权重数据」，JSON 里写明每个张量的名字、形状、精度和字节偏移。所以想查清一个模型到底装了什么、精度是不是它标的那样、值不值得重下，只需要读那一段 JSON，不用碰权重。","author":{"@type":"Person","name":"丘山录"}}</script>
 <style>
 :root{--ink:#1a1a1a;--sub:#5b6570;--line:#e3e6ea;--bg:#fff;--soft:#f7f8fa;

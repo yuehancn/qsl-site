@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>本地部署的时间账：加载慢一半不怪硬盘，卡人的是第一次搬权重 · 丘山录实测库</title>
 <meta name="description" content="同机实测 NVMe 顺序读 2.3 GB/s（绕过 page cache），610 MB 模型纯 IO 只需 0.27 秒，而实测加载要 0.54 秒——差的那一半在解析 GGUF 和建映射，换再贵的盘也省不掉。">
-<link rel="canonical" href="https://361365365.xyz/fix/model-weight-io-budget-20261030/">
+<link rel="canonical" href="https://88918888.xyz/fix/model-weight-io-budget-20261030/">
 <script type="application/ld+json">{"@context":"https://schema.org","@type":"TechArticle","headline":"本地部署的时间账：加载慢一半不怪硬盘，卡人的是第一次搬权重","datePublished":"2026-10-30","description":"同机实测 NVMe 顺序读 2.3 GB/s（绕过 page cache），610 MB 模型纯 IO 只需 0.27 秒，而实测加载要 0.54 秒——差的那一半在解析 GGUF 和建映射，换再贵的盘也省不掉。真正拉开量级的是第一次拿到权重：69 GB 按实测 16.1 MB/s 的公网带宽要 71.4 分钟，从本地盘读只要 30 秒，差 144 倍。本地部署的第一笔账不是显卡钱，是时间钱。","author":{"@type":"Person","name":"丘山录"}}</script>
 <style>
 :root{--ink:#1a1a1a;--sub:#5b6570;--line:#e3e6ea;--bg:#fff;--soft:#f7f8fa;

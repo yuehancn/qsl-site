@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>本地部署大模型要多少显存：权重只是首付，KV 才是月供 · 丘山录实测库</title>
 <meta name="description" content="算显存只算权重的结果一定会崩。真实账单 = 权重 + KV 缓存 + 固定开销。以 Nanbeige4.3-33B（33B 稠密）为例：bf16 权重 66,238,009,168 B = 61.69 GiB；">
-<link rel="canonical" href="https://361365365.xyz/fix/llm-vram-weight-plus-kv-20261027/">
+<link rel="canonical" href="https://88918888.xyz/fix/llm-vram-weight-plus-kv-20261027/">
 <script type="application/ld+json">{"@context":"https://schema.org","@type":"TechArticle","headline":"本地部署大模型要多少显存：权重只是首付，KV 才是月供","datePublished":"2026-10-27","description":"算显存只算权重的结果一定会崩。真实账单 = 权重 + KV 缓存 + 固定开销。以 Nanbeige4.3-33B（33B 稠密）为例：bf16 权重 66,238,009,168 B = 61.69 GiB；KV 每 token = 2×52层×8头×128维×2字节 = 212,992 B（208 KiB），512K 满上下文要 106,496 MiB = 104 GiB；","author":{"@type":"Person","name":"丘山录"}}</script>
 <style>
 :root{--ink:#1a1a1a;--sub:#5b6570;--line:#e3e6ea;--bg:#fff;--soft:#f7f8fa;

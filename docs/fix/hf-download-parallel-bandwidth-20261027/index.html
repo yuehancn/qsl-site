@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>本地部署拉模型权重：8 线程只快 1.77 倍，卡的是链路不是线程 · 丘山录实测库</title>
 <meta name="description" content="分块并发下载能加速，但收益远低于线程数。本机对 hf-mirror.com 实测：单线程 2.68 MiB/s，并发 2/4/8 得 3.85/4.34/4.73 MiB/s，加速比 1.00/1.44/1.62/1.77 倍。">
-<link rel="canonical" href="https://361365365.xyz/fix/hf-download-parallel-bandwidth-20261027/">
+<link rel="canonical" href="https://88918888.xyz/fix/hf-download-parallel-bandwidth-20261027/">
 <script type="application/ld+json">{"@context":"https://schema.org","@type":"TechArticle","headline":"本地部署拉模型权重：8 线程只快 1.77 倍，卡的是链路不是线程","datePublished":"2026-10-27","description":"分块并发下载能加速，但收益远低于线程数。本机对 hf-mirror.com 实测：单线程 2.68 MiB/s，并发 2/4/8 得 3.85/4.34/4.73 MiB/s，加速比 1.00/1.44/1.62/1.77 倍。关键是每条线程分到的带宽从 2.68 掉到 1.93/1.09/0.59 MiB/s —— 掉到 22% 说明总数不是线程能力，是链路容量。","author":{"@type":"Person","name":"丘山录"}}</script>
 <style>
 :root{--ink:#1a1a1a;--sub:#5b6570;--line:#e3e6ea;--bg:#fff;--soft:#f7f8fa;

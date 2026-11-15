@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>DGX Spark 升级模型没删旧权重：四台白占 1.4TB，其中 616.90 GiB 是硬链接假象 · 丘山录实测库</title>
 <meta name="description" content="「删了旧目录却没释放空间」的排查法：先按 inode 去重算真实体积，再看链接计数（%n）。本机四台 DGX Spark 实测：每台旧权重 476 GiB，四台名义合计 2,089.">
-<link rel="canonical" href="https://361365365.xyz/fix/dgx-spark-hardlink-dup-disk-20261024/">
+<link rel="canonical" href="https://88918888.xyz/fix/dgx-spark-hardlink-dup-disk-20261024/">
 <script type="application/ld+json">{"@context":"https://schema.org","@type":"TechArticle","headline":"DGX Spark 升级模型没删旧权重：四台白占 1.4TB，其中 616.90 GiB 是硬链接假象","datePublished":"2026-10-24","description":"「删了旧目录却没释放空间」的排查法：先按 inode 去重算真实体积，再看链接计数（%n）。本机四台 DGX Spark 实测：每台旧权重 476 GiB，四台名义合计 2,089.92 GiB，但 Spark #1 的旧目录与 HF 缓存是同一批 inode（links=2），单删一侧零释放 → 真实可释放只有 1,473.02 GiB，差 616.90 GiB 是算重了。","author":{"@type":"Person","name":"丘山录"}}</script>
 <style>
 :root{--ink:#1a1a1a;--sub:#5b6570;--line:#e3e6ea;--bg:#fff;--soft:#f7f8fa;

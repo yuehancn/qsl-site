@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>显存明明够却 OOM：先看报错里 reserved but unallocated 是不是大于 1GB · 丘山录实测库</title>
 <meta name="description" content="按计算显存明明够，还是报 CUDA out of memory —— 但报错里那句「If reserved but unallocated memory is large」暴露了真相：显存被缓存分配器预留成碎片了，空闲总量够、却没有连续的一大块。">
-<link rel="canonical" href="https://361365365.xyz/fix/vram-fragmentation-vs-oom-20261006/">
+<link rel="canonical" href="https://88918888.xyz/fix/vram-fragmentation-vs-oom-20261006/">
 <script type="application/ld+json">{"@context":"https://schema.org","@type":"TechArticle","headline":"显存明明够却 OOM：先看报错里 reserved but unallocated 是不是大于 1GB","datePublished":"2026-10-06","description":"按计算显存明明够，还是报 CUDA out of memory —— 但报错里那句「If reserved but unallocated memory is large」暴露了真相：显存被缓存分配器预留成碎片了，空闲总量够、却没有连续的一大块。这和「真显存不足」的处置方向不同：真不足要降负载，碎片要调分配器（expandable_segments）或重启进程。","author":{"@type":"Person","name":"丘山录"}}</script>
 <style>
 :root{--ink:#1a1a1a;--sub:#5b6570;--line:#e3e6ea;--bg:#fff;--soft:#f7f8fa;

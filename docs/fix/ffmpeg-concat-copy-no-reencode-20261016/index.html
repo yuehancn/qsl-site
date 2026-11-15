@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>ffmpeg 拼片头不该重编：加 7 秒，全片被重走一遍编码器 · 丘山录实测库</title>
 <meta name="description" content="成片加 3 秒片头 + 4 秒片尾，两段合计只占发布版体积 1.6%，但产线的 concat 步骤把 116.4 秒正片整段用 libx264 重编了一遍，多出 725,385 字节 = +10.05%。">
-<link rel="canonical" href="https://361365365.xyz/fix/ffmpeg-concat-copy-no-reencode-20261016/">
+<link rel="canonical" href="https://88918888.xyz/fix/ffmpeg-concat-copy-no-reencode-20261016/">
 <script type="application/ld+json">{"@context":"https://schema.org","@type":"TechArticle","headline":"ffmpeg 拼片头不该重编：加 7 秒，全片被重走一遍编码器","datePublished":"2026-10-16","description":"成片加 3 秒片头 + 4 秒片尾，两段合计只占发布版体积 1.6%，但产线的 concat 步骤把 116.4 秒正片整段用 libx264 重编了一遍，多出 725,385 字节 = +10.05%。","author":{"@type":"Person","name":"丘山录"}}</script>
 <style>
 :root{--ink:#1a1a1a;--sub:#5b6570;--line:#e3e6ea;--bg:#fff;--soft:#f7f8fa;

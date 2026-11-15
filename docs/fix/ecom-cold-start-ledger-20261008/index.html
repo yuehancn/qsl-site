@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>出图产能账：把冷启动的那 7 秒算进去 · 丘山录实测库</title>
 <meta name="description" content="同一套出图工作流、同一台卡、同一模型，首轮 24.99 秒、次轮 17.63 秒（差 41.7%）——差的不是推理，是把 checkpoint 从磁盘搬进显存的固定开销。">
-<link rel="canonical" href="https://361365365.xyz/fix/ecom-cold-start-ledger-20261008/">
+<link rel="canonical" href="https://88918888.xyz/fix/ecom-cold-start-ledger-20261008/">
 <script type="application/ld+json">{"@context":"https://schema.org","@type":"TechArticle","headline":"出图产能账：把冷启动的那 7 秒算进去","datePublished":"2026-10-08","description":"同一套出图工作流、同一台卡、同一模型，首轮 24.99 秒、次轮 17.63 秒（差 41.7%）——差的不是推理，是把 checkpoint 从磁盘搬进显存的固定开销。按稳态 17.63 秒估产能会高估日产能：常驻批量 204 张/时 vs 一单一跑 144 张/时，同机同模型 8 小时差 481 张。是否让模型常驻，取决于接单颗粒度。","author":{"@type":"Person","name":"丘山录"}}</script>
 <style>
 :root{--ink:#1a1a1a;--sub:#5b6570;--line:#e3e6ea;--bg:#fff;--soft:#f7f8fa;

@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>SDXL 开 batch=4 之前先算显存余量：16GB 卡批完只剩 389MB，省不到 3% · 丘山录实测库</title>
 <meta name="description" content="批量出图省下的时间不是算力换来的，是显存余量换来的。同一个 batch=4，本机 RTX 5090D（32GB）4 张总耗时 16.69 秒，比一张张跑（4×4.98=19.92 秒）省 16.2%；">
-<link rel="canonical" href="https://361365365.xyz/fix/sdxl-batch-parallel-vram-tradeoff-20261022/">
+<link rel="canonical" href="https://88918888.xyz/fix/sdxl-batch-parallel-vram-tradeoff-20261022/">
 <script type="application/ld+json">{"@context":"https://schema.org","@type":"TechArticle","headline":"SDXL 开 batch=4 之前先算显存余量：16GB 卡批完只剩 389MB，省不到 3%","datePublished":"2026-10-22","description":"批量出图省下的时间不是算力换来的，是显存余量换来的。同一个 batch=4，本机 RTX 5090D（32GB）4 张总耗时 16.69 秒，比一张张跑（4×4.98=19.92 秒）省 16.2%；RTX 5060Ti（16GB）64.99 秒 vs 4×16.68=66.72 秒，只省 2.6%——收益差 6.2 倍，而两张卡的算力倍数只有 3.35 倍。","author":{"@type":"Person","name":"丘山录"}}</script>
 <style>
 :root{--ink:#1a1a1a;--sub:#5b6570;--line:#e3e6ea;--bg:#fff;--soft:#f7f8fa;

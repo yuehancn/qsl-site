@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>本地服务起来了、API 却调不通：先 curl，curl 通就是客户端的事 · 丘山录实测库</title>
 <meta name="description" content="本地推理服务明明起来了，OpenAI 客户端却报 401 或 404 —— 九成是路径、鉴权、端口三处里的一处对不上：客户端默认请求 /v1/chat/completions，服务实际可能是别的路径；服务要 API key 而客户端没带；或干脆连错了端口。">
-<link rel="canonical" href="https://361365365.xyz/fix/openai-compatible-api-401-404-20261006/">
+<link rel="canonical" href="https://88918888.xyz/fix/openai-compatible-api-401-404-20261006/">
 <script type="application/ld+json">{"@context":"https://schema.org","@type":"TechArticle","headline":"本地服务起来了、API 却调不通：先 curl，curl 通就是客户端的事","datePublished":"2026-10-06","description":"本地推理服务明明起来了，OpenAI 客户端却报 401 或 404 —— 九成是路径、鉴权、端口三处里的一处对不上：客户端默认请求 /v1/chat/completions，服务实际可能是别的路径；服务要 API key 而客户端没带；或干脆连错了端口。最快的判据是 curl 直连 /v1/models：curl 通说明服务没问题，问题一定在客户端配置。","author":{"@type":"Person","name":"丘山录"}}</script>
 <style>
 :root{--ink:#1a1a1a;--sub:#5b6570;--line:#e3e6ea;--bg:#fff;--soft:#f7f8fa;

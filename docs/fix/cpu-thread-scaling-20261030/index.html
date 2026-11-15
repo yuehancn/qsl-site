@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>CPU 跑本地大模型，线程数配错会让 80 核输给 8 核 · 丘山录实测库</title>
 <meta name="description" content="同一台双路 Xeon（80 逻辑核）跑 0.6B 小模型，线程数从 1 扫到 80：峰值出现在 8 线程（36.27 tok/s），16 线程不再涨，20 线程掉 24%，开满 80 线程只剩 11.04 tok/s——几乎退回单线程水平（10.61）。">
-<link rel="canonical" href="https://361365365.xyz/fix/cpu-thread-scaling-20261030/">
+<link rel="canonical" href="https://88918888.xyz/fix/cpu-thread-scaling-20261030/">
 <script type="application/ld+json">{"@context":"https://schema.org","@type":"TechArticle","headline":"CPU 跑本地大模型，线程数配错会让 80 核输给 8 核","datePublished":"2026-10-30","description":"同一台双路 Xeon（80 逻辑核）跑 0.6B 小模型，线程数从 1 扫到 80：峰值出现在 8 线程（36.27 tok/s），16 线程不再涨，20 线程掉 24%，开满 80 线程只剩 11.04 tok/s——几乎退回单线程水平（10.61）。再加一层 NUMA：同样 8 线程，绑在单节点内 36.27，跨节点只有 29.35，白丢 19%。","author":{"@type":"Person","name":"丘山录"}}</script>
 <style>
 :root{--ink:#1a1a1a;--sub:#5b6570;--line:#e3e6ea;--bg:#fff;--soft:#f7f8fa;

@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>并发加到 16 吞吐反而没涨：找到收益天花板与实用拐点 · 丘山录实测库</title>
 <meta name="description" content="把并发从 1 一路加到 16，吞吐涨到并发 8 就停住了，16 甚至略降（148.95 → 148.22 tok/s），但单请求等待从 13.13 秒涨到 20.24 秒。结论：并发 4 是实用拐点，8 是收益天花板，16 是纯亏。">
-<link rel="canonical" href="https://361365365.xyz/fix/llm-concurrency-ceiling-20260930/">
+<link rel="canonical" href="https://88918888.xyz/fix/llm-concurrency-ceiling-20260930/">
 <script type="application/ld+json">{"@context":"https://schema.org","@type":"TechArticle","headline":"并发加到 16 吞吐反而没涨：找到收益天花板与实用拐点","datePublished":"2026-09-30","description":"把并发从 1 一路加到 16，吞吐涨到并发 8 就停住了，16 甚至略降（148.95 → 148.22 tok/s），但单请求等待从 13.13 秒涨到 20.24 秒。结论：并发 4 是实用拐点，8 是收益天花板，16 是纯亏。加并发的真实含义不是「让系统变快」，而是把一个人的等待摊到所有人头上。","author":{"@type":"Person","name":"丘山录"}}</script>
 <style>
 :root{--ink:#1a1a1a;--sub:#5b6570;--line:#e3e6ea;--bg:#fff;--soft:#f7f8fa;

@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Ollama 默认吃 14.3G 显存，改一个参数降到 9.7G（16GB 卡装不下 14B 的真原因） · 丘山录实测库</title>
 <meta name="description" content="同一台 5090D、同一个 qwen2.5:14b（Q4_K_M，9.0GB），只改上下文长度 num_ctx：2048/4096/8192/16384/32768 → 实际显存 8.45/8.83/9.71/11.23/14.26 GiB。">
-<link rel="canonical" href="https://361365365.xyz/fix/ollama-num-ctx-vram-ledger-20261015/">
+<link rel="canonical" href="https://88918888.xyz/fix/ollama-num-ctx-vram-ledger-20261015/">
 <script type="application/ld+json">{"@context":"https://schema.org","@type":"TechArticle","headline":"Ollama 默认吃 14.3G 显存，改一个参数降到 9.7G（16GB 卡装不下 14B 的真原因）","datePublished":"2026-10-15","description":"同一台 5090D、同一个 qwen2.5:14b（Q4_K_M，9.0GB），只改上下文长度 num_ctx：2048/4096/8192/16384/32768 → 实际显存 8.45/8.83/9.71/11.23/14.26 GiB。模型本体一直 9.0GB 没变，多出来全是 KV 缓存 —— 2048 拉到 32768 多占 5.80 GiB（约 198 KB/token）。","author":{"@type":"Person","name":"丘山录"}}</script>
 <style>
 :root{--ink:#1a1a1a;--sub:#5b6570;--line:#e3e6ea;--bg:#fff;--soft:#f7f8fa;

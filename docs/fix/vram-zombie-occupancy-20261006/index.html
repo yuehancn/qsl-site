@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>显存没释放不是显卡坏了：先分清「真占用」和「残进程虚占」 · 丘山录实测库</title>
 <meta name="description" content="nvidia-smi 显示显存被占了好几 G，但进程列表里看不到程序 —— 这是上个任务异常退出（崩溃或被强杀）后 CUDA context 没归还留下的「虚占」。它和「真显存不足」的处置完全相反：真不足要降负载，虚占要杀残进程或重启服务。">
-<link rel="canonical" href="https://361365365.xyz/fix/vram-zombie-occupancy-20261006/">
+<link rel="canonical" href="https://88918888.xyz/fix/vram-zombie-occupancy-20261006/">
 <script type="application/ld+json">{"@context":"https://schema.org","@type":"TechArticle","headline":"显存没释放不是显卡坏了：先分清「真占用」和「残进程虚占」","datePublished":"2026-10-06","description":"nvidia-smi 显示显存被占了好几 G，但进程列表里看不到程序 —— 这是上个任务异常退出（崩溃或被强杀）后 CUDA context 没归还留下的「虚占」。它和「真显存不足」的处置完全相反：真不足要降负载，虚占要杀残进程或重启服务。判据只有一条：nvidia-smi 的进程列表里那部分占用到底有没有 PID。","author":{"@type":"Person","name":"丘山录"}}</script>
 <style>
 :root{--ink:#1a1a1a;--sub:#5b6570;--line:#e3e6ea;--bg:#fff;--soft:#f7f8fa;

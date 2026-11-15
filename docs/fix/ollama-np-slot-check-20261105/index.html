@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Ollama 并发该开几个槽：峰值在 4 槽，16 槽比单槽还慢 · 丘山录实测库</title>
 <meta name="description" content="同一台 5090D 跑 qwen2.5:14b，五档槽位扫描：61.25 → 97.33 → 180.92 → 158.82 → 55.71 tok/s，峰值在 4 槽，开到 16 槽比只开 1 槽还低 9%。">
-<link rel="canonical" href="https://361365365.xyz/fix/ollama-np-slot-check-20261105/">
+<link rel="canonical" href="https://88918888.xyz/fix/ollama-np-slot-check-20261105/">
 <script type="application/ld+json">{"@context":"https://schema.org","@type":"TechArticle","headline":"Ollama 并发该开几个槽：峰值在 4 槽，16 槽比单槽还慢","datePublished":"2026-11-05","description":"同一台 5090D 跑 qwen2.5:14b，五档槽位扫描：61.25 → 97.33 → 180.92 → 158.82 → 55.71 tok/s，峰值在 4 槽，开到 16 槽比只开 1 槽还低 9%。原因是 Ollama 在显存不够时不报错，而是把 KV 和部分权重悄悄搬到内存走 PCIe。三步能在你调 NUM_PARALLEL 之前把该开几槽算清。","author":{"@type":"Person","name":"丘山录"}}</script>
 <style>
 :root{--ink:#1a1a1a;--sub:#5b6570;--line:#e3e6ea;--bg:#fff;--soft:#f7f8fa;

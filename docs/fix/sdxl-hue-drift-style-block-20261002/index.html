@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>SDXL 批量出图跑色：加一段风格块把色相漂移压掉四成 · 丘山录实测库</title>
 <meta name="description" content="同一提示词只换 seed，SDXL 出的 8 张图跨了 4 个色系（青绿山水/红枫版画/暖米复古/宣纸留白），跨图色相极差 80.35°、圆标准差 23.36°。根因不是模型不稳定，是提示词只写了&quot;平涂/海报风&quot;却没写用什么颜色 —— 模型在没被约束的维度上每次重新抽签。">
-<link rel="canonical" href="https://361365365.xyz/fix/sdxl-hue-drift-style-block-20261002/">
+<link rel="canonical" href="https://88918888.xyz/fix/sdxl-hue-drift-style-block-20261002/">
 <script type="application/ld+json">{"@context":"https://schema.org","@type":"TechArticle","headline":"SDXL 批量出图跑色：加一段风格块把色相漂移压掉四成","datePublished":"2026-10-02","description":"同一提示词只换 seed，SDXL 出的 8 张图跨了 4 个色系（青绿山水/红枫版画/暖米复古/宣纸留白），跨图色相极差 80.35°、圆标准差 23.36°。根因不是模型不稳定，是提示词只写了\"平涂/海报风\"却没写用什么颜色 —— 模型在没被约束的维度上每次重新抽签。修法：每条提示词开头逐字粘同一段风格块（含锁定色盘），尾部补一条硬命令，负面词扩一轮。","author":{"@type":"Person","name":"丘山录"}}</script>
 <style>
 :root{--ink:#1a1a1a;--sub:#5b6570;--line:#e3e6ea;--bg:#fff;--soft:#f7f8fa;

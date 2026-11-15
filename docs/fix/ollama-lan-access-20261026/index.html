@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Ollama 局域网访问怎么通：三道门 + 2.16 秒启动空窗 · 丘山录实测库</title>
 <meta name="description" content="Ollama 从「本机能用」到「别的机器能用」要过三层完全不同的检查：应用层绑定地址（OLLAMA_HOST，默认只听 127.0.0.1）、程序层来源白名单（OLLAMA_ORIGINS，默认 17 条全是本机与编辑器协议…">
-<link rel="canonical" href="https://361365365.xyz/fix/ollama-lan-access-20261026/">
+<link rel="canonical" href="https://88918888.xyz/fix/ollama-lan-access-20261026/">
 <script type="application/ld+json">{"@context":"https://schema.org","@type":"TechArticle","headline":"Ollama 局域网访问怎么通：三道门 + 2.16 秒启动空窗","datePublished":"2026-10-26","description":"Ollama 从「本机能用」到「别的机器能用」要过三层完全不同的检查：应用层绑定地址（OLLAMA_HOST，默认只听 127.0.0.1）、程序层来源白名单（OLLAMA_ORIGINS，默认 17 条全是本机与编辑器协议，命中时返回 403 且响应体长度为 0）、系统层防火墙程序规则（Windows 上 ollama.exe 入站放行规则 0 条，python.exe 是 4 条）。","author":{"@type":"Person","name":"丘山录"}}</script>
 <style>
 :root{--ink:#1a1a1a;--sub:#5b6570;--line:#e3e6ea;--bg:#fff;--soft:#f7f8fa;

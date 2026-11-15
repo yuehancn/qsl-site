@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>删环境前先导记录：环境是三层不是一整块 · 丘山录实测库</title>
 <meta name="description" content="跑不通的 venv 删掉时，删的不只是依赖（torch 一个 4.2 GB），还有「它为什么跑不通」的证据。环境其实三层：依赖层（site-packages，空间大头，可删）、配置层（pyvenv.">
-<link rel="canonical" href="https://361365365.xyz/fix/keep-failed-env-evidence-20261007/">
+<link rel="canonical" href="https://88918888.xyz/fix/keep-failed-env-evidence-20261007/">
 <script type="application/ld+json">{"@context":"https://schema.org","@type":"TechArticle","headline":"删环境前先导记录：环境是三层不是一整块","datePublished":"2026-10-07","description":"跑不通的 venv 删掉时，删的不只是依赖（torch 一个 4.2 GB），还有「它为什么跑不通」的证据。环境其实三层：依赖层（site-packages，空间大头，可删）、配置层（pyvenv.cfg / pip 配置 / 环境变量，不到 1 KB）、记录层（安装日志 / 报错原文 / 版本快照，几百字节）。删整块＝结果、原因、证据一起没了。","author":{"@type":"Person","name":"丘山录"}}</script>
 <style>
 :root{--ink:#1a1a1a;--sub:#5b6570;--line:#e3e6ea;--bg:#fff;--soft:#f7f8fa;

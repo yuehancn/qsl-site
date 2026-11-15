@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Arete-27B 装得下吗：混合注意力省 75% KV，但省不动权重 · 丘山录实测库</title>
 <meta name="description" content="Arete-27B 64 层里只有 16 层是全注意力，每 token KV 只要 64 KiB，对全 64 层口径压缩 4.00 倍，256K 上下文 KV 从 64 GiB 降到 16 GiB —— 这部分是真的。">
-<link rel="canonical" href="https://361365365.xyz/fix/arete-27b-vram-kv-account-20261108/">
+<link rel="canonical" href="https://88918888.xyz/fix/arete-27b-vram-kv-account-20261108/">
 <script type="application/ld+json">{"@context":"https://schema.org","@type":"TechArticle","headline":"Arete-27B 装得下吗：混合注意力省 75% KV，但省不动权重","datePublished":"2026-11-08","description":"Arete-27B 64 层里只有 16 层是全注意力，每 token KV 只要 64 KiB，对全 64 层口径压缩 4.00 倍，256K 上下文 KV 从 64 GiB 降到 16 GiB —— 这部分是真的。但权重一分没省：Q4_K_M 是 17.20GB（16.02 GiB），16G 卡可用 15.9 GiB，差 1.09 GiB 就是装不上。","author":{"@type":"Person","name":"丘山录"}}</script>
 <style>
 :root{--ink:#1a1a1a;--sub:#5b6570;--line:#e3e6ea;--bg:#fff;--soft:#f7f8fa;

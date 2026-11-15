@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>本地部署 Qwen3.8-Flash-Next：131 个分片怎么放盘，别急着合并 · 丘山录实测库</title>
 <meta name="description" content="360GB 权重、144 个文件、131 个分片。网上说「分片多所以加载慢」，我按同口径重测：单文件 3184.8 MB/s vs 96 分片 2928.1 MB/s，只差 8.8%。合并成一个大文件能省 9.91 秒，而合并本身要 287.8 秒 —— 净亏 28 倍。">
-<link rel="canonical" href="https://361365365.xyz/fix/llama-cpp-shard-layout-20261110/">
+<link rel="canonical" href="https://88918888.xyz/fix/llama-cpp-shard-layout-20261110/">
 <script type="application/ld+json">{"@context":"https://schema.org","@type":"TechArticle","headline":"本地部署 Qwen3.8-Flash-Next：131 个分片怎么放盘，别急着合并","datePublished":"2026-11-10","description":"360GB 权重、144 个文件、131 个分片。网上说「分片多所以加载慢」，我按同口径重测：单文件 3184.8 MB/s vs 96 分片 2928.1 MB/s，只差 8.8%。合并成一个大文件能省 9.91 秒，而合并本身要 287.8 秒 —— 净亏 28 倍。另给放盘决策表（本机 NVMe / DGX 板载 / NAS 差 73 倍）与一次跑通的命令链路。","author":{"@type":"Person","name":"丘山录"}}</script>
 <style>
 :root{--ink:#1a1a1a;--sub:#5b6570;--line:#e3e6ea;--bg:#fff;--soft:#f7f8fa;
