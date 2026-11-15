@@ -128,16 +128,18 @@ def check():
         print("    ⚠️  返回 %s（DNS 刚生效时常见 404/502，稍等再试）" % code)
         ok["HTTPS"] = False
 
-    # 5) 旧域名
-    print("\n[5] 旧域名 %s 是否已清空" % OLD)
+    # 5) 旧域名（2026-11-15 用户决定：保留给另一个网站用，不复用为本站）
+    print("\n[5] 旧域名 %s（保留专用，仅作信息展示）" % OLD)
     old_ips = resolve(OLD, "A", AUTH_NS)
     print("    实际返回: %s" % (old_ips or "无"))
     if not old_ips:
-        print("    ✅ 已无 A 记录（符合「彻底弃用」预期）")
+        print("    ℹ️  无 A 记录")
     elif set(old_ips) & GH_IPS:
-        print("    ℹ️  旧域名也指向了 GitHub（若想跳转则可保留）")
+        print("    ⚠️  指向了 GitHub IP —— 但 Pages 只认 88918888.xyz，访问会是 404")
     else:
-        print("    ⚠️  仍指向 %s —— 若已决定弃用，建议删掉" % old_ips)
+        print("    ℹ️  指向 %s（用户家宽 IP，将用于另一个网站）" % old_ips)
+        print("        与本站完全独立，不影响 88918888.xyz")
+    # 旧域名不再计入通过率：它已不是「待清理项」，而是独立资产
 
     # 总结
     print("\n" + "=" * 62)
@@ -145,7 +147,8 @@ def check():
     print("结果：%d/%d 项通过" % (passed, len(ok)))
     if ok.get("A") and ok.get("HTTPS"):
         print("🎉 域名切换完成，站点可正常访问")
-        print("   下一步：GitHub 仓库 → Settings → Pages → 勾选 Enforce HTTPS")
+        print("   下一步：确认 GitHub → Settings → Pages 的 Enforce HTTPS 已勾选")
+        print("   （2026-11-15 已开启，https_enforced=True，通常无需再操作）")
         return True
     if not ok.get("A"):
         print("⏳ 卡在 DNS：请到腾讯云 DNSPod 控制台改 %s 的 A 记录" % DOMAIN)
