@@ -3,3 +3,11 @@ _shots/
 __pycache__/
 *.pyc
 _patch.py
+
+# API 调试时 curl 写的临时响应文件（2026-11-15 误提交过一次）
+_repo.json
+_cname.json
+_pages.json
+_pages2.json
+_health.json
+_build.json
