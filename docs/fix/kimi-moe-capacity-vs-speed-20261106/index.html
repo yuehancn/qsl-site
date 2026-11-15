@@ -57,6 +57,13 @@ margin:18px 0;font-size:14.5px}
 footer{border-top:1px solid var(--line);margin-top:56px;padding:26px 0 44px;
 font-size:13px;color:var(--sub)}
 footer a{color:var(--sub)}
+.qr-box{margin:26px 0 6px;padding:20px 0 4px;border-top:1px solid var(--line);
+display:flex;gap:38px;flex-wrap:wrap;align-items:flex-start}
+.qr-item{text-align:center}
+.qr-item img{width:108px;height:108px;object-fit:contain;display:block;
+background:#fff;border:1px solid var(--line);border-radius:8px;padding:6px}
+.qr-item span{display:block;margin-top:9px;font-size:12.5px;color:var(--sub)}
+@media(max-width:560px){.qr-box{gap:26px}.qr-item img{width:96px;height:96px}}
 .pager{display:flex;justify-content:space-between;gap:16px;margin:36px 0 0;
 padding-top:20px;border-top:1px solid var(--line);font-size:14px}
 .pager a{max-width:46%}
@@ -102,6 +109,16 @@ th,td{padding:7px 9px}pre{font-size:12px}}
 <p>本站数字均为真机实测，逐条标注验证等级（<span class="lv lv-L1">L1</span> 多次复测取中位 /
 <span class="lv lv-L0">L0</span> 单次测量）。查不到的写「未采集」，不估算。</p>
 <p>数据源自丘山录硬件实测库 · 本页生成于 2026-11-15 · <a href="/about/">数据口径与方法</a></p>
+<div class="qr-box">
+<div class="qr-item">
+<img src="/assets/mp-code.png" width="108" height="108" alt="丘山录实测库小程序码" loading="lazy">
+<span>丘山录实测库 · 小程序</span>
+</div>
+<div class="qr-item">
+<img src="/assets/gzh-qr.jpg" width="108" height="108" alt="丘山录公众号二维码" loading="lazy">
+<span>丘山录 · 公众号</span>
+</div>
+</div>
 </div></footer>
 </body>
 </html>

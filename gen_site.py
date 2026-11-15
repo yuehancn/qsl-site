@@ -186,6 +186,13 @@ margin:18px 0;font-size:14.5px}
 footer{border-top:1px solid var(--line);margin-top:56px;padding:26px 0 44px;
 font-size:13px;color:var(--sub)}
 footer a{color:var(--sub)}
+.qr-box{margin:26px 0 6px;padding:20px 0 4px;border-top:1px solid var(--line);
+display:flex;gap:38px;flex-wrap:wrap;align-items:flex-start}
+.qr-item{text-align:center}
+.qr-item img{width:108px;height:108px;object-fit:contain;display:block;
+background:#fff;border:1px solid var(--line);border-radius:8px;padding:6px}
+.qr-item span{display:block;margin-top:9px;font-size:12.5px;color:var(--sub)}
+@media(max-width:560px){.qr-box{gap:26px}.qr-item img{width:96px;height:96px}}
 .pager{display:flex;justify-content:space-between;gap:16px;margin:36px 0 0;
 padding-top:20px;border-top:1px solid var(--line);font-size:14px}
 .pager a{max-width:46%}
@@ -215,6 +222,13 @@ def page(title, desc, body, canonical="", jsonld=None):
               % json.dumps(jsonld, ensure_ascii=False, separators=(",", ":")))
     canon = ('<link rel="canonical" href="https://%s/%s">' % (DOMAIN, canonical)
              if canonical else "")
+    # 🔴 页脚二维码区合规约束（2026-11-15 加，详见 二维码合规说明.md）
+    #   ① 文案禁用「扫码」「长按识别」「扫一扫」等诱导动词 —— 触发微信「诱导关注」判定
+    #   ② 图片宽度封顶 108px（约手机屏宽 1/3，微信建议的安全尺寸）
+    #   ③ 只指向微信生态内部（公众号 / 小程序），绝不指向外部平台
+    #   ④ 静态图，不用动图 / 强艺术变形（机器识别失败会被判风险）
+    #   ⚠️ 约束写在这里而不是 CSS 注释里 —— CSS 会内联进 HTML 发给浏览器，
+    #      注释既占体积又会让 grep 合规词检查误报。
     return """<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
@@ -239,6 +253,16 @@ def page(title, desc, body, canonical="", jsonld=None):
 <p>本站数字均为真机实测，逐条标注验证等级（<span class="lv lv-L1">L1</span> 多次复测取中位 /
 <span class="lv lv-L0">L0</span> 单次测量）。查不到的写「未采集」，不估算。</p>
 <p>数据源自丘山录硬件实测库 · 本页生成于 %s · <a href="/about/">数据口径与方法</a></p>
+<div class="qr-box">
+<div class="qr-item">
+<img src="/assets/mp-code.png" width="108" height="108" alt="丘山录实测库小程序码" loading="lazy">
+<span>丘山录实测库 · 小程序</span>
+</div>
+<div class="qr-item">
+<img src="/assets/gzh-qr.jpg" width="108" height="108" alt="丘山录公众号二维码" loading="lazy">
+<span>丘山录 · 公众号</span>
+</div>
+</div>
 </div></footer>
 </body>
 </html>""" % (esc(title), esc(desc), canon, ld, CSS, NAV, body, TODAY)
@@ -864,6 +888,22 @@ def main():
     if os.path.isdir(OUT):
         shutil.rmtree(OUT)
     os.makedirs(OUT)
+
+    # 🔴 静态资源必须由这里复制，不能手工往 docs/ 里放 ——
+    #    上面 rmtree(OUT) 会清空整个 docs/，手放的图下次生成就没了。
+    #    源图放 assets-src/（不被清理），生成时拷到 docs/assets/。
+    src_assets = os.path.join(BASE, "assets-src")
+    if os.path.isdir(src_assets):
+        dst_assets = os.path.join(OUT, "assets")
+        os.makedirs(dst_assets, exist_ok=True)
+        copied = 0
+        for fn in sorted(os.listdir(src_assets)):
+            p = os.path.join(src_assets, fn)
+            if os.path.isfile(p):
+                shutil.copy2(p, os.path.join(dst_assets, fn))
+                copied += 1
+        if copied:
+            print("  assets: 复制 %d 个" % copied)
 
     benches = load("benchmarks.json")
     sols = [s for s in load("solutions.json") if s.get("slug")]

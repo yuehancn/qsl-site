@@ -11,3 +11,6 @@ _pages.json
 _pages2.json
 _health.json
 _build.json
+
+# push_site.py 调 API 时的临时 payload
+_payload.json

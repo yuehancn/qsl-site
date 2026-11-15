@@ -157,18 +157,27 @@ def api_call(method, path, payload=None, token="", timeout=45):
 
 
 def try_api_push(msg):
-    """降级路径：把**本次 commit 涉及的文件**用 API 提交。"""
+    """降级路径：把**本地领先远端的全部改动文件**用 API 提交。
+
+    🔴 2026-11-15 修：原来取 `git diff HEAD~1 HEAD`，只拿最后一个 commit 的文件。
+       若最后那个 commit 恰好只有临时文件（如 _payload.json），就会误判「没有可提交的文件」，
+       而真正的改动在更早的 commit 里。改为 diff origin/main..HEAD，覆盖全部待推 commit。
+    """
     token = gh_token()
     if not token:
         return False, "拿不到 GitHub token（gh auth token 失败）"
 
-    # 本次 commit 改了哪些文件（相对上一个 commit）
-    rc, out = sh(["git", "diff", "--name-only", "HEAD~1", "HEAD"])
+    # 本地相对远端的全部改动（覆盖多个未推 commit）
+    rc, out = sh(["git", "diff", "--name-only", "origin/" + BRANCH, "HEAD"])
     if rc != 0:
         rc, out = sh(["git", "show", "--name-only", "--pretty=format:", "HEAD"])
-    files = [f.strip() for f in out.splitlines() if f.strip() and not f.startswith("_")]
+    tmp_names = {"_payload.json", "_repo.json", "_cname.json", "_pages.json",
+                 "_pages2.json", "_health.json", "_build.json"}
+    files = [f.strip() for f in out.splitlines()
+             if f.strip() and f.strip() not in tmp_names
+             and not f.strip().startswith("_payload")]
     if not files:
-        return False, "没有可提交的文件"
+        return False, "没有可提交的文件（origin/%s..HEAD 无差异）" % BRANCH
 
     ref = api_call("GET", "/repos/%s/git/ref/heads/%s" % (REPO, BRANCH), token=token)
     base = (ref.get("object") or {}).get("sha")
