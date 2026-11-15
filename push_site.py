@@ -81,25 +81,49 @@ def stage_and_commit(msg):
 
 
 def try_git_push():
-    """正常路径。返回 (ok, 说明)。"""
+    """正常路径。返回 (ok, 说明)。
+
+    🔴 若上一次是用 API 推的，本地与远端历史会分叉，git push 会被拒（non-fast-forward）。
+       这里先尝试普通 push，被拒则自动 fetch + rebase 后再试一次。
+       内容一致，rebase 不会丢东西（API 提交的文件和本地一致）。
+    """
     port = proxy_port()
-    attempts = []
+    proxies = []
     if port:
-        attempts.append(["-c", "http.proxy=" + proxy_url(),
-                         "-c", "https.proxy=" + proxy_url()])
-        attempts.append([])
-    else:
-        attempts.append([])
-    last = ""
-    for extra in attempts:
+        proxies.append(["-c", "http.proxy=" + proxy_url(),
+                        "-c", "https.proxy=" + proxy_url()])
+    proxies.append([])
+
+    def one(extra):
         args = ["git"] + extra + ["push", "origin", BRANCH]
         rc, out = sh(args, timeout=150, env={"GIT_TERMINAL_PROMPT": "0"})
+        return rc, out
+
+    last = ""
+    for extra in proxies:
+        rc, out = one(extra)
         if rc == 0 and "->" in out:
             return True, "git push 成功"
-        last = out.strip()[-300:]
-        # 已是最新也算成功
-        if "Everything up-to-date" in out or "up to date" in out:
+        if "Everything up-to-date" in out or "up to date" in out or "up-to-date" in out:
             return True, "已是最新，无需推送"
+        last = out.strip()[-400:]
+
+        # non-fast-forward → 先对齐再试一次
+        if "non-fast-forward" in out or "fetch first" in out or "rejected" in out:
+            fe = ["git"] + extra + ["fetch", "origin", BRANCH]
+            rc2, out2 = sh(fe, timeout=150, env={"GIT_TERMINAL_PROMPT": "0"})
+            if rc2 == 0:
+                rb = ["git"] + extra + ["rebase", "origin/" + BRANCH]
+                rc3, out3 = sh(rb, timeout=150, env={"GIT_TERMINAL_PROMPT": "0"})
+                if rc3 == 0:
+                    rc4, out4 = one(extra)
+                    if rc4 == 0 and "->" in out4:
+                        return True, "git push 成功（已自动 rebase 对齐远端）"
+                    last = out4.strip()[-400:]
+                else:
+                    # rebase 冲突：中止，保持工作区干净，交给 API 兜底
+                    sh(["git", "rebase", "--abort"], timeout=60)
+                    last = "rebase 冲突，已中止: " + out3.strip()[-200:]
     return False, last
 
 
