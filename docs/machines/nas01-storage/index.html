@@ -58,12 +58,15 @@ footer{border-top:1px solid var(--line);margin-top:56px;padding:26px 0 44px;
 font-size:13px;color:var(--sub)}
 footer a{color:var(--sub)}
 .qr-box{margin:26px 0 6px;padding:20px 0 4px;border-top:1px solid var(--line);
-display:flex;gap:30px;flex-wrap:wrap;align-items:flex-start}
+display:flex;gap:26px;flex-wrap:wrap;align-items:flex-start;
+/* 8 个码：容器宽限为「4 个码 + 3 个间距」，自然排成 4+4 两行（2026-11-16） */
+max-width:calc(4 * 122px + 3 * 26px)}
 .qr-item{text-align:center;flex:0 0 auto}
 .qr-item img{width:108px;height:108px;object-fit:contain;display:block;
 background:#fff;border:1px solid var(--line);border-radius:8px;padding:6px}
 .qr-item span{display:block;margin-top:9px;font-size:12.5px;color:var(--sub)}
-@media(max-width:560px){.qr-box{gap:22px}.qr-item img{width:92px;height:92px}}
+@media(max-width:560px){.qr-box{gap:18px;max-width:calc(4 * 100px + 3 * 18px)}
+.qr-item img{width:92px;height:92px}}
 .pager{display:flex;justify-content:space-between;gap:16px;margin:36px 0 0;
 padding-top:20px;border-top:1px solid var(--line);font-size:14px}
 .pager a{max-width:46%}
@@ -125,6 +128,14 @@ NAS 节点 1（原 tzAI）：存储池 + 备份 + 容器宿主
 <div class="qr-item">
 <img decoding="async" src="/assets/bilibili-code.png" width="108" height="108" alt="丘山录B站号二维码">
 <span>丘山录 · B站号</span>
+</div>
+<div class="qr-item">
+<img decoding="async" src="/assets/zhihu-code.png" width="108" height="108" alt="丘山录知乎二维码">
+<span>丘山录 · 知乎</span>
+</div>
+<div class="qr-item">
+<img decoding="async" src="/assets/csdn-code.png" width="108" height="108" alt="丘山录CSDN二维码">
+<span>丘山录 · CSDN</span>
 </div>
 </div>
 </div></footer>
