@@ -103,14 +103,14 @@ Q4_K_M  595.58 MiB（按 4bit 名义应为 476.8 MiB，多 118.7 MiB = 24.9%）<
 单档 Q4_K_M 730,895,168 B = 697.0 MiB；仓库除以单档 = 19.9 倍</code></pre>
 <p>【位宽为什么不是整数】<br>量化块要存缩放因子、最小值、对齐填充，这部分开销与权重数量同阶，所以位宽被按比例抬高：<br>4bit 档 4.99（+24.9%）；8bit 档 8.52（+6.5%）；F16 无量化块 16.02（+0.1%）<br>档位越低，名义与实际的偏离越大，「4bit 省一半」这个直觉在低位宽上最不准。</p>
 <div class="caveat"><strong>失效边界</strong><br>本文不含任何模型加载或推理，全部是「逐文件字节数除以官方参数量」的算术值，因此没有 tok/s、没有显存占用实测。1000 亿参数为按位宽等比外推的示例量级，不是某个具体模型的实测占用；真实模型还有 KV cache、框架开销与激活内存，实际需求高于权重本身。位宽里的元数据开销随量化实现不同会浮动，Q4_K_M 在不同模型上大致在 4.9 到 5.1 之间，不是恒定 4.9961。GB 与 GiB 在文中分别标注；1 MiB = 1,048,576 字节。</div>
-<div class="pager"><a href="/fix/praxis1-download-gate-before-vram-20261113/">← 本地部署 Praxis-1 卡在 80GB 之前：真正拦住你的是 11.6 天</a><a href="/fix/sdxl-resolution-wall-20261014/" style="text-align:right">SDXL 出大图的墙不是显存，是训练画布 1024：超过 1536 主体就开始复制 →</a></div>
+<div class="pager"><a href="/fix/praxis1-download-gate-before-vram-20261113/">← 本地部署 Praxis-1 卡在 80GB 之前：真正拦住你的是 11.6 天</a><a href="/fix/moe-weight-footprint-cards-20261117/" style="text-align:right">买卡前先反算每参字节：按 BF16 估会白买三张 32G 卡 →</a></div>
 <p style="margin-top:30px"><a href="/fix/">← 返回全部排错方案</a></p>
 
 </main>
 <footer><div class="wrap">
 <p>本站数字均为真机实测，逐条标注验证等级（<span class="lv lv-L1">L1</span> 多次复测取中位 /
 <span class="lv lv-L0">L0</span> 单次测量）。查不到的写「未采集」，不估算。</p>
-<p>数据源自丘山录硬件实测库 · 本页生成于 2026-11-16 · <a href="/about/">数据口径与方法</a></p>
+<p>数据源自丘山录硬件实测库 · 本页生成于 2026-11-17 · <a href="/about/">数据口径与方法</a></p>
 <div class="qr-box">
 <div class="qr-item">
 <img decoding="async" src="/assets/gzh-qr.jpg" width="108" height="108" alt="丘山录公众号二维码">

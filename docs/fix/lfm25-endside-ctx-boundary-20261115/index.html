@@ -123,14 +123,14 @@ ctx       Q4_K_M RSS(KB)   比上一档多(MiB)
   ldd (Debian GLIBC 2.36-9+deb12u13) 2.36
 架构对、文件完整、字节数一分不差，差 0.02 个版本就是跑不起来。glibc 是硬墙，不是下载路径。</code></pre>
 <div class="caveat"><strong>失效边界</strong><br>LFM2.5-1.2B 本体在端侧盒子上从未跑起来（glibc 2.38 门槛），因此本文没有任何 tok/s、没有首 token 延迟、没有端侧实测速度。5.8 万与 818MiB 是按实测 RSS 斜率与 available 外推的边界，不是在盒子上真开到 12.8 万得到的。KV 字节数由进程 RSS 斜率反推，未读 llama.cpp 自报的 KV self size，两者本应交叉验证但本次没做。预填充长度梯度（长 prompt 下的峰值）未测。同批的 BotPsy-0.8B 因镜像源返回空内容与半截下载，本体完全没跑成，其 KV 只能按 config 推算、不可当实测引用。x86 对照未做，跨架构同模型差异仍是空白。20 线程档位受生产容器污染（loadavg 1.04 到 4.08），该组数据已整组判废。</div>
-<div class="pager"><a href="/fix/block-size-16m-sweet-spot-20261113/">← 读盘块大小设错，475 GiB 权重多等 85 秒：16MB 是拐点，NAS 上怎么调都没用</a><span></span></div>
+<div class="pager"><a href="/fix/block-size-16m-sweet-spot-20261113/">← 读盘块大小设错，475 GiB 权重多等 85 秒：16MB 是拐点，NAS 上怎么调都没用</a><a href="/fix/moe-expert-locality-decision-20261117/" style="text-align:right">MoE 专家库该放哪块盘：先反算命中率，别先买盘 →</a></div>
 <p style="margin-top:30px"><a href="/fix/">← 返回全部排错方案</a></p>
 
 </main>
 <footer><div class="wrap">
 <p>本站数字均为真机实测，逐条标注验证等级（<span class="lv lv-L1">L1</span> 多次复测取中位 /
 <span class="lv lv-L0">L0</span> 单次测量）。查不到的写「未采集」，不估算。</p>
-<p>数据源自丘山录硬件实测库 · 本页生成于 2026-11-16 · <a href="/about/">数据口径与方法</a></p>
+<p>数据源自丘山录硬件实测库 · 本页生成于 2026-11-17 · <a href="/about/">数据口径与方法</a></p>
 <div class="qr-box">
 <div class="qr-item">
 <img decoding="async" src="/assets/gzh-qr.jpg" width="108" height="108" alt="丘山录公众号二维码">
