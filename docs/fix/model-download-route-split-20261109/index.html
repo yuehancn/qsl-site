@@ -105,7 +105,7 @@ th,td{padding:7px 9px}pre{font-size:12px}}
 <p>【20GB 模型的外推】按实测速度线性折算：0.12 MB/s 需 44.4 小时；1.16 需 4.6 小时；21.3 需 15.2 分钟；117.1 需 2.9 分钟。</p>
 <pre><code>【内网这一步为什么值得单独做】千兆理论上限 125 MB/s，实测 117.1 = 93.7%。这是整条链路上唯一一次接近物理极限的传输 —— 因为中间没有任何一段需要穿越公网。搬到 20GB 量级时，从 44.4 小时压到 2.9 分钟，硬件投入为零。</code></pre>
 <div class="caveat"><strong>失效边界</strong><br>20GB 折算为按实测速度线性外推，未考虑网络波动与拥塞，实际会略长。J3455 那台 1.16 MB/s 归因于「单核 TLS 解密跟不上」是推测，未做隔离测试（可用 --no-check-certificate 或换 curl 复测来排除）。内网 117.1 MB/s 是单流单次测量，未做多流并发；理论上多流还能更高，但千兆网段上限就在 125 MB/s。五条路径各在单一时间窗口内测一次，不是多次取中位。</div>
-<div class="pager"><a href="/fix/dgx-spark-dual-net-verify-20261105/">← DGX Spark 双网怎么测：千兆口 118.7 MB/s，200G 环网 16 流 13.8 GB/s</a><a href="/fix/llama-cpp-shard-layout-20261110/" style="text-align:right">本地部署 Qwen3.8-Flash-Next：131 个分片怎么放盘，别急着合并 →</a></div>
+<div class="pager"><a href="/fix/dgx-spark-dual-net-verify-20261105/">← DGX Spark 双网怎么测：千兆口 118.7 MB/s，200G 环网 16 流 13.8 GB/s</a><a href="/fix/cpu-thread-saturation-by-bandwidth-20261118/" style="text-align:right">纯 CPU 跑本地模型：先用带宽反算线程饱和点，不要按核数给 →</a></div>
 <p style="margin-top:30px"><a href="/fix/">← 返回全部排错方案</a></p>
 
 </main>

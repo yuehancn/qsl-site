@@ -99,7 +99,7 @@ th,td{padding:7px 9px}pre{font-size:12px}}
 <p class="count">表三：并发曲线（max_tokens=256, temperature=0）</p><div class="tw"><div class="tw"><table><tr><th>并发</th><th>系统吞吐</th><th>加速比</th><th>单请求等待</th></tr><tr><td class="num">1</td><td>41.20 tok/s</td><td>1.00x</td><td>6.21 s</td></tr><tr><td class="num">2</td><td>65.26 tok/s</td><td>1.58x</td><td>7.67 s</td></tr><tr><td class="num">4</td><td>103.29 tok/s</td><td>2.51x</td><td>9.52 s</td></tr><tr><td class="num">8</td><td>148.95 tok/s</td><td>3.62x</td><td>13.13 s</td></tr><tr><td class="num">16</td><td>148.22 tok/s</td><td>3.60x</td><td>20.24 s</td></tr></table></div></div>
 <h3>判断顺序：先看显存 -&gt; 再看是否只有第一轮慢 -&gt; 最后看并发边际收益</h3><p>加卡最大的代价不是钱，是它让你停止思考了。</p>
 <div class="caveat"><strong>失效边界</strong><br>三条判据里最容易误判的是第二条（显存接近 0 的那种慢）：它长得特别像「卡不行」，但根本不是。你去看显存几乎没被占用，你去看 GPU 利用率可能是满的（因为别的东西在用），你去看日志它写着「加载成功」—— 所有仪表盘都在告诉你一切正常，但计算根本没上卡。这种慢花钱买不到，因为它缺的不是算力，是配置和运行时的接缝。适用边界：表一的分类是<strong></strong>，不同框架、不同硬件下判据会变化。另外「并发 16 零收益」这一行是 4 台机器跑单实例张量并行的结论，换流水线并行或多实例部署不成立。</div>
-<div class="pager"><a href="/fix/sdxl-batch-parallel-vram-tradeoff-20261022/">← SDXL 开 batch=4 之前先算显存余量：16GB 卡批完只剩 389MB，省不到 3%</a><a href="/fix/audio-container-volume-wav-vs-aac-20261023/" style="text-align:right">降采样不省体积：24k MP3 降到 16k 存 WAV，反而胖 5.33 倍 →</a></div>
+<div class="pager"><a href="/fix/install-service-worth-it-check-20261118/">← 花 38 元买「代装本地大模型」之前，先问卖家一个问题</a><a href="/fix/audio-container-volume-wav-vs-aac-20261023/" style="text-align:right">降采样不省体积：24k MP3 降到 16k 存 WAV，反而胖 5.33 倍 →</a></div>
 <p style="margin-top:30px"><a href="/fix/">← 返回全部排错方案</a></p>
 
 </main>

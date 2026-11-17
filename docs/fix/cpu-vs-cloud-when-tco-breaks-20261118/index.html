@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>纯 CPU 本地跑 7B 的账：一小时 24,023 token，抵不过一台机器的钱 · 丘山录实测库</title>
+<meta name="description" content="Xeon E5-2673 v4 纯 CPU 跑 7B Q4_K_M，出字稳定在 6.67 tok/s（20 线程），一小时最多 24,022.86 个 token。按整机 200W 估，一小时 0.2 度电、约 0.11 元。电费不是问题。">
+<link rel="canonical" href="https://88918888.xyz/fix/cpu-vs-cloud-when-tco-breaks-20261118/">
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"TechArticle","headline":"纯 CPU 本地跑 7B 的账：一小时 24,023 token，抵不过一台机器的钱","datePublished":"2026-11-17","description":"Xeon E5-2673 v4 纯 CPU 跑 7B Q4_K_M，出字稳定在 6.67 tok/s（20 线程），一小时最多 24,022.86 个 token。按整机 200W 估，一小时 0.2 度电、约 0.11 元。电费不是问题。问题是这台机器的钱：128GB 内存的双路服务器，即便按二手价也是四位数到五位数。这个产出量换成云端 API，价钱是几块钱量级。","author":{"@type":"Person","name":"丘山录"}}</script>
+<style>
+:root{--ink:#1a1a1a;--sub:#5b6570;--line:#e3e6ea;--bg:#fff;--soft:#f7f8fa;
+--accent:#b03a2e;--ok:#1e7b45;--warn:#9a6b00;--danger:#a11b1b;--none:#6b7280}
+*{box-sizing:border-box}
+body{margin:0;font:16px/1.75 -apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC",
+"Hiragino Sans GB","Microsoft YaHei",sans-serif;color:var(--ink);background:var(--bg)}
+a{color:#1a4f8a;text-decoration:none}a:hover{text-decoration:underline}
+.wrap{max-width:820px;margin:0 auto;padding:0 20px}
+header.site{border-bottom:1px solid var(--line);padding:18px 0;margin-bottom:32px}
+header.site .wrap{display:flex;align-items:baseline;gap:18px;flex-wrap:wrap}
+header.site .logo{font-weight:700;font-size:18px;color:var(--ink)}
+header.site nav{font-size:14px}
+header.site nav a{color:var(--sub);margin-right:16px}
+h1{font-size:27px;line-height:1.4;margin:0 0 10px;letter-spacing:-.2px}
+h2{font-size:19px;margin:34px 0 12px;padding-top:6px}
+h3{font-size:16px;margin:22px 0 8px}
+p{margin:0 0 14px}
+.meta{color:var(--sub);font-size:13px;margin-bottom:22px;line-height:1.9}
+.meta span{margin-right:14px;white-space:nowrap}
+.lede{font-size:17px;line-height:1.8;background:var(--soft);border-left:3px solid var(--accent);
+padding:16px 18px;margin:0 0 26px}
+table{width:100%;border-collapse:collapse;margin:16px 0;font-size:14px}
+th,td{border:1px solid var(--line);padding:9px 11px;text-align:left;vertical-align:top}
+th{background:var(--soft);font-weight:600}
+td.num{font-variant-numeric:tabular-nums;white-space:nowrap}
+.tag{display:inline-block;font-size:12px;padding:1px 7px;border:1px solid var(--line);
+border-radius:3px;color:var(--sub);margin:0 6px 6px 0;background:#fff}
+.card{border:1px solid var(--line);border-radius:5px;padding:17px 19px;margin:0 0 14px}
+.card h3{margin:0 0 7px;font-size:16px;line-height:1.5}
+.card h3 a{color:var(--ink)}
+.card p{font-size:14px;color:var(--sub);margin:0 0 8px}
+.card .kv{font-size:12.5px;color:var(--sub)}
+ul,ol{padding-left:22px}li{margin-bottom:7px}
+code{background:var(--soft);padding:1px 5px;border-radius:3px;font-size:13.5px;
+font-family:ui-monospace,Consolas,monospace}
+pre{background:var(--soft);padding:14px;border-radius:4px;overflow-x:auto;font-size:13px;
+line-height:1.6}
+pre code{background:none;padding:0}
+.lv{display:inline-block;font-size:11.5px;padding:0 6px;border-radius:3px;
+border:1px solid currentColor;font-weight:600}
+.lv-L1{color:var(--ok)}.lv-L0{color:var(--warn)}.lv-none{color:var(--none)}
+.v-ok{color:var(--ok)}.v-warn{color:var(--warn)}.v-danger{color:var(--danger)}
+.v-limited{color:#7a4b00}.v-none{color:var(--none)}
+.note{border-left:3px solid var(--warn);background:#fffdf5;padding:13px 16px;
+margin:18px 0;font-size:14.5px}
+.caveat{border-left:3px solid var(--accent);background:#fdf7f6;padding:13px 16px;margin:18px 0}
+.caveat strong{color:var(--accent)}
+footer{border-top:1px solid var(--line);margin-top:56px;padding:26px 0 44px;
+font-size:13px;color:var(--sub)}
+footer a{color:var(--sub)}
+.qr-box{margin:26px 0 6px;padding:20px 0 4px;border-top:1px solid var(--line);
+display:flex;gap:26px;flex-wrap:wrap;align-items:flex-start;
+/* 8 个码：容器宽限为「4 个码 + 3 个间距」，自然排成 4+4 两行（2026-11-16） */
+max-width:calc(4 * 122px + 3 * 26px)}
+.qr-item{text-align:center;flex:0 0 auto}
+.qr-item img{width:108px;height:108px;object-fit:contain;display:block;
+background:#fff;border:1px solid var(--line);border-radius:8px;padding:6px}
+.qr-item span{display:block;margin-top:9px;font-size:12.5px;color:var(--sub)}
+@media(max-width:560px){.qr-box{gap:18px;max-width:calc(4 * 100px + 3 * 18px)}
+.qr-item img{width:92px;height:92px}}
+.pager{display:flex;justify-content:space-between;gap:16px;margin:36px 0 0;
+padding-top:20px;border-top:1px solid var(--line);font-size:14px}
+.pager a{max-width:46%}
+.count{color:var(--sub);font-size:13.5px;margin:-8px 0 18px}
+.tw{width:100%;overflow-x:auto;-webkit-overflow-scrolling:touch;margin:16px 0}
+.tw table{margin:0;min-width:100%}
+body{overflow-x:hidden}
+@media(max-width:600px){h1{font-size:22px}.wrap{padding:0 15px}table{font-size:13px}
+th,td{padding:7px 9px}pre{font-size:12px}}
+</style>
+</head>
+<body>
+<body>
+<header class="site"><div class="wrap">
+<a class="logo" href="/">丘山录实测库</a>
+<nav><a href="/bench/">跑分</a><a href="/fix/">排错</a><a href="/license/">许可证</a><a href="/machines/">机器</a><a href="/about/">口径</a></nav>
+</div></header>
+<main class="wrap">
+
+<h1>纯 CPU 本地跑 7B 的账：一小时 24,023 token，抵不过一台机器的钱</h1>
+<div class="meta"><span>成本账 · 1 台机器 / 1 个模型 / 2 档对照</span><span><span class="lv lv-none">未标注</span></span><span>整理于 2026-11-17</span>
+<span>有效期 permanent</span></div>
+<p class="lede">Xeon E5-2673 v4 纯 CPU 跑 7B Q4_K_M，出字稳定在 6.67 tok/s（20 线程），一小时最多 24,022.86 个 token。按整机 200W 估，一小时 0.2 度电、约 0.11 元。电费不是问题。问题是这台机器的钱：128GB 内存的双路服务器，即便按二手价也是四位数到五位数。这个产出量换成云端 API，价钱是几块钱量级。所以纯 CPU 跑大模型这条路，账不算在电费上，算在「这台机器本来就在那儿」上。它的真实价值是离线、数据不出门、不受配额限制，不是便宜。</p>
+<span class="tag">纯CPU推理</span><span class="tag">回本</span><span class="tag">云API</span><span class="tag">成本</span><span class="tag">本地部署</span><span class="tag">7B</span><span class="tag">TCO</span>
+<h2>这条适用于</h2><ul><li>能用功率计测整机功耗</li><li>有连续 60 秒以上的稳态 tok/s</li></ul>
+<h2>版本指纹</h2><p><code>qwen2.5 7B Q4_K_M + llama-bench b12451</code></p>
+<h2>具体做法</h2>
+<pre><code>【实测与计算】
+  7B Q4_K_M（4,677,120,000 B）@20 线程 decode = 6.673016 tok/s
+  一小时产出 = 6.673016 x 3600 = 24,022.86 token
+  1.5B 对照：27.713532 tok/s -&gt; 一小时 99,768.72 token</code></pre>
+<pre><code>【电费（按 200W、0.55 元/度）】
+  0.2 kWh -&gt; 0.11 元/小时
+  ⚠ 200W 是估算，未经功率计实测。双路 E5 满载常高于此值。</code></pre>
+<pre><code>【关键判断】
+  每小时 2.4 万 token 的量，云端按主流 API 价位是几块钱。
+  所以纯 CPU 跑大模型的正当理由不是「省 API 费」，是离线 / 数据不出门 / 无配额。
+  如果只为省钱买一台双路服务器，回本周期会远长于硬件寿命。</code></pre>
+<div class="caveat"><strong>失效边界</strong><br>功率 200W 是估算不是实测，未用功率计核对。云端 API 价格未在本文取当日实际报价，只作量级参照，未给出具体金额对比。折旧年限与每日运行时长未固定，故不给回本周期结论。只覆盖 7B Q4_K_M 一档，更大模型会显著更慢（权重体积线性放大）。</div>
+<div class="pager"><a href="/fix/sdxl-step-energy-ledger-20261012/">← SDXL 步数翻三倍，一万张电费只多 2.61 元：瓶颈是机器小时</a><a href="/fix/dgx-spark-roi-ledger-20261024/" style="text-align:right">本地部署回本账怎么算：四台 DGX Spark 满产 7.3 年，利用率 5% 就是 145.6 年 →</a></div>
+<p style="margin-top:30px"><a href="/fix/">← 返回全部排错方案</a></p>
+
+</main>
+<footer><div class="wrap">
+<p>本站数字均为真机实测，逐条标注验证等级（<span class="lv lv-L1">L1</span> 多次复测取中位 /
+<span class="lv lv-L0">L0</span> 单次测量）。查不到的写「未采集」，不估算。</p>
+<p>数据源自丘山录硬件实测库 · 本页生成于 2026-11-17 · <a href="/about/">数据口径与方法</a></p>
+<div class="qr-box">
+<div class="qr-item">
+<img decoding="async" src="/assets/gzh-qr.jpg" width="108" height="108" alt="丘山录公众号二维码">
+<span>丘山录 · 公众号</span>
+</div>
+<div class="qr-item">
+<img decoding="async" src="/assets/mp-code.png" width="108" height="108" alt="丘山录小程序码">
+<span>丘山录 · 小程序</span>
+</div>
+<div class="qr-item">
+<img decoding="async" src="/assets/shipinhao-code.png" width="108" height="108" alt="丘山录视频号二维码">
+<span>丘山录 · 视频号</span>
+</div>
+<div class="qr-item">
+<img decoding="async" src="/assets/xiaohongshu-code.png" width="108" height="108" alt="丘山录小红书二维码">
+<span>丘山录 · 小红书</span>
+</div>
+<div class="qr-item">
+<img decoding="async" src="/assets/douyin-code.png" width="108" height="108" alt="丘山录抖音号二维码">
+<span>丘山录 · 抖音号</span>
+</div>
+<div class="qr-item">
+<img decoding="async" src="/assets/bilibili-code.png" width="108" height="108" alt="丘山录B站号二维码">
+<span>丘山录 · B站号</span>
+</div>
+<div class="qr-item">
+<img decoding="async" src="/assets/zhihu-code.png" width="108" height="108" alt="丘山录知乎二维码">
+<span>丘山录 · 知乎</span>
+</div>
+<div class="qr-item">
+<img decoding="async" src="/assets/csdn-code.png" width="108" height="108" alt="丘山录CSDN二维码">
+<span>丘山录 · CSDN</span>
+</div>
+</div>
+</div></footer>
+</body>
+</html>

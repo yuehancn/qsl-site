@@ -108,7 +108,7 @@ th,td{padding:7px 9px}pre{font-size:12px}}
 · ⇒ 耗时由像素总量决定，不吃长宽比</code></pre>
 <p>【冷启动同一机制】<br>· 5090D 5.03 s vs 稳态 4.98 s（几乎无差，32GB 可整模型常驻）<br>· 5060Ti 25.72 s vs 稳态 16.68 s，多出约 9 s 全是模型加载与显存搬运<br>· 若服务每次重启进程，冷启动代价被放大到 5 倍以上</p>
 <div class="caveat"><strong>失效边界</strong><br>本结论为本机跑分库真源（2026-09-26 基线 + 2026-10-02 复测，每档 3 次取中位数），非厂商标称。不同工作流、分辨率、采样步数、量化精度下数值会变，请以你自己的产线参数复测。本轮测量窗口内两台机器均有后台 GPU 负载（本机 20812/32607 MiB、5060Ti 9207/16311 MiB 均 100% 占用），故本次未采集功耗，也未做任何电费结论。batch=4 后 389MB 余量是「能跑通」的实测值，不代表在你的工作流下也安全——多挂一个 ControlNet 或提高分辨率都可能越过这条线。</div>
-<div class="pager"><a href="/fix/gpu-coldstart-vs-steady-ledger-20261015/">← 同一套 SDXL 工作流，5090D 冷启动快 5.11 倍 —— 多出来的不是算力，是搬运</a><a href="/fix/three-kinds-of-slow-20260930/" style="text-align:right">集群慢不一定是卡不够：三种慢，只有一种值得花钱 →</a></div>
+<div class="pager"><a href="/fix/gpu-coldstart-vs-steady-ledger-20261015/">← 同一套 SDXL 工作流，5090D 冷启动快 5.11 倍 —— 多出来的不是算力，是搬运</a><a href="/fix/install-service-worth-it-check-20261118/" style="text-align:right">花 38 元买「代装本地大模型」之前，先问卖家一个问题 →</a></div>
 <p style="margin-top:30px"><a href="/fix/">← 返回全部排错方案</a></p>
 
 </main>

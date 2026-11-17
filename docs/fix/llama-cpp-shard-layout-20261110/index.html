@@ -105,7 +105,7 @@ th,td{padding:7px 9px}pre{font-size:12px}}
 <pre><code>【合并的成本】读 360.02 GB 按 3223.4 MB/s = 111.7 s；写 360.02 GB 按 2043.8 MB/s = 176.2 s；合计 287.8 s，另需 670.6 GiB 中转空间。合并后仅省 9.91 s（123.0 s → 113.0 s）→ 净亏 277.9 s，是收益的 28 倍。需冷启动 29 次才追回一次合并成本。</code></pre>
 <pre><code>【容量口径陷阱】360.02 GB（十进制） = 335.30 GiB（二进制），差 24.7 GiB —— 够放一个 7B 的 Q4 模型。df 报的是 GiB，按 GB 去减会误判还能再塞一个模型。</code></pre>
 <div class="caveat"><strong>失效边界</strong><br>只测单流，未做多线程聚合读 —— 多线程下 NVMe 扩展比另有账（本机 T=1 5.579 / T=8 6.865 GB/s），NAS 2 线程到顶。NAS 那组未区分 SMB 协议开销与链路开销。「-ngl 99 静默降级」来自 2026-09-30 同型号机器实测记录，本次未在新权重上复现。分片对照只测了 96 个 8MB 这一种切分（对应 768MB 总量），131 分片/360GB 量级未直接实测，为按字节数折算。随机 4K 只在本机测，DGX 与 NAS 未测 4K QD32。</div>
-<div class="pager"><a href="/fix/model-download-route-split-20261109/">← 下模型慢不是源的问题：同一天同一个源，五条路径差 180 倍</a><a href="/fix/llm-vram-weight-plus-kv-20261027/" style="text-align:right">本地部署大模型要多少显存：权重只是首付，KV 才是月供 →</a></div>
+<div class="pager"><a href="/fix/cpu-thread-saturation-by-bandwidth-20261118/">← 纯 CPU 跑本地模型：先用带宽反算线程饱和点，不要按核数给</a><a href="/fix/llm-vram-weight-plus-kv-20261027/" style="text-align:right">本地部署大模型要多少显存：权重只是首付，KV 才是月供 →</a></div>
 <p style="margin-top:30px"><a href="/fix/">← 返回全部排错方案</a></p>
 
 </main>
