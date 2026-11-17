@@ -14,3 +14,7 @@ _build.json
 
 # push_site.py 调 API 时的临时 payload
 _payload.json
+
+# sync_daily.py 的本地同步基线（seed 指纹），只对运行它的那台机器有意义
+.sync_state.json
+.sync_state.json.tmp
