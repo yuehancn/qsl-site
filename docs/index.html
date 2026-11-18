@@ -93,16 +93,16 @@ th,td{padding:7px 9px}pre{font-size:12px}}
 
 <div class="tw"><div class="tw"><table>
 <tr><th>数据</th><th>条数</th><th>说明</th></tr>
-<tr><td>真机实测跑分</td><td class="num">1223</td><td>其中 227 条直接关系「跑不跑得动」，
-441 条为 L1 级多次复测取中位</td></tr>
-<tr><td>排错方案</td><td class="num">114</td><td>每条含触发条件、版本指纹、失效边界</td></tr>
+<tr><td>真机实测跑分</td><td class="num">1294</td><td>其中 230 条直接关系「跑不跑得动」，
+490 条为 L1 级多次复测取中位</td></tr>
+<tr><td>排错方案</td><td class="num">117</td><td>每条含触发条件、版本指纹、失效边界</td></tr>
 <tr><td>开源仓库许可证核验</td><td class="num">141</td><td>其中 59 条有传染性/受限风险，
 8 条判定为不整改不能商用</td></tr>
 <tr><td>实测机器</td><td class="num">16</td><td>从 4 卡 DGX 集群到端侧 J3455</td></tr>
 </table></div></div>
 
 <h2>先查你的卡能不能跑</h2>
-<p><a href="/bench/">→ 跑分查询</a>：227 条与选型直接相关的实测，按任务和机器列出，
+<p><a href="/bench/">→ 跑分查询</a>：230 条与选型直接相关的实测，按任务和机器列出，
 每条给数值、单位、验证等级。</p>
 
 <h2>许可证风险榜</h2>
@@ -112,7 +112,7 @@ th,td{padding:7px 9px}pre{font-size:12px}}
 
 <h2>最近整理的排错方案</h2>
 <div class="card"><h3><a href="/fix/pip-wrong-env-silent-mismatch-20261001/">pip 装成功了程序还是缺包：多 Python 环境的静默错配</a></h3><p>pip 返回 Successfully installed、import 也真的通，程序还是报 ModuleNotFoundError —— 因为机器上同时活着三套 Python。</p><div class="kv">setup · <span class="lv lv-L1">L1</span></div></div><div class="card"><h3><a href="/fix/sdxl-hue-drift-style-block-20261002/">SDXL 批量出图跑色：加一段风格块把色相漂移压掉四成</a></h3><p>同一提示词只换 seed，SDXL 出的 8 张图跨了 4 个色系（青绿山水/红枫版画/暖米复古/宣纸留白），跨图色相极差 80.35°、圆标准差 23.36°。</p><div class="kv">make · <span class="lv lv-L1">L1</span></div></div><div class="card"><h3><a href="/fix/tts-duration-formula-three-errors-20261003/">口播稿时长换算：我那个公式错了三处（rate 系数 / 计量单位 / 口径错配）</a></h3><p>秒数≈CJK÷(4.33×(1+rate)) 这条公式错了三处：4.33 只在 rate=+0% 成立；公式只数中文，看不见占 83% 的 ASCII 与标点；拿写稿口径的公式去算产线口径。</p><div class="kv">make · <span class="lv lv-L1">L1</span></div></div><div class="card"><h3><a href="/fix/reinstall-decision-table-20261001/">「装不上就重装」之前，先看四种「装不上」各要多少代价</a></h3><p>「装不上就重装环境」在大多数情况下是白做的。四种「装不上」代价完全不同：真正装不上（红字依赖冲突）重装有效；装成功但程序看不见（装错环境）重装完全无效，修复成本只要一条 pip -V；</p><div class="kv">setup · <span class="lv lv-L1">L1</span></div></div><div class="card"><h3><a href="/fix/gen-image-capacity-is-denominator-20261002/">AI 生图产能不是资产，是分母：三万张图卖不出去的那笔账</a></h3><p>本机 5090D 实测 SDXL 1024×1024 稳态单张 5.15 秒，一天满载 16776 张、扣掉停机散热重跑后约两万张/天即六十万张/月。</p><div class="kv">money · <span class="lv lv-L1">L1</span></div></div><div class="card"><h3><a href="/fix/proxy-env-trap-20260930/">内网推理服务「偶尔连不上」：先查代理环境变量，别查配置</a></h3><p>推理服务明明 curl 得通、端口在听、机器不忙，客户端却报 Connection error，而且「有时能通、有时不通」。</p><div class="kv">fix · <span class="lv lv-L1">L1</span></div></div>
-<p><a href="/fix/">→ 全部 114 条排错方案</a></p>
+<p><a href="/fix/">→ 全部 117 条排错方案</a></p>
 
 <h2>这个站不做什么</h2>
 <ul>
@@ -125,7 +125,7 @@ th,td{padding:7px 9px}pre{font-size:12px}}
 <footer><div class="wrap">
 <p>本站数字均为真机实测，逐条标注验证等级（<span class="lv lv-L1">L1</span> 多次复测取中位 /
 <span class="lv lv-L0">L0</span> 单次测量）。查不到的写「未采集」，不估算。</p>
-<p>数据源自丘山录硬件实测库 · 本页生成于 2026-11-17 · <a href="/about/">数据口径与方法</a></p>
+<p>数据源自丘山录硬件实测库 · 本页生成于 2026-11-18 · <a href="/about/">数据口径与方法</a></p>
 <div class="qr-box">
 <div class="qr-item">
 <img decoding="async" src="/assets/gzh-qr.jpg" width="108" height="108" alt="丘山录公众号二维码">

@@ -111,14 +111,14 @@ UD-IQ1_S 6,192,222,208 B、UD-IQ2_XXS 7,206,043,648 B、Q4_K_M 16,564,259,744 B�
 量化位宽反算：5.767 GiB × 8 ÷ 26.90B 参数 = 1.716 bit/参，名义 1.5625，多吃 9.8%</code></pre>
 <p>【单线程不可用】-p 128 -n 32 -r 2 跑 3 分 20 秒未出第一档，已强杀，不列为数据点。</p>
 <div class="caveat"><strong>失效边界</strong><br>全程纯 CPU，未占任何 GPU 显存，「8G 显存能跑」这个口径本日既没证实也没证伪。KV cache 未测：262,144 原生上下文与 YaRN 至 1M 全部零数据，5.767 GiB 只是权重。视觉能力未测（mmproj 未下载）。功耗零数据。所有 tok/s 受同机 sglang 常驻污染（290.9% CPU / load 3.9-4.7），绝对值偏保守。x86 侧同模型对照未跑成（编译未完成），故「ARM vs x86 差几倍」本文无数据。</div>
-<div class="pager"><a href="/fix/gpu-pick-vram-headroom-20261111/">← 5090D 与 5060Ti 怎么选：价差 4.96 倍只买到 3.35 倍速度，每万张成本反而更高</a><a href="/fix/pip-wrong-env-silent-mismatch-20261001/" style="text-align:right">pip 装成功了程序还是缺包：多 Python 环境的静默错配 →</a></div>
+<div class="pager"><a href="/fix/gpu-pick-vram-headroom-20261111/">← 5090D 与 5060Ti 怎么选：价差 4.96 倍只买到 3.35 倍速度，每万张成本反而更高</a><a href="/fix/model-on-nas-only-slow-on-cold-load-20261119/" style="text-align:right">模型放 NAS 只慢在冷加载：载入内存后出字速度和本地盘一样 →</a></div>
 <p style="margin-top:30px"><a href="/fix/">← 返回全部排错方案</a></p>
 
 </main>
 <footer><div class="wrap">
 <p>本站数字均为真机实测，逐条标注验证等级（<span class="lv lv-L1">L1</span> 多次复测取中位 /
 <span class="lv lv-L0">L0</span> 单次测量）。查不到的写「未采集」，不估算。</p>
-<p>数据源自丘山录硬件实测库 · 本页生成于 2026-11-17 · <a href="/about/">数据口径与方法</a></p>
+<p>数据源自丘山录硬件实测库 · 本页生成于 2026-11-18 · <a href="/about/">数据口径与方法</a></p>
 <div class="qr-box">
 <div class="qr-item">
 <img decoding="async" src="/assets/gzh-qr.jpg" width="108" height="108" alt="丘山录公众号二维码">

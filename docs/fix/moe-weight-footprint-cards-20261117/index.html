@@ -118,14 +118,14 @@ th,td{padding:7px 9px}pre{font-size:12px}}
   num_experts 384 / num_experts_per_tok 6 / moe_intermediate_size 512 / max_position_embeddings 262144
   layer_types 50 项，full_attention 恰好 10 层</code></pre>
 <div class="caveat"><strong>失效边界</strong><br>本文不含任何模型加载或推理，全部是「仓库字节数 加 参数量 加 config 层结构」的算术值，因此没有 tok/s、没有显存占用实测。卡数是「向上取整」的下界，未计入运行时开销（显存碎片、CUDA context、激活值）与不同推理框架的显存管理策略，实际可装张数可能更保守。KV 按 fp16 逐层计算，未做 KV 量化对照。Q4_K_M 与 Q4_K_L 的字节数取自仓库 size 字段，未下载核对。</div>
-<div class="pager"><a href="/fix/gguf-real-bitwidth-account-20261115/">← 标称 4bit 其实是 4.9961，每参数多占 25% 内存</a><a href="/fix/sdxl-resolution-wall-20261014/" style="text-align:right">SDXL 出大图的墙不是显存，是训练画布 1024：超过 1536 主体就开始复制 →</a></div>
+<div class="pager"><a href="/fix/gguf-real-bitwidth-account-20261115/">← 标称 4bit 其实是 4.9961，每参数多占 25% 内存</a><a href="/fix/block-size-decides-nas-ratio-20261119/" style="text-align:right">网络盘比本地盘慢几倍：答案随块大小从 3.6 变到 25.9，不带块大小的倍数不成立 →</a></div>
 <p style="margin-top:30px"><a href="/fix/">← 返回全部排错方案</a></p>
 
 </main>
 <footer><div class="wrap">
 <p>本站数字均为真机实测，逐条标注验证等级（<span class="lv lv-L1">L1</span> 多次复测取中位 /
 <span class="lv lv-L0">L0</span> 单次测量）。查不到的写「未采集」，不估算。</p>
-<p>数据源自丘山录硬件实测库 · 本页生成于 2026-11-17 · <a href="/about/">数据口径与方法</a></p>
+<p>数据源自丘山录硬件实测库 · 本页生成于 2026-11-18 · <a href="/about/">数据口径与方法</a></p>
 <div class="qr-box">
 <div class="qr-item">
 <img decoding="async" src="/assets/gzh-qr.jpg" width="108" height="108" alt="丘山录公众号二维码">

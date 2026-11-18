@@ -111,14 +111,14 @@ $ cat C://AI//ComfyUI//venv//pyvenv.cfg
 <h3>另有一条软性偏差：上游 README 要求 20 系以上用 cu130+，本机实为 torch 2.11.0+cu128</h3><p>目前是「声明的」而非「强校验的」，实测出图正常 —— 记进环境档案让它可见，不当场升级产线。</p>
 <h3>一句话：最贵的报错不是「装不上」，是「装上了但没人看见」。</h3>
 <div class="caveat"><strong>失效边界</strong><br>适用边界：核心判据（用哪个解释器跑、就用哪个解释器装）在所有 Python 环境通用；但三套环境的路径、版本号与 pyvenv.cfg 均为 2026-10-01 本机实测值，换机/换安装顺序即变。两个易踩点：① 三个前端版本（1.49.6/1.51.9/1.53.6）是当日快照，上游滚动发布，几天后失效，不要当固定事实引用；② cu130 口径来自上游 README，属声明性要求，本机 cu128 实测正常 —— 不要据此当场重建环境。</div>
-<div class="pager"><a href="/fix/end-side-fits-vs-runs-20261112/">← 端侧跑大模型先分清「装得下」和「跑得动」：体积涨 10.9 倍，速度掉 25.4 倍</a><a href="/fix/reinstall-decision-table-20261001/" style="text-align:right">「装不上就重装」之前，先看四种「装不上」各要多少代价 →</a></div>
+<div class="pager"><a href="/fix/model-on-nas-only-slow-on-cold-load-20261119/">← 模型放 NAS 只慢在冷加载：载入内存后出字速度和本地盘一样</a><a href="/fix/reinstall-decision-table-20261001/" style="text-align:right">「装不上就重装」之前，先看四种「装不上」各要多少代价 →</a></div>
 <p style="margin-top:30px"><a href="/fix/">← 返回全部排错方案</a></p>
 
 </main>
 <footer><div class="wrap">
 <p>本站数字均为真机实测，逐条标注验证等级（<span class="lv lv-L1">L1</span> 多次复测取中位 /
 <span class="lv lv-L0">L0</span> 单次测量）。查不到的写「未采集」，不估算。</p>
-<p>数据源自丘山录硬件实测库 · 本页生成于 2026-11-17 · <a href="/about/">数据口径与方法</a></p>
+<p>数据源自丘山录硬件实测库 · 本页生成于 2026-11-18 · <a href="/about/">数据口径与方法</a></p>
 <div class="qr-box">
 <div class="qr-item">
 <img decoding="async" src="/assets/gzh-qr.jpg" width="108" height="108" alt="丘山录公众号二维码">

@@ -586,8 +586,20 @@ def build_fix_index(sols):
         body, "fix/"))
 
 
+def _sort_key(s):
+    """sort_order 在 seed 里可能被写成字符串（如 "1"），统一强制成整数再比较，
+    避免 str 与 int 混排触发 TypeError。非数字一律回落 0。"""
+    raw = s.get("sort_order")
+    if isinstance(raw, bool):
+        raw = int(raw)
+    try:
+        return (str(s.get("group") or ""), int(raw))
+    except (TypeError, ValueError):
+        return (str(s.get("group") or ""), 0)
+
+
 def build_fix_detail(sols):
-    order = sorted(sols, key=lambda s: (s.get("group") or "", s.get("sort_order") or 0))
+    order = sorted(sols, key=_sort_key)
     idx = {s["slug"]: i for i, s in enumerate(order)}
     for s in sols:
         pre = s.get("preconditions") or []

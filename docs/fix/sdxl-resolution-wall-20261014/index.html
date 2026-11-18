@@ -108,14 +108,14 @@ th,td{padding:7px 9px}pre{font-size:12px}}
 <pre><code>长宽比对照（同一总面积）：832×1216 = 2.064s / 6766 MiB；1216×832 = 2.075s / 6758 MiB → 差 0.011s / 8 MiB。
 双机对照：1024 差 3.51×（5090D 2.259s vs 5060Ti 7.921s）→ 2560 差 4.19×（16.611s vs 69.560s）。</code></pre>
 <div class="caveat"><strong>失效边界</strong><br>本结论为本机实测（RTX 5090D 32GB / 驱动 591.86 / ComfyUI 0.33.0 / sd_xl_base_1.0）。SDXL base 训练分辨率为 1024² 出自 Stability AI 官方模型卡。亮区连通域是相对指标、不等于画质评分；未继续测 4096 以上（已占 98% 显存，边际意义为零）。测试前已停止占卡进程。不同驱动 / 框架版本数值会变。</div>
-<div class="pager"><a href="/fix/moe-weight-footprint-cards-20261117/">← 买卡前先反算每参字节：按 BF16 估会白买三张 32G 卡</a><a href="/fix/sdxl-sampler-time-ledger-20261014/" style="text-align:right">SDXL 采样器耗时差 64%、画面差与耗时无关：euler 与 ddim 同 seed 出图逐像素一致 →</a></div>
+<div class="pager"><a href="/fix/block-size-decides-nas-ratio-20261119/">← 网络盘比本地盘慢几倍：答案随块大小从 3.6 变到 25.9，不带块大小的倍数不成立</a><a href="/fix/sdxl-sampler-time-ledger-20261014/" style="text-align:right">SDXL 采样器耗时差 64%、画面差与耗时无关：euler 与 ddim 同 seed 出图逐像素一致 →</a></div>
 <p style="margin-top:30px"><a href="/fix/">← 返回全部排错方案</a></p>
 
 </main>
 <footer><div class="wrap">
 <p>本站数字均为真机实测，逐条标注验证等级（<span class="lv lv-L1">L1</span> 多次复测取中位 /
 <span class="lv lv-L0">L0</span> 单次测量）。查不到的写「未采集」，不估算。</p>
-<p>数据源自丘山录硬件实测库 · 本页生成于 2026-11-17 · <a href="/about/">数据口径与方法</a></p>
+<p>数据源自丘山录硬件实测库 · 本页生成于 2026-11-18 · <a href="/about/">数据口径与方法</a></p>
 <div class="qr-box">
 <div class="qr-item">
 <img decoding="async" src="/assets/gzh-qr.jpg" width="108" height="108" alt="丘山录公众号二维码">

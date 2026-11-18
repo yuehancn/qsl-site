@@ -106,14 +106,14 @@ th,td{padding:7px 9px}pre{font-size:12px}}
 <p>相对同 seed 48 步的 RMS（4 seed 均值）：<br>· 8 步 40.12 / 12 步 29.66 / 16 步 23.32<br>· 20 步 22.37 / 24 步 19.18 / 32 步 15.82</p>
 <p>16→20 步：平均 RMS 只降 0.96（4.1%），跨 seed 范围 14.6-30.1 —— 不稳定。</p>
 <div class="caveat"><strong>失效边界</strong><br>RMS 是像素级均方根差（0-255），衡量的是「离参照档（本轮取 48 步）有多远」，属<strong></strong>指标，<strong></strong>。本条目只量化「多花的算力买到了多少画面变化」，不做「哪一档更好看」的结论。48 步只是本轮参照基准，不是正确值。换模型/采样器/CFG 后最优断点会移动。</div>
-<div class="pager"><a href="/fix/lora-training-metadata-ledger-20261021/">← 一个 47 MiB 的 LoRA 自带训练账本：7750 步、7412 张图、每张 297.7 毫秒</a><a href="/fix/gen-image-capacity-is-denominator-20261002/" style="text-align:right">AI 生图产能不是资产，是分母：三万张图卖不出去的那笔账 →</a></div>
+<div class="pager"><a href="/fix/lora-training-metadata-ledger-20261021/">← 一个 47 MiB 的 LoRA 自带训练账本：7750 步、7412 张图、每张 297.7 毫秒</a><a href="/fix/gguf-repo-size-vs-what-you-need-20261119/" style="text-align:right">仓库挂着 152 GiB，你只下 7 GB：量化档体积账与 mmproj 漏下陷阱 →</a></div>
 <p style="margin-top:30px"><a href="/fix/">← 返回全部排错方案</a></p>
 
 </main>
 <footer><div class="wrap">
 <p>本站数字均为真机实测，逐条标注验证等级（<span class="lv lv-L1">L1</span> 多次复测取中位 /
 <span class="lv lv-L0">L0</span> 单次测量）。查不到的写「未采集」，不估算。</p>
-<p>数据源自丘山录硬件实测库 · 本页生成于 2026-11-17 · <a href="/about/">数据口径与方法</a></p>
+<p>数据源自丘山录硬件实测库 · 本页生成于 2026-11-18 · <a href="/about/">数据口径与方法</a></p>
 <div class="qr-box">
 <div class="qr-item">
 <img decoding="async" src="/assets/gzh-qr.jpg" width="108" height="108" alt="丘山录公众号二维码">
