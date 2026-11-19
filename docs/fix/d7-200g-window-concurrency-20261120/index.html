@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>本地大模型搬运：大带宽单流吃不满，先加流再加窗口 · 丘山录实测库</title>
+<meta name="description" content="同一份 7,405,956,128 字节的分片，从一台 DGX Spark 经 200G 直连搬到另一台，四轮取中位。默认接收窗口下内核只给 131,072 字节（128 KB），单流只跑到 2,050.50 MB/s，占 200G 的 8.2%。">
+<link rel="canonical" href="https://88918888.xyz/fix/d7-200g-window-concurrency-20261120/">
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"TechArticle","headline":"本地大模型搬运：大带宽单流吃不满，先加流再加窗口","datePublished":"2026-11-20","description":"同一份 7,405,956,128 字节的分片，从一台 DGX Spark 经 200G 直连搬到另一台，四轮取中位。默认接收窗口下内核只给 131,072 字节（128 KB），单流只跑到 2,050.50 MB/s，占 200G 的 8.2%。","author":{"@type":"Person","name":"丘山录"}}</script>
+<style>
+:root{--ink:#1a1a1a;--sub:#5b6570;--line:#e3e6ea;--bg:#fff;--soft:#f7f8fa;
+--accent:#b03a2e;--ok:#1e7b45;--warn:#9a6b00;--danger:#a11b1b;--none:#6b7280}
+*{box-sizing:border-box}
+body{margin:0;font:16px/1.75 -apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC",
+"Hiragino Sans GB","Microsoft YaHei",sans-serif;color:var(--ink);background:var(--bg)}
+a{color:#1a4f8a;text-decoration:none}a:hover{text-decoration:underline}
+.wrap{max-width:820px;margin:0 auto;padding:0 20px}
+header.site{border-bottom:1px solid var(--line);padding:18px 0;margin-bottom:32px}
+header.site .wrap{display:flex;align-items:baseline;gap:18px;flex-wrap:wrap}
+header.site .logo{font-weight:700;font-size:18px;color:var(--ink)}
+header.site nav{font-size:14px}
+header.site nav a{color:var(--sub);margin-right:16px}
+h1{font-size:27px;line-height:1.4;margin:0 0 10px;letter-spacing:-.2px}
+h2{font-size:19px;margin:34px 0 12px;padding-top:6px}
+h3{font-size:16px;margin:22px 0 8px}
+p{margin:0 0 14px}
+.meta{color:var(--sub);font-size:13px;margin-bottom:22px;line-height:1.9}
+.meta span{margin-right:14px;white-space:nowrap}
+.lede{font-size:17px;line-height:1.8;background:var(--soft);border-left:3px solid var(--accent);
+padding:16px 18px;margin:0 0 26px}
+table{width:100%;border-collapse:collapse;margin:16px 0;font-size:14px}
+th,td{border:1px solid var(--line);padding:9px 11px;text-align:left;vertical-align:top}
+th{background:var(--soft);font-weight:600}
+td.num{font-variant-numeric:tabular-nums;white-space:nowrap}
+.tag{display:inline-block;font-size:12px;padding:1px 7px;border:1px solid var(--line);
+border-radius:3px;color:var(--sub);margin:0 6px 6px 0;background:#fff}
+.card{border:1px solid var(--line);border-radius:5px;padding:17px 19px;margin:0 0 14px}
+.card h3{margin:0 0 7px;font-size:16px;line-height:1.5}
+.card h3 a{color:var(--ink)}
+.card p{font-size:14px;color:var(--sub);margin:0 0 8px}
+.card .kv{font-size:12.5px;color:var(--sub)}
+ul,ol{padding-left:22px}li{margin-bottom:7px}
+code{background:var(--soft);padding:1px 5px;border-radius:3px;font-size:13.5px;
+font-family:ui-monospace,Consolas,monospace}
+pre{background:var(--soft);padding:14px;border-radius:4px;overflow-x:auto;font-size:13px;
+line-height:1.6}
+pre code{background:none;padding:0}
+.lv{display:inline-block;font-size:11.5px;padding:0 6px;border-radius:3px;
+border:1px solid currentColor;font-weight:600}
+.lv-L1{color:var(--ok)}.lv-L0{color:var(--warn)}.lv-none{color:var(--none)}
+.v-ok{color:var(--ok)}.v-warn{color:var(--warn)}.v-danger{color:var(--danger)}
+.v-limited{color:#7a4b00}.v-none{color:var(--none)}
+.note{border-left:3px solid var(--warn);background:#fffdf5;padding:13px 16px;
+margin:18px 0;font-size:14.5px}
+.caveat{border-left:3px solid var(--accent);background:#fdf7f6;padding:13px 16px;margin:18px 0}
+.caveat strong{color:var(--accent)}
+footer{border-top:1px solid var(--line);margin-top:56px;padding:26px 0 44px;
+font-size:13px;color:var(--sub)}
+footer a{color:var(--sub)}
+.qr-box{margin:26px 0 6px;padding:20px 0 4px;border-top:1px solid var(--line);
+display:flex;gap:26px;flex-wrap:wrap;align-items:flex-start;
+/* 8 个码：容器宽限为「4 个码 + 3 个间距」，自然排成 4+4 两行（2026-11-16） */
+max-width:calc(4 * 122px + 3 * 26px)}
+.qr-item{text-align:center;flex:0 0 auto}
+.qr-item img{width:108px;height:108px;object-fit:contain;display:block;
+background:#fff;border:1px solid var(--line);border-radius:8px;padding:6px}
+.qr-item span{display:block;margin-top:9px;font-size:12.5px;color:var(--sub)}
+@media(max-width:560px){.qr-box{gap:18px;max-width:calc(4 * 100px + 3 * 18px)}
+.qr-item img{width:92px;height:92px}}
+.pager{display:flex;justify-content:space-between;gap:16px;margin:36px 0 0;
+padding-top:20px;border-top:1px solid var(--line);font-size:14px}
+.pager a{max-width:46%}
+.count{color:var(--sub);font-size:13.5px;margin:-8px 0 18px}
+.tw{width:100%;overflow-x:auto;-webkit-overflow-scrolling:touch;margin:16px 0}
+.tw table{margin:0;min-width:100%}
+body{overflow-x:hidden}
+@media(max-width:600px){h1{font-size:22px}.wrap{padding:0 15px}table{font-size:13px}
+th,td{padding:7px 9px}pre{font-size:12px}}
+</style>
+</head>
+<body>
+<body>
+<header class="site"><div class="wrap">
+<a class="logo" href="/">丘山录实测库</a>
+<nav><a href="/bench/">跑分</a><a href="/fix/">排错</a><a href="/license/">许可证</a><a href="/machines/">机器</a><a href="/about/">口径</a></nav>
+</div></header>
+<main class="wrap">
+
+<h1>本地大模型搬运：大带宽单流吃不满，先加流再加窗口</h1>
+<div class="meta"><span>性能 · 1 条边 / 6 档窗口 / 3 档并发 / 1 条千兆对照</span><span><span class="lv lv-none">未标注</span></span><span>整理于 2026-11-20</span>
+<span>有效期 permanent</span></div>
+<p class="lede">同一份 7,405,956,128 字节的分片，从一台 DGX Spark 经 200G 直连搬到另一台，四轮取中位。默认接收窗口下内核只给 131,072 字节（128 KB），单流只跑到 2,050.50 MB/s，占 200G 的 8.2%。把 SO_RCVBUF 调到 2 MB，提到 3,262.76 MB/s（13.1%）就到顶，再往上 4/8/16 MB 反而掉回 10.6%–12.6%。改并发才是主变量：4 流聚合 10,715.01 MB/s（42.9%），8 流 12,079.21 MB/s（48.3%）。但 8 流的单流速度从 2,678.75 掉到 1,509.90 MB/s（−43.6%），按「聚合还在涨、单流已单调降 = 链路已满」的判据，48.3% 就是这条链路的实际上限。对照那根千兆管理网：117.59 MB/s = 0.941 Gbps，占标称 94.1%，T1=T2=T4 全是 117.5x，加流完全无效。</p>
+<span class="tag">本地部署</span><span class="tag">模型搬运</span><span class="tag">200G</span><span class="tag">TCP接收窗口</span><span class="tag">SO_RCVBUF</span><span class="tag">并发流数</span><span class="tag">千兆网</span><span class="tag">DGX Spark</span>
+<h2>这条适用于</h2><ul><li>两端同一内核版本且可修改 SO_RCVBUF</li><li>发送端应尽量清空背景负载（本例无法清空）</li><li>接收端逐轮校验字节数，避免把断连当完成</li></ul>
+<h2>版本指纹</h2><p><code>7,405,956,128 B 分片 + DGX Spark GB10 + 200G 直连</code></p>
+<h2>具体做法</h2>
+<pre><code>【实测口径】
+  发送端：DGX Spark #1（aarch64 GB10 / 20 核 / 122 GB 内存），源文件为生产模型真实分片，7,405,956,128 B
+  接收端：DGX Spark #2 经 200G 直连；旁路对照为一台主机经千兆管理网
+  服务端每连接一线程（避免串行 accept 假值）；客户端 threading.Barrier 栅栏同步起跑
+  每档 4 轮取中位；每轮校验 got 字节数 == 目标字节数，不等的整档作废；单流每轮 4 GiB</code></pre>
+<pre><code>【接收窗口梯度（200G 单流，4 轮中位）】
+  不设（内核自动，生效 131,072 B）：2,050.50 MB/s = 16.404 Gbps = 8.2%
+  1 MB（生效 2,097,152 B）：2,525.36 MB/s = 20.203 = 10.1%
+  2 MB（生效 4,194,304 B）：3,262.76 MB/s = 26.102 = 13.1%（最高）
+  4 MB（生效 8,388,608 B）：3,157.16 MB/s = 25.258 = 12.6%
+  8 MB（生效 8,388,608 B）：2,743.76 MB/s = 21.950 = 11.0%
+  16 MB（生效 8,388,608 B）：2,648.98 MB/s = 21.192 = 10.6%</code></pre>
+<pre><code>【并发梯度（自动窗口，每流 4 GiB）】
+  T=1：2,050.50 MB/s = 16.404 Gbps = 8.2%，单流 2,050.50
+  T=4：10,715.01 MB/s = 85.720 Gbps = 42.9%，单流 2,678.75
+  T=8：12,079.21 MB/s = 96.633 Gbps = 48.3%，单流 1,509.90（较 T=4 降 43.6%）</code></pre>
+<pre><code>【对照通道】
+  千兆管理网：117.59 MB/s = 0.941 Gbps = 94.1% 线速；T1 = T2 = T4 = 117.5x，加流无效
+  本机 NVMe（O_DIRECT 16 MB × 256）：10.6 GB/s</code></pre>
+<p>【18.475 GB 权重搬运时间】200G 八流 1.5 s ｜ 200G 单流默认窗口 9.0 s ｜ 千兆 157.1 s（2.62 min）｜ 本机盘 1.7 s</p>
+<div class="caveat"><strong>失效边界</strong><br>只测了环拓扑上一条边（Spark #1 ↔ #2），另外三条边与对角线未测（对角线没有 200G 路径），不可外推到其它边。200G 只跑到 48.3% 的根因未定位：已排除「窗口太小」这一因，但 PFC / ECN / GPUDirect / MTU / 中断绑核全部未查。窗口梯度只做到 16 MB 请求（内核封顶 8 MB 生效），未改 net.core.rmem_max，也未试 64/128 MB 档。全部测量是「网络读进内存」，没有同时写盘，所以文中秒数是纯网络值，不是端到端搬运时延。未测边下载边加载（mmap 场景）。未测跨网段。自动窗口那档四轮极差 78.4%，因发送端常驻推理服务占用背景算力，中位数可用、单次值不可引用。</div>
+<div class="pager"><a href="/fix/arete-27b-vram-kv-account-20261108/">← Arete-27B 装得下吗：混合注意力省 75% KV，但省不动权重</a><a href="/fix/bandwidth-before-toks-ceiling-20261102/" style="text-align:right">算 tok/s 上限之前先量带宽：标称 273 GB/s 的机器，四台实测只到 233.6 →</a></div>
+<p style="margin-top:30px"><a href="/fix/">← 返回全部排错方案</a></p>
+
+</main>
+<footer><div class="wrap">
+<p>本站数字均为真机实测，逐条标注验证等级（<span class="lv lv-L1">L1</span> 多次复测取中位 /
+<span class="lv lv-L0">L0</span> 单次测量）。查不到的写「未采集」，不估算。</p>
+<p>数据源自丘山录硬件实测库 · 本页生成于 2026-11-19 · <a href="/about/">数据口径与方法</a></p>
+<div class="qr-box">
+<div class="qr-item">
+<img decoding="async" src="/assets/gzh-qr.jpg" width="108" height="108" alt="丘山录公众号二维码">
+<span>丘山录 · 公众号</span>
+</div>
+<div class="qr-item">
+<img decoding="async" src="/assets/mp-code.png" width="108" height="108" alt="丘山录小程序码">
+<span>丘山录 · 小程序</span>
+</div>
+<div class="qr-item">
+<img decoding="async" src="/assets/shipinhao-code.png" width="108" height="108" alt="丘山录视频号二维码">
+<span>丘山录 · 视频号</span>
+</div>
+<div class="qr-item">
+<img decoding="async" src="/assets/xiaohongshu-code.png" width="108" height="108" alt="丘山录小红书二维码">
+<span>丘山录 · 小红书</span>
+</div>
+<div class="qr-item">
+<img decoding="async" src="/assets/douyin-code.png" width="108" height="108" alt="丘山录抖音号二维码">
+<span>丘山录 · 抖音号</span>
+</div>
+<div class="qr-item">
+<img decoding="async" src="/assets/bilibili-code.png" width="108" height="108" alt="丘山录B站号二维码">
+<span>丘山录 · B站号</span>
+</div>
+<div class="qr-item">
+<img decoding="async" src="/assets/zhihu-code.png" width="108" height="108" alt="丘山录知乎二维码">
+<span>丘山录 · 知乎</span>
+</div>
+<div class="qr-item">
+<img decoding="async" src="/assets/csdn-code.png" width="108" height="108" alt="丘山录CSDN二维码">
+<span>丘山录 · CSDN</span>
+</div>
+</div>
+</div></footer>
+</body>
+</html>

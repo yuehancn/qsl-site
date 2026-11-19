@@ -99,14 +99,14 @@ th,td{padding:7px 9px}pre{font-size:12px}}
 <p>但权重一分没省。27.36B 参数在 BF16 下就是 54.74 GB，能压到 17.20 GB 靠的是量化，跟注意力结构毫无关系。所以对 16G 卡用户来说，它的友好程度和任何一个 27B 稠密模型一样：都装不下。</p>
 <p>真正兑现那 4 倍的前提是「你已经有足够显存」。一张 32G 卡跑 Q4_K_M，普通 27B 全注意力模型要 64 GiB KV 直接出局，Arete 只要 16 GiB 塞得进去。这就像「这车很省油」—— 前提是你先买得起这车。</p>
 <div class="caveat"><strong>失效边界</strong><br>① 权重体积与各档字节来自仓库 API 真源，层结构来自官方 config 原文；② KV 体积与各卡可开上下文全部是算术推导，不是实测运行 —— Arete-27B 本体未下载未加载；③ 统一扣 1 GiB 作为激活与计算图预留，这是工程惯例取值，不同推理框架实际开销不同，真实可开上下文会低于本文推算；④ 4090 的 24G 为标称值，该卡不在本站测试床内，仅作对照；⑤ 名义位宽与实际位宽差异（Q4 标 4 bit 实际 5.03 bit）是 GGUF 的 K-quant 混精度结构决定的，不是哪个转换脚本算错。</div>
-<div class="pager"><a href="/fix/weight-shard-write-penalty-20261103/">← 权重落盘慢 35 倍不是盘坏了，是分片太碎：每文件固定开销 3.7 毫秒</a><a href="/fix/bandwidth-before-toks-ceiling-20261102/" style="text-align:right">算 tok/s 上限之前先量带宽：标称 273 GB/s 的机器，四台实测只到 233.6 →</a></div>
+<div class="pager"><a href="/fix/weight-shard-write-penalty-20261103/">← 权重落盘慢 35 倍不是盘坏了，是分片太碎：每文件固定开销 3.7 毫秒</a><a href="/fix/d7-200g-window-concurrency-20261120/" style="text-align:right">本地大模型搬运：大带宽单流吃不满，先加流再加窗口 →</a></div>
 <p style="margin-top:30px"><a href="/fix/">← 返回全部排错方案</a></p>
 
 </main>
 <footer><div class="wrap">
 <p>本站数字均为真机实测，逐条标注验证等级（<span class="lv lv-L1">L1</span> 多次复测取中位 /
 <span class="lv lv-L0">L0</span> 单次测量）。查不到的写「未采集」，不估算。</p>
-<p>数据源自丘山录硬件实测库 · 本页生成于 2026-11-18 · <a href="/about/">数据口径与方法</a></p>
+<p>数据源自丘山录硬件实测库 · 本页生成于 2026-11-19 · <a href="/about/">数据口径与方法</a></p>
 <div class="qr-box">
 <div class="qr-item">
 <img decoding="async" src="/assets/gzh-qr.jpg" width="108" height="108" alt="丘山录公众号二维码">
