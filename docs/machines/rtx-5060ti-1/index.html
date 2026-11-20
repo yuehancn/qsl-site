@@ -3,8 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>RTX 5060Ti #1 实测数据 · 16 条</title>
-<meta name="description" content="RTX 5060Ti #1 的真机实测记录：9 条跑分与显存数据。">
+<title>RTX 5060Ti #1 实测数据 · 20 条</title>
+<meta name="description" content="RTX 5060Ti #1 的真机实测记录：11 条跑分与显存数据。">
 <link rel="canonical" href="https://88918888.xyz/machines/rtx-5060ti-1/">
 
 <style>
@@ -87,23 +87,23 @@ th,td{padding:7px 9px}pre{font-size:12px}}
 <main class="wrap">
 
 <h1>RTX 5060Ti #1</h1>
-<div class="meta"><span>素材产出机</span><span>16 条实测</span></div>
+<div class="meta"><span>素材产出机</span><span>20 条实测</span></div>
 <div class="tw"><div class="tw"><table><tr><th>GPU</th><td>NVIDIA GeForce RTX 5060 Ti</td></tr><tr><th>显存</th><td>16 GB GDDR7</td></tr><tr><th>CPU</th><td>Intel Xeon E5-2680 v4 @ 2.40GHz</td></tr><tr><th>内存</th><td>63.9 GB</td></tr><tr><th>磁盘</th><td>C: 已用 88GB / 余 135GB；D: 余 1844GB</td></tr><tr><th>系统</th><td>Windows 11 专业版</td></tr><tr><th>驱动</th><td>616.56</td></tr><tr><th>CUDA</th><td>13.4</td></tr><tr><th>架构</th><td>x86_64</td></tr></table></div></div>
 <div class="caveat"><strong>这台机器的坑</strong><br>驱动 616.56 + CUDA 13.4，是四台 5060Ti 中版本最新的。跨机对比时须注意驱动差异引入的系统误差</div>
 素材产出机 1（出图 / 批量生产）
-<h2>与选型相关的实测（9 条）</h2>
-<div class="tw"><div class="tw"><table><tr><th>任务</th><th>数值</th><th>等级</th></tr><tr><td>5060Ti NP=1 时同时 1 请求的聚合吞吐</td><td class="num">11.43 tok/s</td><td><span class="lv lv-L1">L1</span></td></tr><tr><td>5060Ti NP=1 时的显存占用</td><td class="num">15945 MiB</td><td><span class="lv lv-L1">L1</span></td></tr><tr><td>5060Ti NP=2 时同时 2 请求的聚合吞吐</td><td class="num">16.63 tok/s</td><td><span class="lv lv-L1">L1</span></td></tr><tr><td>5060Ti NP=4 时同时 4 请求的聚合吞吐</td><td class="num">16.22 tok/s</td><td><span class="lv lv-L1">L1</span></td></tr><tr><td>5060Ti NP=4 时的显存占用</td><td class="num">15919 MiB</td><td><span class="lv lv-L1">L1</span></td></tr><tr><td>RTX 5060Ti 16GB 显存每 GB 单价</td><td class="num">331 元/GB</td><td><span class="lv lv-L0">L0</span></td></tr><tr><td>SDXL 单张 1024×1024</td><td class="num">17.66 秒/张</td><td><span class="lv lv-L1">L1</span></td></tr><tr><td>SDXL 批 4 均摊单张耗时</td><td class="num">16.84 秒/张</td><td><span class="lv lv-L1">L1</span></td></tr><tr><td>SDXL 批量 4 张 1024×1024</td><td class="num">67.38 秒/批</td><td><span class="lv lv-L1">L1</span></td></tr></table></div></div>
-<h2>部署与运维相关（7 条）</h2>
+<h2>与选型相关的实测（11 条）</h2>
+<div class="tw"><div class="tw"><table><tr><th>任务</th><th>数值</th><th>等级</th></tr><tr><td>16G 卡装完 Loop-9B 4bit 后留给上下文的显存</td><td class="num">11.337 GiB</td><td><span class="lv lv-L0">L0</span></td></tr><tr><td>5060Ti NP=1 时同时 1 请求的聚合吞吐</td><td class="num">11.43 tok/s</td><td><span class="lv lv-L1">L1</span></td></tr><tr><td>5060Ti NP=1 时的显存占用</td><td class="num">15945 MiB</td><td><span class="lv lv-L1">L1</span></td></tr><tr><td>5060Ti NP=2 时同时 2 请求的聚合吞吐</td><td class="num">16.63 tok/s</td><td><span class="lv lv-L1">L1</span></td></tr><tr><td>5060Ti NP=4 时同时 4 请求的聚合吞吐</td><td class="num">16.22 tok/s</td><td><span class="lv lv-L1">L1</span></td></tr><tr><td>5060Ti NP=4 时的显存占用</td><td class="num">15919 MiB</td><td><span class="lv lv-L1">L1</span></td></tr><tr><td>RTX 5060Ti 16G 可用显存（标称扣驱动与显示占用）</td><td class="num">15.9 GiB</td><td><span class="lv lv-L0">L0</span></td></tr><tr><td>RTX 5060Ti 16GB 显存每 GB 单价</td><td class="num">331 元/GB</td><td><span class="lv lv-L0">L0</span></td></tr><tr><td>SDXL 单张 1024×1024</td><td class="num">17.66 秒/张</td><td><span class="lv lv-L1">L1</span></td></tr><tr><td>SDXL 批 4 均摊单张耗时</td><td class="num">16.84 秒/张</td><td><span class="lv lv-L1">L1</span></td></tr><tr><td>SDXL 批量 4 张 1024×1024</td><td class="num">67.38 秒/批</td><td><span class="lv lv-L1">L1</span></td></tr></table></div></div>
+<h2>部署与运维相关（9 条）</h2>
 <p class="count">磁盘、缓存、网络层面的数据，决定「能不能装下、传得快不快」，
 不代表算力强弱。</p>
-<div class="tw"><div class="tw"><table><tr><th>任务</th><th>数值</th><th>等级</th></tr><tr><td>16G 卡与 32G 卡的并发峰值位置不同（2 槽 vs 4 槽）</td><td class="num">2 槽</td><td><span class="lv lv-L1">L1</span></td></tr><tr><td>16G 卡加 4 槽相对 2 槽的吞吐变化</td><td class="num">0.98 倍</td><td><span class="lv lv-L1">L1</span></td></tr><tr><td>RTX 5060 Ti 16GB 二手挂牌价中位</td><td class="num">5124.5 元</td><td><span class="lv lv-L0">L0</span></td></tr><tr><td>RTX 5060Ti 16GB 二手挂牌价中位</td><td class="num">5300 元</td><td><span class="lv lv-L0">L0</span></td></tr><tr><td>RTX 5060Ti 16GB 有效挂单条数</td><td class="num">13 条</td><td><span class="lv lv-L0">L0</span></td></tr><tr><td>一次代装（¥38）占 RTX 5060 Ti 16G 挂牌价的比重</td><td class="num">0.74 %</td><td><span class="lv lv-L0">L0</span></td></tr><tr><td>装多少次（¥38/次）才抵一台 RTX 5060 Ti 16G</td><td class="num">134.9 次</td><td><span class="lv lv-L0">L0</span></td></tr></table></div></div>
+<div class="tw"><div class="tw"><table><tr><th>任务</th><th>数值</th><th>等级</th></tr><tr><td>16G 卡与 32G 卡的并发峰值位置不同（2 槽 vs 4 槽）</td><td class="num">2 槽</td><td><span class="lv lv-L1">L1</span></td></tr><tr><td>16G 卡加 4 槽相对 2 槽的吞吐变化</td><td class="num">0.98 倍</td><td><span class="lv lv-L1">L1</span></td></tr><tr><td>16G 卡装 Loop-9B BF16 权重的缺口</td><td class="num">2.092 GiB</td><td><span class="lv lv-L0">L0</span></td></tr><tr><td>RTX 5060 Ti 16GB 二手挂牌价中位</td><td class="num">5124.5 元</td><td><span class="lv lv-L0">L0</span></td></tr><tr><td>RTX 5060Ti 16GB 二手挂牌价中位</td><td class="num">5300 元</td><td><span class="lv lv-L0">L0</span></td></tr><tr><td>RTX 5060Ti 16GB 有效挂单条数</td><td class="num">13 条</td><td><span class="lv lv-L0">L0</span></td></tr><tr><td>SenseNova Loop-9B 4bit 权重折算 GiB</td><td class="num">4.563 GiB</td><td><span class="lv lv-L0">L0</span></td></tr><tr><td>一次代装（¥38）占 RTX 5060 Ti 16G 挂牌价的比重</td><td class="num">0.74 %</td><td><span class="lv lv-L0">L0</span></td></tr><tr><td>装多少次（¥38/次）才抵一台 RTX 5060 Ti 16G</td><td class="num">134.9 次</td><td><span class="lv lv-L0">L0</span></td></tr></table></div></div>
 <p style="margin-top:30px"><a href="/machines/">← 返回机器清单</a></p>
 
 </main>
 <footer><div class="wrap">
 <p>本站数字均为真机实测，逐条标注验证等级（<span class="lv lv-L1">L1</span> 多次复测取中位 /
 <span class="lv lv-L0">L0</span> 单次测量）。查不到的写「未采集」，不估算。</p>
-<p>数据源自丘山录硬件实测库 · 本页生成于 2026-11-19 · <a href="/about/">数据口径与方法</a></p>
+<p>数据源自丘山录硬件实测库 · 本页生成于 2026-11-20 · <a href="/about/">数据口径与方法</a></p>
 <div class="qr-box">
 <div class="qr-item">
 <img decoding="async" src="/assets/gzh-qr.jpg" width="108" height="108" alt="丘山录公众号二维码">

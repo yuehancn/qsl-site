@@ -104,14 +104,14 @@ th,td{padding:7px 9px}pre{font-size:12px}}
 <pre><code>【为什么不是理论上的 99.2%】128 倍压缩的理论极限 = 1 - 1/128 = 99.2%。实际 83.05%。差额的来源是一个除法：4032 ÷ 4198.5 = 96.03%。1M 上下文的 KV 里，96% 全堆在那 7 层不压缩的层上，37 层压缩的功劳只占剩下 4%。</code></pre>
 <p>【这笔账怎么用】长上下文不是显存的大头。1M 上下文 FP8 只吃 4.10 GiB，一张 32G 卡光放 KV 能放七个 1M 会话。真正吃显存的是权重本身 —— 这个模型 FP8 权重 288.46GB。看到「1M 上下文」这个卖点，先算权重，再算 KV。</p>
 <div class="caveat"><strong>失效边界</strong><br>全部为按官方 config.json 与仓库真实字节数的算术推导，ERNIE 5.5 Flash Base 权重未下载、模型未运行，本方案不含任何该模型的实测速度或实测显存占用。compress_ratios 长度 44 与层数 43 差一个：前 43 个对应层，第 44 个（值 -2）用途未确认，可能对应 num_nextn_predict_layers = 1 的 MTP 层；若它也参与 KV，1M 下要多 576 个数/token（约 +0.56 GiB），结论不变。官方「37 层 HCA + 6 层 MLA」与 config 的 37 + 7 亦差一层，本方案以 config 原值为准，媒体口径记为待核。多卡切分的通信开销未在这个模型上实测。</div>
-<div class="pager"><a href="/fix/kimi-moe-capacity-vs-speed-20261106/">← MoE 大模型能不能跑：容量和速度是两笔账，别混成一句「太大了」</a><a href="/fix/kv-const-vs-linear-concurrency-20261102/" style="text-align:right">4B 模型显存别只算权重：权重决定装不装得下，KV 决定能挂几路 →</a></div>
+<div class="pager"><a href="/fix/kimi-moe-capacity-vs-speed-20261106/">← MoE 大模型能不能跑：容量和速度是两笔账，别混成一句「太大了」</a><a href="/fix/quant-price-vs-repo-bytes-20261121/" style="text-align:right">厂商写「4bit 只要 4.9GB」，先数仓库分片再算余量 →</a></div>
 <p style="margin-top:30px"><a href="/fix/">← 返回全部排错方案</a></p>
 
 </main>
 <footer><div class="wrap">
 <p>本站数字均为真机实测，逐条标注验证等级（<span class="lv lv-L1">L1</span> 多次复测取中位 /
 <span class="lv lv-L0">L0</span> 单次测量）。查不到的写「未采集」，不估算。</p>
-<p>数据源自丘山录硬件实测库 · 本页生成于 2026-11-19 · <a href="/about/">数据口径与方法</a></p>
+<p>数据源自丘山录硬件实测库 · 本页生成于 2026-11-20 · <a href="/about/">数据口径与方法</a></p>
 <div class="qr-box">
 <div class="qr-item">
 <img decoding="async" src="/assets/gzh-qr.jpg" width="108" height="108" alt="丘山录公众号二维码">
