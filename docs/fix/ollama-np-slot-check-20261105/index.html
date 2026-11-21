@@ -116,14 +116,14 @@ NP=8 的 24962 MiB 构成：模型 8148.38 + KV 12288 + CUDA_Host 417.66 + 计�
 NP=16 总显存 31887 MiB 低于「模型 8148 + KV 24576 = 32724」的直觉值，差额就是被搬出显存的那部分。
 推演：ctx 拉到 32768 后单槽 KV 6144 MiB，4 槽 24576 MiB —— 已超今天 4 槽实际占用 12288 的两倍，峰值可能前移。</code></pre>
 <div class="caveat"><strong>失效边界</strong><br>五档数据只对 qwen2.5:14b / ctx 8192 / 这两张卡成立，换模型、换上下文长度、换量化格式都要重测。24GB 卡（4090）本轮没有实测，文中不给数；双卡与多机并发未测。「4→8 槽掉 12% 是抢 SM」是机制解释，未做 profile 验证。跑分库里 NP=8 总显存另有 24267 MiB 一条读数，与同轮启动日志算不平，本方案采用与日志对齐的 24962 MiB。</div>
-<div class="pager"><a href="/fix/endside-i8mm-check-20261101/">← 端侧设备选型先查指令集：缺 i8mm 的机器，int8 量化比 fp32 慢 47 倍</a><a href="/fix/llm-concurrency-ceiling-20260930/" style="text-align:right">并发加到 16 吞吐反而没涨：找到收益天花板与实用拐点 →</a></div>
+<div class="pager"><a href="/fix/endside-i8mm-check-20261101/">← 端侧设备选型先查指令集：缺 i8mm 的机器，int8 量化比 fp32 慢 47 倍</a><a href="/fix/llamacpp-thread-peak-collapse-20261122/" style="text-align:right">llama.cpp 线程数：峰值远小于核数，全开反而崩 →</a></div>
 <p style="margin-top:30px"><a href="/fix/">← 返回全部排错方案</a></p>
 
 </main>
 <footer><div class="wrap">
 <p>本站数字均为真机实测，逐条标注验证等级（<span class="lv lv-L1">L1</span> 多次复测取中位 /
 <span class="lv lv-L0">L0</span> 单次测量）。查不到的写「未采集」，不估算。</p>
-<p>数据源自丘山录硬件实测库 · 本页生成于 2026-11-20 · <a href="/about/">数据口径与方法</a></p>
+<p>数据源自丘山录硬件实测库 · 本页生成于 2026-11-21 · <a href="/about/">数据口径与方法</a></p>
 <div class="qr-box">
 <div class="qr-item">
 <img decoding="async" src="/assets/gzh-qr.jpg" width="108" height="108" alt="丘山录公众号二维码">

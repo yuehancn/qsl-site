@@ -111,14 +111,14 @@ th,td{padding:7px 9px}pre{font-size:12px}}
 <pre><code>【社区读数（2026-11-20）】
   HF downloads 1,447 / likes 391；许可证 Apache-2.0</code></pre>
 <div class="caveat"><strong>失效边界</strong><br>【口径边界】<br>1. 4.164 bit 每参是从官方「4.9 GB」反算出来的，属厂商口径换算，实际量化档位与分组方式未核。<br>2. 「部署显存低至 10GB 以内」对应的上下文长度厂商没说，本文不外推。10 GB 装 4.563 GiB 权重加短上下文很正常；装 512K 缓存从任何 9B 模型的量级看都不像，但这条是推理不是实测。<br>3. 模型未在本地下载运行，本篇零 tok/s，所有结论都是体积与算术，不含速度。<br>4. 5060Ti 的 15.9 GiB 是标称 16 GiB 扣驱动与显示占用的估算，驱动版本会让它浮动几百 MiB。<br>5. GB 为十进制、GiB 为二进制，19,318,917,488 B = 19.319 GB = 17.992 GiB，两者不可混用。</div>
-<div class="pager"><a href="/fix/ernie55-kv-compress-real-number-20261107/">← 「37 层压缩省 99%」到底省多少：按 config 逐层算一遍</a><a href="/fix/kv-const-vs-linear-concurrency-20261102/" style="text-align:right">4B 模型显存别只算权重：权重决定装不装得下，KV 决定能挂几路 →</a></div>
+<div class="pager"><a href="/fix/ernie55-kv-compress-real-number-20261107/">← 「37 层压缩省 99%」到底省多少：按 config 逐层算一遍</a><a href="/fix/vram-price-per-gb-5090-vs-5060ti-20261122/" style="text-align:right">买显存：5090 每 GB 比 5060Ti 贵 4.85 倍，钱买的是带宽 →</a></div>
 <p style="margin-top:30px"><a href="/fix/">← 返回全部排错方案</a></p>
 
 </main>
 <footer><div class="wrap">
 <p>本站数字均为真机实测，逐条标注验证等级（<span class="lv lv-L1">L1</span> 多次复测取中位 /
 <span class="lv lv-L0">L0</span> 单次测量）。查不到的写「未采集」，不估算。</p>
-<p>数据源自丘山录硬件实测库 · 本页生成于 2026-11-20 · <a href="/about/">数据口径与方法</a></p>
+<p>数据源自丘山录硬件实测库 · 本页生成于 2026-11-21 · <a href="/about/">数据口径与方法</a></p>
 <div class="qr-box">
 <div class="qr-item">
 <img decoding="async" src="/assets/gzh-qr.jpg" width="108" height="108" alt="丘山录公众号二维码">
