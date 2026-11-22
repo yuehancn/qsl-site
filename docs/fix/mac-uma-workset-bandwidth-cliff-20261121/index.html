@@ -119,14 +119,14 @@ th,td{padding:7px 9px}pre{font-size:12px}}
   Mac mini M6 12C / 16GB / 256GB：6,999 元（apple.com.cn 官网）
   内存 16GB→24GB 加价 1,500 元 → 24GB 版 8,499 元；折 187.5 元/GB</code></pre>
 <div class="caveat"><strong>失效边界</strong><br>【未测到的，一律不许当结论】<br>1. 24GB / 32GB 机型一台都没测。24GB 的「建议线约 17.8 GiB」是按 16GB 的 74% 比例外推的算术，不是实测。<br>2. 11.0 与 11.5 GiB 之间的断点没二分到 0.1 GiB，只知落在这 0.5 GiB 区间内。<br>3. M4 / M5 / M5 Pro 全没复现，结论仅限本机 M6 16GB。<br>4. max_recommended_working_set_size 的官方语义没读 Apple 原文，只按实测行为描述为「建议线」，不写「硬上限」。<br>5. Mac 侧带宽绝对值未取到（8×64 MiB 测出 437-485 GB/s 属 SLC 命中，判无效）。因此只给「驻留量变化时带宽怎么变」的相对结论，不含 M6 峰值带宽，跨机带宽绝对值对比不成立。<br>6. 11.0 GiB 这一档两轮差异大（21.77 vs 76.5 GB/s），判为后台负载干扰，该点存疑。<br>7. 全部带宽为单次求和换算值，未做多轮误差棒。<br>8. 模型本体没跑，本篇零 tok/s。</div>
-<div class="pager"><a href="/fix/glm47-flash-24g-concurrency-capacity-20261120/">← GLM-4.7-Flash 显存账：24G 卡权重装得下，但只能跑一路</a><a href="/fix/three-kinds-of-slow-20260930/" style="text-align:right">集群慢不一定是卡不够：三种慢，只有一种值得花钱 →</a></div>
+<div class="pager"><a href="/fix/glm47-flash-24g-concurrency-capacity-20261120/">← GLM-4.7-Flash 显存账：24G 卡权重装得下，但只能跑一路</a><a href="/fix/dgxspark-rent-vs-buy-breakeven-20261123/" style="text-align:right">DGX Spark 租买回本：412 天，而一年只有 365 天 →</a></div>
 <p style="margin-top:30px"><a href="/fix/">← 返回全部排错方案</a></p>
 
 </main>
 <footer><div class="wrap">
 <p>本站数字均为真机实测，逐条标注验证等级（<span class="lv lv-L1">L1</span> 多次复测取中位 /
 <span class="lv lv-L0">L0</span> 单次测量）。查不到的写「未采集」，不估算。</p>
-<p>数据源自丘山录硬件实测库 · 本页生成于 2026-11-21 · <a href="/about/">数据口径与方法</a></p>
+<p>数据源自丘山录硬件实测库 · 本页生成于 2026-11-22 · <a href="/about/">数据口径与方法</a></p>
 <div class="qr-box">
 <div class="qr-item">
 <img decoding="async" src="/assets/gzh-qr.jpg" width="108" height="108" alt="丘山录公众号二维码">

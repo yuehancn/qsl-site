@@ -15,7 +15,7 @@ from PIL import Image
 import numpy as np
 
 SRC = r"C:\Users\yuehancn\Desktop\新建文件夹 (10)"
-DST = r"C:\Users\yuehancn\WorkBuddy\qsl-site\assets-src"
+DST = r"//192.168.11.178/我的文档-699065053/岳晗/WorkBuddy\qsl-site\assets-src"
 
 JOBS = [
     ("shipinhao-code.png",   "微信图片_20261115224227_513_49.jpg", (452, 1241), "视频号"),

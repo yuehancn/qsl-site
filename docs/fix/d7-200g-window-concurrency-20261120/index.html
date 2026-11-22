@@ -115,14 +115,14 @@ th,td{padding:7px 9px}pre{font-size:12px}}
   本机 NVMe（O_DIRECT 16 MB × 256）：10.6 GB/s</code></pre>
 <p>【18.475 GB 权重搬运时间】200G 八流 1.5 s ｜ 200G 单流默认窗口 9.0 s ｜ 千兆 157.1 s（2.62 min）｜ 本机盘 1.7 s</p>
 <div class="caveat"><strong>失效边界</strong><br>只测了环拓扑上一条边（Spark #1 ↔ #2），另外三条边与对角线未测（对角线没有 200G 路径），不可外推到其它边。200G 只跑到 48.3% 的根因未定位：已排除「窗口太小」这一因，但 PFC / ECN / GPUDirect / MTU / 中断绑核全部未查。窗口梯度只做到 16 MB 请求（内核封顶 8 MB 生效），未改 net.core.rmem_max，也未试 64/128 MB 档。全部测量是「网络读进内存」，没有同时写盘，所以文中秒数是纯网络值，不是端到端搬运时延。未测边下载边加载（mmap 场景）。未测跨网段。自动窗口那档四轮极差 78.4%，因发送端常驻推理服务占用背景算力，中位数可用、单次值不可引用。</div>
-<div class="pager"><a href="/fix/arete-27b-vram-kv-account-20261108/">← Arete-27B 装得下吗：混合注意力省 75% KV，但省不动权重</a><a href="/fix/bandwidth-before-toks-ceiling-20261102/" style="text-align:right">算 tok/s 上限之前先量带宽：标称 273 GB/s 的机器，四台实测只到 233.6 →</a></div>
+<div class="pager"><a href="/fix/arete-27b-vram-kv-account-20261108/">← Arete-27B 装得下吗：混合注意力省 75% KV，但省不动权重</a><a href="/fix/mmap-load-meter-readbytes-zero-20261123/" style="text-align:right">mmap 加载计量：扫完 1 GiB，read_bytes 还是 0 →</a></div>
 <p style="margin-top:30px"><a href="/fix/">← 返回全部排错方案</a></p>
 
 </main>
 <footer><div class="wrap">
 <p>本站数字均为真机实测，逐条标注验证等级（<span class="lv lv-L1">L1</span> 多次复测取中位 /
 <span class="lv lv-L0">L0</span> 单次测量）。查不到的写「未采集」，不估算。</p>
-<p>数据源自丘山录硬件实测库 · 本页生成于 2026-11-21 · <a href="/about/">数据口径与方法</a></p>
+<p>数据源自丘山录硬件实测库 · 本页生成于 2026-11-22 · <a href="/about/">数据口径与方法</a></p>
 <div class="qr-box">
 <div class="qr-item">
 <img decoding="async" src="/assets/gzh-qr.jpg" width="108" height="108" alt="丘山录公众号二维码">
