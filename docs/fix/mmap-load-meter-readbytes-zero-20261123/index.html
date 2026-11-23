@@ -128,7 +128,7 @@ th,td{padding:7px 9px}pre{font-size:12px}}
   · 驻留比例 = 驻留页 ÷ 总页数；体积 = 驻留页 × page size。
   · Mac 侧无 root 无法 purge，冷态含缓存污染，97.8 / 64.4 只作方向性证据。
   · 测试对象是填充文件，不是 GGUF；llama.cpp 实际加载路径未在本轮复现。</code></pre>
-<div class="caveat"><strong>失效边界</strong><br>1. <strong></strong> 测的是 <code></code> 填充的 1 GiB 文件，不是 llama.cpp 加载 GGUF 的真实路径。<br>   要复现 11-20 那个 mmap 社区问题，得装 llama.cpp + &lt;|place_holder_mm_span_0442|&gt; a GGUF 且超出 page cache，本轮时间盒不够。<br>   所以本文能说「mmap 的计量口径是这样」，不能说「你加载 GGUF 慢就是这个原因」。<br>2. <strong></strong> 观察到的是实测现象 + 通行解释（只统计块设备层实际 IO，页错误走另一条路）。标为「实测现象」，不当内核机制讲。<br>3. <strong></strong> 无 root 不能 purge，文件刚写完可能部分仍在缓存里。<br>   97.821 / 64.350 这个比例只当方向，别当保证的绝对值。<br>4. <strong></strong> 只跑了单轮，且文件在缓存中（4k 0.11s / 64k 0.02s / 1m 0.01s），   ⚠️ 仅作方向性旁证，不可引用为实测结论。<br>5. <strong></strong> 本文结论以 Ubuntu 26.04.1 实测为准，   换发行版请自己复算一遍。<br>6. <strong></strong>    那篇是另一种测法（读方向与文件布局不同），本篇 4 MB 反而比 64 KB 低 5.7%。两次独立观测，别合并引用。</div>
+<div class="caveat"><strong>失效边界</strong><br>1. <strong></strong> 测的是 <code></code> 填充的 1 GiB 文件，不是 llama.cpp 加载 GGUF 的真实路径。<br>   要复现 11-20 那个 mmap 社区问题，得装 llama.cpp + 准备一个 GGUF 且超出 page cache，本轮时间盒不够。<br>   所以本文能说「mmap 的计量口径是这样」，不能说「你加载 GGUF 慢就是这个原因」。<br>2. <strong></strong> 观察到的是实测现象 + 通行解释（只统计块设备层实际 IO，页错误走另一条路）。标为「实测现象」，不当内核机制讲。<br>3. <strong></strong> 无 root 不能 purge，文件刚写完可能部分仍在缓存里。<br>   97.821 / 64.350 这个比例只当方向，别当保证的绝对值。<br>4. <strong></strong> 只跑了单轮，且文件在缓存中（4k 0.11s / 64k 0.02s / 1m 0.01s），   ⚠️ 仅作方向性旁证，不可引用为实测结论。<br>5. <strong></strong> 本文结论以 Ubuntu 26.04.1 实测为准，   换发行版请自己复算一遍。<br>6. <strong></strong>    那篇是另一种测法（读方向与文件布局不同），本篇 4 MB 反而比 64 KB 低 5.7%。两次独立观测，别合并引用。</div>
 <div class="pager"><a href="/fix/d7-200g-window-concurrency-20261120/">← 本地大模型搬运：大带宽单流吃不满，先加流再加窗口</a><a href="/fix/bandwidth-before-toks-ceiling-20261102/" style="text-align:right">算 tok/s 上限之前先量带宽：标称 273 GB/s 的机器，四台实测只到 233.6 →</a></div>
 <p style="margin-top:30px"><a href="/fix/">← 返回全部排错方案</a></p>
 
@@ -136,7 +136,7 @@ th,td{padding:7px 9px}pre{font-size:12px}}
 <footer><div class="wrap">
 <p>本站数字均为真机实测，逐条标注验证等级（<span class="lv lv-L1">L1</span> 多次复测取中位 /
 <span class="lv lv-L0">L0</span> 单次测量）。查不到的写「未采集」，不估算。</p>
-<p>数据源自丘山录硬件实测库 · 本页生成于 2026-11-22 · <a href="/about/">数据口径与方法</a></p>
+<p>数据源自丘山录硬件实测库 · 本页生成于 2026-11-23 · <a href="/about/">数据口径与方法</a></p>
 <div class="qr-box">
 <div class="qr-item">
 <img decoding="async" src="/assets/gzh-qr.jpg" width="108" height="108" alt="丘山录公众号二维码">

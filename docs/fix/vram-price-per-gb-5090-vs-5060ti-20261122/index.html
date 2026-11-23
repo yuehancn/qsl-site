@@ -104,14 +104,14 @@ th,td{padding:7px 9px}pre{font-size:12px}}
 3 张 5090：96GB / ¥149,997
 5060Ti 每 GB 全样本区间：¥300.0 ~ ¥369.1</code></pre>
 <div class="caveat"><strong>失效边界</strong><br>【不许当结论的部分】<br>1. 5090 整卡样本只有 5 条，中位数的稳健性明显弱于 5060Ti 的 20 条。<br>2. 全部为挂牌价（ask），非成交价、非销量。挂牌价证明不了成交。<br>3. 带宽为厂商标称口径（5090 GDDR7/512-bit、5060Ti 128-bit），本文未做实测。<br>4. 功耗、电源、机箱空间、多卡通信开销、电费均未计入每 GB 单价。<br>5. 未采集任何整机价或租价，因此没有算租买平衡点。<br>6. 多卡堆叠的实际可扩展性未测（张量并行/流水线并行的效率损耗未量化）。</div>
-<div class="pager"><a href="/fix/quant-price-vs-repo-bytes-20261121/">← 厂商写「4bit 只要 4.9GB」，先数仓库分片再算余量</a><a href="/fix/kv-const-vs-linear-concurrency-20261102/" style="text-align:right">4B 模型显存别只算权重：权重决定装不装得下，KV 决定能挂几路 →</a></div>
+<div class="pager"><a href="/fix/quant-price-vs-repo-bytes-20261121/">← 厂商写「4bit 只要 4.9GB」，先数仓库分片再算余量</a><a href="/fix/cloud-api-offpeak-pricing-breakeven-20261124/" style="text-align:right">云端 API 分时段定价：三档同 2 倍，月账单 100 元是买硬件的分界线 →</a></div>
 <p style="margin-top:30px"><a href="/fix/">← 返回全部排错方案</a></p>
 
 </main>
 <footer><div class="wrap">
 <p>本站数字均为真机实测，逐条标注验证等级（<span class="lv lv-L1">L1</span> 多次复测取中位 /
 <span class="lv lv-L0">L0</span> 单次测量）。查不到的写「未采集」，不估算。</p>
-<p>数据源自丘山录硬件实测库 · 本页生成于 2026-11-22 · <a href="/about/">数据口径与方法</a></p>
+<p>数据源自丘山录硬件实测库 · 本页生成于 2026-11-23 · <a href="/about/">数据口径与方法</a></p>
 <div class="qr-box">
 <div class="qr-item">
 <img decoding="async" src="/assets/gzh-qr.jpg" width="108" height="108" alt="丘山录公众号二维码">

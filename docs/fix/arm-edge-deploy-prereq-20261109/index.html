@@ -103,14 +103,14 @@ th,td{padding:7px 9px}pre{font-size:12px}}
 <pre><code>【带宽达成率】低配 x86 机 T=1 只吃到带宽的 14.3%（隐含有效带宽 1.15 GB/s），Xeon T=1 吃到 49.6%（8.48 GB/s）。两者裸带宽只差 2 倍（8.01 vs 17.09 GB/s），达成率却差 3.5 倍 —— 决定速度的不是内存有多快，是能不能把带宽用起来。</code></pre>
 <p>【为什么 ARM 上没拿到 tok/s】官方 arm64 预编译包跑不起来（上面三条），本机又缺 cmake 无法源码编译。ARM 侧的真实 tok/s 是本次最大空白，不做估算、不用 x86 数字顶替。</p>
 <div class="caveat"><strong>失效边界</strong><br>ARM 侧真实 tok/s 未取得：预编译包因 glibc 2.36 &lt; 2.38 无法运行，本机缺 cmake 无法源码编译，两条路都断。文中所有 tok/s 均来自 x86 两台机器（低配 4 核与 80 线程双路 Xeon），与 ARM 盒子不是同一台设备，不可直接外推。反量化加速比（i8mm/bf16 贡献多少）只能定性说，本机群没有带 i8mm 的 ARM 设备，量不出具体倍数。功耗未测 —— 该机没有可读功率计，SoC 温度 48.9°C 只是温度不是功耗。</div>
-<div class="pager"><a href="/fix/model-weight-move-verify-path-20261108/">← 模型权重从下载到上机：四跳链路 + 校验一跳的完整计时</a><a href="/fix/numpy-torch-version-conflict-20261006/" style="text-align:right">升级一个包整个环境就崩：numpy 1.x/2.x 断代是最经典的那种 →</a></div>
+<div class="pager"><a href="/fix/model-weight-move-verify-path-20261108/">← 模型权重从下载到上机：四跳链路 + 校验一跳的完整计时</a><a href="/fix/edge-available-memory-subtraction-20261124/" style="text-align:right">端侧能不能跑：用 available 做减法，别用 MemTotal →</a></div>
 <p style="margin-top:30px"><a href="/fix/">← 返回全部排错方案</a></p>
 
 </main>
 <footer><div class="wrap">
 <p>本站数字均为真机实测，逐条标注验证等级（<span class="lv lv-L1">L1</span> 多次复测取中位 /
 <span class="lv lv-L0">L0</span> 单次测量）。查不到的写「未采集」，不估算。</p>
-<p>数据源自丘山录硬件实测库 · 本页生成于 2026-11-22 · <a href="/about/">数据口径与方法</a></p>
+<p>数据源自丘山录硬件实测库 · 本页生成于 2026-11-23 · <a href="/about/">数据口径与方法</a></p>
 <div class="qr-box">
 <div class="qr-item">
 <img decoding="async" src="/assets/gzh-qr.jpg" width="108" height="108" alt="丘山录公众号二维码">

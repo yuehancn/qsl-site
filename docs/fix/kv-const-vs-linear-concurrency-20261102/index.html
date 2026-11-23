@@ -103,14 +103,14 @@ th,td{padding:7px 9px}pre{font-size:12px}}
 <p>【不拿厂商自测分当结论】<br>厂商报的 82.9% AIME 2024-2026 mean pass@1 是他们自测的，没有第三方复现，本文不当结论引用。<br>但 KV 是常数这件事是结构事实，不是跑分 —— 数层数、数字段就能验，不需要信任任何自测分数。</p>
 <p>【为什么本文没有运行时实测】<br>四台 DGX Spark 均在跑生产负载，MemAvailable 仅 19-20 GB，腾不出干净环境，<br>EdgeRock-4B 本体未下载、未加载、未跑（19-20 GB 就是当时的真实余量）。<br>不拿扰动生产的数字当实测，所以全部并发数与 KV 体积都标注为「按官方公开参数算术推导」。</p>
 <div class="caveat"><strong>失效边界</strong><br>① 全部并发路数与 KV 体积都是<strong></strong> —— EdgeRock-4B 本体未下载、未加载、未跑（四台 DGX Spark 均在跑生产负载，MemAvailable 仅 19-20 GB，腾不出干净环境）。② 8.00 GB 余量是权重按 BF16 理论值相减，实际还要扣 CUDA context、框架运行时、显存碎片，真实并发一定低于 78。③ 厂商自测 82.9% AIME 2024-2026 mean pass@1 无第三方复现，本文未当结论引用。④ 「省 99.1%」这个相对数取自官方模型卡，其基线具体配置（是否同精度、同上下文）未逐一核验。⑤ 1024 窗口滑窗的实际召回损失未量化，本文只写机制，不替它下性能判断。</div>
-<div class="pager"><a href="/fix/vram-price-per-gb-5090-vs-5060ti-20261122/">← 买显存：5090 每 GB 比 5060Ti 贵 4.85 倍，钱买的是带宽</a><a href="/fix/dsh-plugin-dep-duplicate-20261013/" style="text-align:right">6 个插件依赖文件重复 85.3%：每加一个插件，净花 246MB 公共依赖钱 →</a></div>
+<div class="pager"><a href="/fix/cloud-api-offpeak-pricing-breakeven-20261124/">← 云端 API 分时段定价：三档同 2 倍，月账单 100 元是买硬件的分界线</a><a href="/fix/dsh-plugin-dep-duplicate-20261013/" style="text-align:right">6 个插件依赖文件重复 85.3%：每加一个插件，净花 246MB 公共依赖钱 →</a></div>
 <p style="margin-top:30px"><a href="/fix/">← 返回全部排错方案</a></p>
 
 </main>
 <footer><div class="wrap">
 <p>本站数字均为真机实测，逐条标注验证等级（<span class="lv lv-L1">L1</span> 多次复测取中位 /
 <span class="lv lv-L0">L0</span> 单次测量）。查不到的写「未采集」，不估算。</p>
-<p>数据源自丘山录硬件实测库 · 本页生成于 2026-11-22 · <a href="/about/">数据口径与方法</a></p>
+<p>数据源自丘山录硬件实测库 · 本页生成于 2026-11-23 · <a href="/about/">数据口径与方法</a></p>
 <div class="qr-box">
 <div class="qr-item">
 <img decoding="async" src="/assets/gzh-qr.jpg" width="108" height="108" alt="丘山录公众号二维码">

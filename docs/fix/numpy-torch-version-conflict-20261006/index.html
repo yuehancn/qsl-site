@@ -111,14 +111,14 @@ $ &lt;你的python.exe&gt; -m pip show torch | findstr Requires</code></pre>
 $ python -m venv .venv
 $ .venv\Scripts\python.exe -m pip install -r requirements.txt</code></pre>
 <div class="caveat"><strong>失效边界</strong><br>适用边界：判据（pip check + 报错点名的包版本）在所有 Python 项目通用。本机实测环境为三套 Python 并存（见「pip 装成功却缺包」篇），所以本类问题在本机更容易被放大——先确认你改动的是哪一套环境，再动手。提醒：不要用 pip install -U 无差别升级 AI 栈里的包；也不要「一路降级」硬凑，兼容性问题成堆时新建干净 venv 重装往往更快更干净。</div>
-<div class="pager"><a href="/fix/arm-edge-deploy-prereq-20261109/">← ARM 小机跑端侧模型的三个前置门槛：指令集、glibc、cmake</a><a href="/fix/quantized-duplicate-models-20261007/" style="text-align:right">同名模型多精度副本：白占的 57 个 G →</a></div>
+<div class="pager"><a href="/fix/edge-available-memory-subtraction-20261124/">← 端侧能不能跑：用 available 做减法，别用 MemTotal</a><a href="/fix/quantized-duplicate-models-20261007/" style="text-align:right">同名模型多精度副本：白占的 57 个 G →</a></div>
 <p style="margin-top:30px"><a href="/fix/">← 返回全部排错方案</a></p>
 
 </main>
 <footer><div class="wrap">
 <p>本站数字均为真机实测，逐条标注验证等级（<span class="lv lv-L1">L1</span> 多次复测取中位 /
 <span class="lv lv-L0">L0</span> 单次测量）。查不到的写「未采集」，不估算。</p>
-<p>数据源自丘山录硬件实测库 · 本页生成于 2026-11-22 · <a href="/about/">数据口径与方法</a></p>
+<p>数据源自丘山录硬件实测库 · 本页生成于 2026-11-23 · <a href="/about/">数据口径与方法</a></p>
 <div class="qr-box">
 <div class="qr-item">
 <img decoding="async" src="/assets/gzh-qr.jpg" width="108" height="108" alt="丘山录公众号二维码">
