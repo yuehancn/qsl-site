@@ -27,7 +27,7 @@ from PIL import Image
 import numpy as np
 
 SRC = r"C:\Users\yuehancn\Desktop\新建文件夹 (10)\微信图片_20261115225755_515_49.jpg"
-DST = r"//192.168.11.178/我的文档-699065053/岳晗/WorkBuddy\qsl-site\assets-src\douyin-code.png"
+DST = r"E:\workbuddy\qsl-site\assets-src\douyin-code.png"
 
 OUT_SIZE = 512
 Y_LO, Y_HI = 210, 1060

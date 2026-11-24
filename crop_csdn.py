@@ -20,8 +20,8 @@ import numpy as np
 from PIL import Image, ImageDraw
 
 SRC = r"C:\Users\yuehancn\Desktop\新建文件夹 (10)\微信图片_20261116063708_521_49.jpg"
-OUT = r"//192.168.11.178/我的文档-699065053/岳晗/WorkBuddy\qsl-site\assets-src\csdn-code.png"
-MARKED = r"//192.168.11.178/我的文档-699065053/岳晗/WorkBuddy\qsl-site\_csdn_mark2.png"
+OUT = r"E:\workbuddy\qsl-site\assets-src\csdn-code.png"
+MARKED = r"E:\workbuddy\qsl-site\_csdn_mark2.png"
 SIZE = 512
 
 RX0, RY0, RX1, RY1 = 440, 1080, 840, 1480

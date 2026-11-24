@@ -28,7 +28,7 @@ from PIL import Image
 import numpy as np
 
 SRC = r"C:\Users\yuehancn\.workbuddy\clipboard-images\clipboard-2026-11-15T15-28-05-769Z-6b6e9fb7.jpg"
-DST = r"//192.168.11.178/我的文档-699065053/岳晗/WorkBuddy\qsl-site\assets-src\bilibili-code.png"
+DST = r"E:\workbuddy\qsl-site\assets-src\bilibili-code.png"
 
 OUT_SIZE = 512
 PAD_RATIO = 0.08

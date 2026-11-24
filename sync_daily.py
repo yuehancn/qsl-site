@@ -38,7 +38,7 @@ import subprocess
 import datetime
 
 BASE = os.path.dirname(os.path.abspath(__file__))
-SEED = r"//192.168.11.178/我的文档-699065053/岳晗/WorkBuddy/丘山录/hardware-lab-miniprogram/seed"
+SEED = r"//192.168.11.178/我的文档-699065053/岳晗/WorkBuddy_migrated_20261123/丘山录/hardware-lab-miniprogram/seed"
 STATE = os.path.join(BASE, ".sync_state.json")
 PY = sys.executable
 

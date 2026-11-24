@@ -32,10 +32,10 @@ import numpy as np
 from PIL import Image, ImageDraw
 
 SRC = r"C:\Users\yuehancn\Desktop\新建文件夹 (10)\微信图片_20261116063620_520_49.jpg"
-OUT = r"//192.168.11.178/我的文档-699065053/岳晗/WorkBuddy\qsl-site\assets-src\zhihu-code.png"
+OUT = r"E:\workbuddy\qsl-site\assets-src\zhihu-code.png"
 FINAL = 512
 INNER = 456
-MARKED = r"//192.168.11.178/我的文档-699065053/岳晗/WorkBuddy\qsl-site\_zh_corners.png"
+MARKED = r"E:\workbuddy\qsl-site\_zh_corners.png"
 
 REGION = (200, 560, 1190, 1280)
 
