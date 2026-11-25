@@ -3,9 +3,9 @@
 丘山录 · 实测数据库静态站生成器
 
 数据源（只读，绝不写入）：
-  //192.168.11.178/我的文档-699065053/岳晗/WorkBuddy_migrated_20261123/丘山录/hardware-lab-miniprogram/seed/
-    benchmarks.json   1111 条真机实测
-    solutions.json    109 条排错方案
+  E:/workbuddy/丘山录/hardware-lab-miniprogram/seed/
+    benchmarks.json   1523 条真机实测
+    solutions.json    129 条排错方案
     repo_catalog.json 141 条开源仓库许可证核验
     machines.json     16 台机器规格
 
@@ -27,7 +27,7 @@ import shutil
 from datetime import datetime
 
 BASE = os.path.dirname(os.path.abspath(__file__))
-SEED = r"//192.168.11.178/我的文档-699065053/岳晗/WorkBuddy_migrated_20261123/丘山录/hardware-lab-miniprogram/seed"
+SEED = r"E:\workbuddy\丘山录\hardware-lab-miniprogram\seed"
 OUT = os.path.join(BASE, "docs")
 # 🔴 2026-11-15 域名从 361365365.xyz 换成 88918888.xyz（旧域名弃用）。
 #    全站 URL / canonical / sitemap 都由这个常量派生，改这里即可，不要手改 docs/*.html。

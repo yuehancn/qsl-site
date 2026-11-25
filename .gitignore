@@ -18,3 +18,6 @@ _payload.json
 # sync_daily.py 的本地同步基线（seed 指纹），只对运行它的那台机器有意义
 .sync_state.json
 .sync_state.json.tmp
+
+# 改路径前的临时备份目录（2026-11-25 误提交过一次，1222 行噪音）
+_pathfix_backup_*/

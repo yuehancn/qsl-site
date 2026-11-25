@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>DGX Spark 的 200G 只跑一半：不是 PFC，是网卡挂在 PCIe ×4 上 · 丘山录实测库</title>
+<meta name="description" content="两台 DGX Spark 直连的 200G 聚合只有 12,414.46 MB/s（占标称 49.7%），逐项排查五个常见嫌疑：MTU 已是上限、中断一一绑核、RoCE 四项错误计数全零、PFC 反压是结果不是原因 —— **根因是 ConnectX-7 的 PCIe 链路出厂就是 ×4**（`ma…">
+<link rel="canonical" href="https://88918888.xyz/fix/dgxspark-pcie-x4-200g-ceiling-20261125/">
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"TechArticle","headline":"DGX Spark 的 200G 只跑一半：不是 PFC，是网卡挂在 PCIe ×4 上","datePublished":"2026-11-25","description":"两台 DGX Spark 直连的 200G 聚合只有 12,414.46 MB/s（占标称 49.7%），逐项排查五个常见嫌疑：MTU 已是上限、中断一一绑核、RoCE 四项错误计数全零、PFC 反压是结果不是原因 —— **根因是 ConnectX-7 的 PCIe 链路出厂就是 ×4**（`max_link_width` 也是 4，没有更宽的状态），Gen5×4 理论 15.","author":{"@type":"Person","name":"丘山录"}}</script>
+<style>
+:root{--ink:#1a1a1a;--sub:#5b6570;--line:#e3e6ea;--bg:#fff;--soft:#f7f8fa;
+--accent:#b03a2e;--ok:#1e7b45;--warn:#9a6b00;--danger:#a11b1b;--none:#6b7280}
+*{box-sizing:border-box}
+body{margin:0;font:16px/1.75 -apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC",
+"Hiragino Sans GB","Microsoft YaHei",sans-serif;color:var(--ink);background:var(--bg)}
+a{color:#1a4f8a;text-decoration:none}a:hover{text-decoration:underline}
+.wrap{max-width:820px;margin:0 auto;padding:0 20px}
+header.site{border-bottom:1px solid var(--line);padding:18px 0;margin-bottom:32px}
+header.site .wrap{display:flex;align-items:baseline;gap:18px;flex-wrap:wrap}
+header.site .logo{font-weight:700;font-size:18px;color:var(--ink)}
+header.site nav{font-size:14px}
+header.site nav a{color:var(--sub);margin-right:16px}
+h1{font-size:27px;line-height:1.4;margin:0 0 10px;letter-spacing:-.2px}
+h2{font-size:19px;margin:34px 0 12px;padding-top:6px}
+h3{font-size:16px;margin:22px 0 8px}
+p{margin:0 0 14px}
+.meta{color:var(--sub);font-size:13px;margin-bottom:22px;line-height:1.9}
+.meta span{margin-right:14px;white-space:nowrap}
+.lede{font-size:17px;line-height:1.8;background:var(--soft);border-left:3px solid var(--accent);
+padding:16px 18px;margin:0 0 26px}
+table{width:100%;border-collapse:collapse;margin:16px 0;font-size:14px}
+th,td{border:1px solid var(--line);padding:9px 11px;text-align:left;vertical-align:top}
+th{background:var(--soft);font-weight:600}
+td.num{font-variant-numeric:tabular-nums;white-space:nowrap}
+.tag{display:inline-block;font-size:12px;padding:1px 7px;border:1px solid var(--line);
+border-radius:3px;color:var(--sub);margin:0 6px 6px 0;background:#fff}
+.card{border:1px solid var(--line);border-radius:5px;padding:17px 19px;margin:0 0 14px}
+.card h3{margin:0 0 7px;font-size:16px;line-height:1.5}
+.card h3 a{color:var(--ink)}
+.card p{font-size:14px;color:var(--sub);margin:0 0 8px}
+.card .kv{font-size:12.5px;color:var(--sub)}
+ul,ol{padding-left:22px}li{margin-bottom:7px}
+code{background:var(--soft);padding:1px 5px;border-radius:3px;font-size:13.5px;
+font-family:ui-monospace,Consolas,monospace}
+pre{background:var(--soft);padding:14px;border-radius:4px;overflow-x:auto;font-size:13px;
+line-height:1.6}
+pre code{background:none;padding:0}
+.lv{display:inline-block;font-size:11.5px;padding:0 6px;border-radius:3px;
+border:1px solid currentColor;font-weight:600}
+.lv-L1{color:var(--ok)}.lv-L0{color:var(--warn)}.lv-none{color:var(--none)}
+.v-ok{color:var(--ok)}.v-warn{color:var(--warn)}.v-danger{color:var(--danger)}
+.v-limited{color:#7a4b00}.v-none{color:var(--none)}
+.note{border-left:3px solid var(--warn);background:#fffdf5;padding:13px 16px;
+margin:18px 0;font-size:14.5px}
+.caveat{border-left:3px solid var(--accent);background:#fdf7f6;padding:13px 16px;margin:18px 0}
+.caveat strong{color:var(--accent)}
+footer{border-top:1px solid var(--line);margin-top:56px;padding:26px 0 44px;
+font-size:13px;color:var(--sub)}
+footer a{color:var(--sub)}
+.qr-box{margin:26px 0 6px;padding:20px 0 4px;border-top:1px solid var(--line);
+display:flex;gap:26px;flex-wrap:wrap;align-items:flex-start;
+/* 8 个码：容器宽限为「4 个码 + 3 个间距」，自然排成 4+4 两行（2026-11-16） */
+max-width:calc(4 * 122px + 3 * 26px)}
+.qr-item{text-align:center;flex:0 0 auto}
+.qr-item img{width:108px;height:108px;object-fit:contain;display:block;
+background:#fff;border:1px solid var(--line);border-radius:8px;padding:6px}
+.qr-item span{display:block;margin-top:9px;font-size:12.5px;color:var(--sub)}
+@media(max-width:560px){.qr-box{gap:18px;max-width:calc(4 * 100px + 3 * 18px)}
+.qr-item img{width:92px;height:92px}}
+.pager{display:flex;justify-content:space-between;gap:16px;margin:36px 0 0;
+padding-top:20px;border-top:1px solid var(--line);font-size:14px}
+.pager a{max-width:46%}
+.count{color:var(--sub);font-size:13.5px;margin:-8px 0 18px}
+.tw{width:100%;overflow-x:auto;-webkit-overflow-scrolling:touch;margin:16px 0}
+.tw table{margin:0;min-width:100%}
+body{overflow-x:hidden}
+@media(max-width:600px){h1{font-size:22px}.wrap{padding:0 15px}table{font-size:13px}
+th,td{padding:7px 9px}pre{font-size:12px}}
+</style>
+</head>
+<body>
+<body>
+<header class="site"><div class="wrap">
+<a class="logo" href="/">丘山录实测库</a>
+<nav><a href="/bench/">跑分</a><a href="/fix/">排错</a><a href="/license/">许可证</a><a href="/machines/">机器</a><a href="/about/">口径</a></nav>
+</div></header>
+<main class="wrap">
+
+<h1>DGX Spark 的 200G 只跑一半：不是 PFC，是网卡挂在 PCIe ×4 上</h1>
+<div class="meta"><span>性能 · 2 台直连 / 5 个嫌疑排查 / 7 档流数阶梯 / 3 条路径对照</span><span><span class="lv lv-none">未标注</span></span><span>整理于 2026-11-25</span>
+<span>有效期 180d</span></div>
+<p class="lede">两台 DGX Spark 直连的 200G 聚合只有 12,414.46 MB/s（占标称 49.7%），逐项排查五个常见嫌疑：MTU 已是上限、中断一一绑核、RoCE 四项错误计数全零、PFC 反压是结果不是原因 —— **根因是 ConnectX-7 的 PCIe 链路出厂就是 ×4**（`max_link_width` 也是 4，没有更宽的状态），Gen5×4 理论 15.75 GB/s，实测已跑到它的 78.8%，属于正常工程值。**单流只有 14.3% 是另一堵墙**：`wmem_max` 封顶 4 MB，而 200G 的带宽时延积是 3.8 MB，显式放大 SO_SNDBUF 后单流 3,010.95 → 6,315.38 MB/s（+109.7%）而 4 流聚合纹丝不动 —— 两组数据同时证明「单流慢是缓冲，聚合上不去是 PCIe」。最实用的一段是端到端：纯网络 7,225.9 MB/s，边收边 O_DIRECT 落盘只剩 1,624.7 MB/s（−77.5%），而本机盘单独写有 10,722.3 MB/s，**盘不是瓶颈，是「收一块写一块」没有重叠**。结论落到钱上：18,475 MB 的模型，本机 1.7 秒 / 200G 端到端 11.6 秒 / 千兆 157.1 秒，**插上 200G 比 1G 快 13.5 倍，不是快 200 倍**；指望它当单台 200G 存储节点，方向从采购那天就错了。</p>
+<span class="tag">DGX Spark</span><span class="tag">200G</span><span class="tag">PCIe</span><span class="tag">网卡</span><span class="tag">带宽</span><span class="tag">本地部署</span><span class="tag">网络互联</span><span class="tag">LnkSta</span><span class="tag">传输慢</span><span class="tag">wmem</span><span class="tag">落盘</span><span class="tag">排查</span>
+<h2>这条适用于</h2><ul><li>Linux，能读 lspci -vv 与 ethtool -S（部分计数需 root）</li><li>两台机器之间已有 200G 直连或交换机通路</li><li>测时机器上可能还跑着别的负载，需在结论里声明</li></ul>
+<h2>版本指纹</h2><p><code>mlx5_core 7.0.0-1019-nvidia / 固件 28.45.4028 / mtu 9000 / 200G 直连</code></p>
+<h2>具体做法</h2>
+<pre><code>【实测口径】
+  机器：两台 DGX Spark 直连（不走交换机），驱动 mlx5_core 7.0.0-1019-nvidia / 固件 28.45.4028
+  链路：speed=200000 / mtu=9000；测时两台均在跑 sglang（GPU 90-91%），属带污染测量，数值取下限
+  测法：自写 socket（不套 iperf3），可同时控制流数 / 每流字节数 / SO_SNDBUF</code></pre>
+<pre><code>【第一组：PCIe 宽度（全文根因）】
+  LnkCap: Port #0, Speed 32GT/s, Width x4
+  LnkSta: Speed 32GT/s (ok), Width x4 (ok)
+  max_link_width = 4 → 出厂就是 ×4，没有更宽的状态
+  PCIe Gen5 ×4 理论 = 32 × 4 × (128/130) ÷ 8 = 15.75 GB/s
+  200G 以太网理论 = 25 GB/s → 链路设计上只能装进 63%
+  实测聚合峰值 12,414.46 MB/s ÷ 15.75 GB/s = 78.8%（正常工程值，已压满）</code></pre>
+<pre><code>【第二组：并发梯度复测（512 MiB/流）】
+  T=1   3,574.31 MB/s  28.595 Gbps  14.3%   单流 3,574.31
+  T=4  11,899.71 MB/s  95.198 Gbps  47.6%   单流 2,974.93
+  T=8  12,414.46 MB/s  99.316 Gbps  49.7%   单流 1,551.81
+  vs 11-20 同口径 12,079.21 → 误差 +2.8%（复现度够，可当定论）</code></pre>
+<pre><code>【第三组：五个嫌疑逐条排查】
+  MTU           接口 9000 / RoCE active_mtu 4096     → 已是上限，不是根因
+  中断绑核       20 个 MSI 队列，363→核0 … 383→核19 一一打散 → 教科书配置，不是根因
+  RoCE 错误计数  xmit_discards / rcv_errors / xmit_wait / buffer_overrun 全 0 → 链路无损
+  PFC           rx_pause_ctrl_phy 本机 5,192 / 对端 685  → 反压是结果不是原因
+  PCIe          宽度 ×4，上限 ×4                      → 就是它</code></pre>
+<pre><code>【第四组：单流缓冲对照（512 MiB/流）】
+              默认缓冲      显式 4MB      变化
+  T=1        3,010.95      6,315.38     +109.7%   ← 单流翻倍
+  T=4       12,429.07     11,542.36      −7.1%    ← 聚合纹丝不动
+  T=8       11,587.92     11,101.29      −4.2%
+  wmem_max = 4,194,304 B；tcp_rmem 最大 33,554,432 B（收发不对称 8 倍）
+  RTT min 0.152 ms → BDP = 200 Gbps × 0.152 ms = 3.8 MB，正好被 4 MB 封顶</code></pre>
+<pre><code>【第五组：流数阶梯（128 MiB/流，显式 4MB）】
+  T      2         3         4         6         8        12        16
+  聚合  5,075.76  8,515.91 12,429.07 9,498.01 11,587.92 10,283.87 11,107.71 MB/s
+  单流  2,537.88  2,838.64  3,107.27 1,583.00 1,448.49   856.99    694.23 MB/s
+  ⇒ 聚合 4 流后不再涨、单流单调跌 = 链路满了</code></pre>
+<pre><code>【第六组：端到端落盘（512 MiB/流，18,475 MB）】
+  纯内存接收    T=1 7,225.9 / T=4 6,131.6 MB/s
+  边收边落盘    T=1 1,624.7（−77.5%）/ T=4 1,637.8 MB/s
+  本机 NVMe O_DIRECT 写  10,722.3 MB/s（1 GiB / 0.100 s）→ 盘比网络快 6.6 倍</code></pre>
+<pre><code>【第七组：同一批数据的三种搬法】
+  本机 NVMe 复制                1.7 s    1×
+  200G 直连 + 落盘   ≈ 11.6 s   6.8×
+  千兆管理网 117.59 MB/s        157.1 s  92×
+  ⇒ 插上 200G 比 1G 快 13.5 倍，不是快 200 倍</code></pre>
+<pre><code>【口径说明】
+  · 78.8% / 63% / 6.6 倍 / 13.5 倍 均为两个已入库实测值的算术派生，非直接测量。
+  · 11.6 秒 = 18.475 GB × 1024 ÷ 1,624.7 MB/s，按实测落盘速率反推，非直接计时。
+  · 512 MiB 与 128 MiB 两组口径不同，绝对值不可横比，只看各自走势。</code></pre>
+<div class="caveat"><strong>失效边界</strong><br>1. <strong></strong> 两台全程在跑 sglang（GPU 90-91%），所以只能说「两台都在跑推理的 DGX Spark 上 200G 聚合到 11.5–12.4 GB/s」，不能写「DGX Spark 的 200G 上限是 12 GB/s」。空载可能更高，但最高也只能逼近 15.75。<br>2. <strong></strong> 验证「×4 是硬上限」最干净的方法是跑 RDMA 绕开 TCP 栈，本次没做。所以「15.75 GB/s 是物理上限」这个结论建立在 <code></code> 的自证上，而不是「另一条路径也撞同一堵墙」的交叉验证。<br>3. <strong></strong> 只验证了四台机器的 PCIe 配置同为 ×4，没测其他三条链路的实际聚合吞吐，不能假设它们也正好 48-50%。<br>4. <strong></strong> 需要 root，本次只用到 4 MB 这个已有上限，没验证「放开到 16 MB 后单流还能不能再涨」。<br>5. <strong></strong>，未测多流并发落盘与 io_uring。如果你用 io_uring 或双缓冲，1,624.7 MB/s 这个数会变好，具体多少未测。<br>6. <strong></strong>，未与 NVIDIA 官方规格页交叉核对。</div>
+<div class="pager"><a href="/fix/mmap-load-meter-readbytes-zero-20261123/">← mmap 加载计量：扫完 1 GiB，read_bytes 还是 0</a><a href="/fix/bandwidth-before-toks-ceiling-20261102/" style="text-align:right">算 tok/s 上限之前先量带宽：标称 273 GB/s 的机器，四台实测只到 233.6 →</a></div>
+<p style="margin-top:30px"><a href="/fix/">← 返回全部排错方案</a></p>
+
+</main>
+<footer><div class="wrap">
+<p>本站数字均为真机实测，逐条标注验证等级（<span class="lv lv-L1">L1</span> 多次复测取中位 /
+<span class="lv lv-L0">L0</span> 单次测量）。查不到的写「未采集」，不估算。</p>
+<p>数据源自丘山录硬件实测库 · 本页生成于 2026-11-25 · <a href="/about/">数据口径与方法</a></p>
+<div class="qr-box">
+<div class="qr-item">
+<img decoding="async" src="/assets/gzh-qr.jpg" width="108" height="108" alt="丘山录公众号二维码">
+<span>丘山录 · 公众号</span>
+</div>
+<div class="qr-item">
+<img decoding="async" src="/assets/mp-code.png" width="108" height="108" alt="丘山录小程序码">
+<span>丘山录 · 小程序</span>
+</div>
+<div class="qr-item">
+<img decoding="async" src="/assets/shipinhao-code.png" width="108" height="108" alt="丘山录视频号二维码">
+<span>丘山录 · 视频号</span>
+</div>
+<div class="qr-item">
+<img decoding="async" src="/assets/xiaohongshu-code.png" width="108" height="108" alt="丘山录小红书二维码">
+<span>丘山录 · 小红书</span>
+</div>
+<div class="qr-item">
+<img decoding="async" src="/assets/douyin-code.png" width="108" height="108" alt="丘山录抖音号二维码">
+<span>丘山录 · 抖音号</span>
+</div>
+<div class="qr-item">
+<img decoding="async" src="/assets/bilibili-code.png" width="108" height="108" alt="丘山录B站号二维码">
+<span>丘山录 · B站号</span>
+</div>
+<div class="qr-item">
+<img decoding="async" src="/assets/zhihu-code.png" width="108" height="108" alt="丘山录知乎二维码">
+<span>丘山录 · 知乎</span>
+</div>
+<div class="qr-item">
+<img decoding="async" src="/assets/csdn-code.png" width="108" height="108" alt="丘山录CSDN二维码">
+<span>丘山录 · CSDN</span>
+</div>
+</div>
+</div></footer>
+</body>
+</html>

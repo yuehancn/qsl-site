@@ -57,8 +57,28 @@ def sh(args, cwd=SITE, timeout=120, env=None):
 
 
 def gh_token():
+    # ① 优先 gh CLI
     rc, out = sh(["gh", "auth", "token"], timeout=30)
-    return out.strip() if rc == 0 and out.strip() else ""
+    if rc == 0 and out.strip():
+        return out.strip()
+    # ② 回退：git 凭据管理器（Windows 下由 credential.helper=manager 保管）
+    #    2026-11-25 加：本机未装 gh，且 github.com:443 被墙只有 api.github.com 通，
+    #    此时这是唯一能拿到 token 的通路。
+    try:
+        p = subprocess.run(
+            ["git", "credential", "fill"],
+            input="protocol=https\nhost=github.com\n\n",
+            capture_output=True, text=True, timeout=30,
+        )
+        for line in p.stdout.splitlines():
+            if line.startswith("password="):
+                tok = line[len("password="):].strip()
+                if tok:
+                    return tok
+    except Exception:
+        pass
+    # ③ 环境变量兜底
+    return os.environ.get("GITHUB_TOKEN") or os.environ.get("GH_TOKEN") or ""
 
 
 def has_changes():

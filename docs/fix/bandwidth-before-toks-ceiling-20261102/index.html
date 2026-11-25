@@ -136,7 +136,7 @@ KV 读写（每生成一个 token 都要读历史 KV）、权重解压（expert 
 一个人用，看到的就是那 72.9%；要榨干带宽只能上并发。</code></pre>
 <p>【换一张卡怎么代】<br>带宽是 tok/s 的直接决定项，但它不是商品页上那个数。<br>这张卡标称 1792 GB/s 还是 273 GB/s，落到你的任务上大概打八五折 ——<br>缺口 15% 就是本文四台机器测出来的那个缺口的通用形态。<br>按实测值砍 15% 再算，是保守但不返工的做法。</p>
 <div class="caveat"><strong>失效边界</strong><br>① 233.6 是 512MB 张量 copy 的实测峰值，换张量尺寸或访问模式会有差异，只测了 64/256/512MB 三档。② 170.3 GB/s 只在 Spark#1 上跑了一次，未做多次取中位数 —— 方向可靠（bs=1 明显低于 bs=32），具体数值有波动。③ prefill 与 decode 未严格分离：56.32 含首 token 延迟，是靠「短 prompt + 长输出」逼近出来的。④ 64.6%→60.1% 里「通信占多少、KV 占多少」拆不出来，需要多机重启 + profiler，本轮未做，只能整体说「非权重开销合计约 40%」。⑤ 标称 273 GB/s 的原始测试条件未取得，全文写「标称」不写「官方实测」。⑥ 不同固件、功耗策略下数值会变，方法是稳定的、数字不是。</div>
-<div class="pager"><a href="/fix/mmap-load-meter-readbytes-zero-20261123/">← mmap 加载计量：扫完 1 GiB，read_bytes 还是 0</a><a href="/fix/gb-vs-gib-model-capacity-20261110/" style="text-align:right">下大模型前先算 GB 与 GiB：同一个权重两种口径差一百多 GiB →</a></div>
+<div class="pager"><a href="/fix/dgxspark-pcie-x4-200g-ceiling-20261125/">← DGX Spark 的 200G 只跑一半：不是 PFC，是网卡挂在 PCIe ×4 上</a><a href="/fix/gb-vs-gib-model-capacity-20261110/" style="text-align:right">下大模型前先算 GB 与 GiB：同一个权重两种口径差一百多 GiB →</a></div>
 <p style="margin-top:30px"><a href="/fix/">← 返回全部排错方案</a></p>
 
 </main>
