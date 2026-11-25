@@ -87,7 +87,7 @@ th,td{padding:7px 9px}pre{font-size:12px}}
 <main class="wrap">
 
 <h1>pip 装成功了程序还是缺包：多 Python 环境的静默错配</h1>
-<div class="meta"><span>环境与安装 · 1 条命令判据 / 5 张对照表</span><span><span class="lv lv-L1">L1</span></span><span>整理于 2026-10-01</span>
+<div class="meta"><span>环境与安装 · 1 条命令判据 / 5 张对照表</span><span><span class="lv lv-none">未标注</span></span><span>整理于 2026-10-01</span>
 <span>有效期 30d</span></div>
 <p class="lede">pip 返回 Successfully installed、import 也真的通，程序还是报 ModuleNotFoundError —— 因为机器上同时活着三套 Python。pip 与 python 命中的解释器由 PATH + Windows App Execution Aliases 决定，与你想装到哪无关；venv 又设了 include-system-site-packages = false，base 装了也读不到。两层失败方式完全相同：成功、无报错、程序看不见。唯一判据：跑 pip -V，看末尾括号里的解释器路径。</p>
 <span class="tag">ComfyUI</span><span class="tag">Python环境</span><span class="tag">依赖管理</span><span class="tag">排错</span><span class="tag">Windows</span>

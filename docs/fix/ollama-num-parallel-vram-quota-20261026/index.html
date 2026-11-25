@@ -87,7 +87,7 @@ th,td{padding:7px 9px}pre{font-size:12px}}
 <main class="wrap">
 
 <h1>OLLAMA_NUM_PARALLEL 不是并发开关，是显存配额：一个槽位 6 GiB</h1>
-<div class="meta"><span>性能 · 6 GiB/槽 · KV 2×与4× · 32877 &gt; 32606 · 16G 双槽差 4278 MiB</span><span><span class="lv lv-L1">L1</span></span><span>整理于 2026-10-26</span>
+<div class="meta"><span>性能 · 6 GiB/槽 · KV 2×与4× · 32877 &gt; 32606 · 16G 双槽差 4278 MiB</span><span><span class="lv lv-none">未标注</span></span><span>整理于 2026-10-26</span>
 <span>有效期 180d</span></div>
 <p class="lede">把 NUM_PARALLEL 从 1 调到 2，KV cache 从 6144 变 12288 MiB（正好两倍），模型本体 8148 MiB 不动；调到 4 时总量预计 32877 MiB &gt; 卡上 32606 MiB，直接 500 崩溃并报 CUDA 初始化失败。而默认值 1 更坑：并发 4 个请求不是并行，是全串行排队（等待/推理比值 1.01），总吞吐一点不涨（62.6 vs 63.2 tok/s）却不报错。设成 2 后比值降到 0.51、总吞吐 1.73 倍。换算成卡：16G 卡单槽够（余 1713 MiB），双槽差 4278 MiB 装不下 —— 要两个并发就得换 32G 卡。</p>
 <span class="tag">Ollama</span><span class="tag">本地部署</span><span class="tag">显存</span><span class="tag">并发</span><span class="tag">OLLAMA_NUM_PARALLEL</span><span class="tag">KV cache</span><span class="tag">选卡</span><span class="tag">16G</span><span class="tag">32G</span>

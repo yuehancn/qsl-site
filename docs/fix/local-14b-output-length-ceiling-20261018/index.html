@@ -87,7 +87,7 @@ th,td{padding:7px 9px}pre{font-size:12px}}
 <main class="wrap">
 
 <h1>本地 14B 写长文有天花板：要 5000 字只给 2400，且它自己认为写完了</h1>
-<div class="meta"><span>排障 · 5 档长度 · 10 次采样 · 全部 stop</span><span><span class="lv lv-L0">L0</span></span><span>整理于 2026-10-18</span>
+<div class="meta"><span>排障 · 5 档长度 · 10 次采样 · 全部 stop</span><span><span class="lv lv-none">未标注</span></span><span>整理于 2026-10-18</span>
 <span>有效期 30d</span></div>
 <p class="lede">本机 5090D + Ollama 0.40.4 + qwen2.5:14b（Q4_K_M / 14.8B / 上下文 32768）的长度指令遵守度实测。5 档长度要求各跑 2 个随机种子共 10 次采样，num_predict 给 16000：要求 1000 字返 1022 / 1318（超额）；2000 字返 1314 / 1350（66% / 68%）；3000 字返 1622 / 2191（54% / 73%）；5000 字返 2327 / 2452（47% / 49%）；不写要求返 692 / 835。10 次 done_reason 全部是 stop（模型自收尾），不是 length 截断。把 num_predict 从 2000 抬到 8000 再到 16000：2000 档 done=length 出 2675 汉字，8000 与 16000 档 done=stop 且输出逐字相同。显存全程未用满。输出按 500 字切窗算 5-gram 重复率：要求 5000 字那次后半段爬到 0.405 / 0.335，约为前半段的 6 倍。</p>
 <span class="tag">Ollama</span><span class="tag">Qwen</span><span class="tag">14B</span><span class="tag">本地部署</span><span class="tag">长文写作</span><span class="tag">输出长度</span><span class="tag">done_reason</span><span class="tag">num_predict</span><span class="tag">复读</span><span class="tag">指令遵守度</span>

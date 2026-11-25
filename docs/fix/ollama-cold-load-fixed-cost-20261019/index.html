@@ -87,7 +87,7 @@ th,td{padding:7px 9px}pre{font-size:12px}}
 <main class="wrap">
 
 <h1>Ollama 冷加载的时间大头不在读盘：小模型 93% 花在固定开销上</h1>
-<div class="meta"><span>排障 · 8.371 GiB vs 0.2555 GiB · 各 5 次取样</span><span><span class="lv lv-L0">L0</span></span><span>整理于 2026-10-19</span>
+<div class="meta"><span>排障 · 8.371 GiB vs 0.2555 GiB · 各 5 次取样</span><span><span class="lv lv-none">未标注</span></span><span>整理于 2026-10-19</span>
 <span>有效期 30d</span></div>
 <p class="lede">本机 RTX 5090D 32GB + Ollama 0.40.4 的「模型冷加载 vs 裸顺序读权重文件」同条件对照。14B 对话模型（qwen2.5:14b Q4_K_M）权重 8,988,110,688 B = 8.371 GiB，裸读 5 次 2.3886–2.4324 秒（3.441–3.504 GiB/s）；Ollama 冷加载 5 次 2.9155–2.9447 秒（2.843–2.871 GiB/s）。embedding 模型（nomic-embed-text F16）权重 274,290,656 B = 0.2555 GiB，裸读 0.0749–0.0825 秒（3.097–3.410 GiB/s）；Ollama 冷加载 5 次 1.1287–1.1353 秒（仅 0.226 GiB/s）。两者相减得每次加载的固定成本：14B 约 0.51 秒（占 17%）、embedding 约 1.06 秒（占 93.4%）。因此体积涨 32.8 倍，加载时间只涨 2.58 倍。另做 3 轮页缓存对照（先裸读一遍再加载 vs 直接加载），差值 0.011 / 0.013 / 0.011 秒且方向不一致，说明预读无效。</p>
 <span class="tag">Ollama</span><span class="tag">冷加载</span><span class="tag">模型加载</span><span class="tag">本地部署</span><span class="tag">固定开销</span><span class="tag">页缓存</span><span class="tag">load_duration</span><span class="tag">小模型</span><span class="tag">embedding</span><span class="tag">读盘</span>

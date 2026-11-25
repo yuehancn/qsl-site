@@ -105,7 +105,7 @@ B + 1.5B：29.39 × 1,117,320,736 = 32.8 GB/s</code></pre>
 <p>【NUMA 绑定 A/B（机器 B，taskset -c 0-19）】<br>线程  pp 绑    pp 不绑   差异     tg 绑    tg 不绑   差异<br>4     71.75    68.82   +4.3%   22.50    19.75   +13.9%<br>8     140.03   125.44  +11.6%  27.02    26.42   +2.3%<br>16    261.00   212.89  +22.6%  27.52    29.21   −5.8%<br>20    303.90   247.08  +23.0%  27.44    29.39   −6.6%</p>
 <p>【单线程 stream copy（python3，128 MiB，3 次取优，读+写合计）】<br>B：2.29 GB/s ｜ C：10.30 GB/s（差 4.5 倍）</p>
 <div class="caveat"><strong>失效边界</strong><br>【不许当结论的部分】<br>1. 80 线程崩盘的根因没定位到指标层。只知道是「线程数 + 34 vCPU 被虚拟机抢」的叠加，未采 perf / numastat / mpstat，各占多少不知道。<br>2. 机器 C 的绝对值按 11-18 判据应判污染（sglang 常驻 114% CPU / GPU 90%），本文只用其方向（最优线程远小于核数），不引用绝对值。<br>3. 跨机对比非严格同版本：本机 b11901、远端 b12600，中间差 3 天（含 11-20 的 mmap 与 IQ2 提交）。<br>4. 33B 模型只在机器 A 测了 24 线程一档，三机横向未做。<br>5. 机器 A 的单线程 stream copy 未测，三机带宽横向缺一角。<br>6. 线程数与功耗/温度的关系未测，崩盘过程是否含降频未知（机器 B 无 root）。<br>7. 机器 C 的 t≥12 未做重复测量。<br>8. 单线程 stream copy 是 python 纯字节拷贝、未向量化，绝对值偏低，只能做相对比较。</div>
-<div class="pager"><a href="/fix/ollama-np-slot-check-20261105/">← Ollama 并发该开几个槽：峰值在 4 槽，16 槽比单槽还慢</a><a href="/fix/llm-concurrency-ceiling-20260930/" style="text-align:right">并发加到 16 吞吐反而没涨：找到收益天花板与实用拐点 →</a></div>
+<div class="pager"><a href="/fix/ollama-np-slot-check-20261105/">← Ollama 并发该开几个槽：峰值在 4 槽，16 槽比单槽还慢</a><a href="/fix/5060ti-mesh-bandwidth-ceiling-20261126/" style="text-align:right">4 张 5060Ti 拼集群前先测这条网线：3911 倍差距怎么来的 →</a></div>
 <p style="margin-top:30px"><a href="/fix/">← 返回全部排错方案</a></p>
 
 </main>

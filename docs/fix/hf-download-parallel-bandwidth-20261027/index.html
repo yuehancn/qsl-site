@@ -87,7 +87,7 @@ th,td{padding:7px 9px}pre{font-size:12px}}
 <main class="wrap">
 
 <h1>本地部署拉模型权重：8 线程只快 1.77 倍，卡的是链路不是线程</h1>
-<div class="meta"><span>性能 · 2.68→4.73 MiB/s / 1.77 倍 / 每线程降至 22% / 24 档 435.40 GiB / 实测 31 分 15 秒</span><span><span class="lv lv-L1">L1</span></span><span>整理于 2026-10-27</span>
+<div class="meta"><span>性能 · 2.68→4.73 MiB/s / 1.77 倍 / 每线程降至 22% / 24 档 435.40 GiB / 实测 31 分 15 秒</span><span><span class="lv lv-none">未标注</span></span><span>整理于 2026-10-27</span>
 <span>有效期 180d</span></div>
 <p class="lede">分块并发下载能加速，但收益远低于线程数。本机对 hf-mirror.com 实测：单线程 2.68 MiB/s，并发 2/4/8 得 3.85/4.34/4.73 MiB/s，加速比 1.00/1.44/1.62/1.77 倍。关键是每条线程分到的带宽从 2.68 掉到 1.93/1.09/0.59 MiB/s —— 掉到 22% 说明总数不是线程能力，是链路容量。9.4 GiB 单线程 60 分钟、8 线程 34 分钟；实际完整下载 31 分 15 秒。</p>
 <span class="tag">本地部署</span><span class="tag">模型下载</span><span class="tag">带宽</span><span class="tag">量化</span><span class="tag">GGUF</span><span class="tag">镜像</span><span class="tag">并发</span><span class="tag">试错成本</span>

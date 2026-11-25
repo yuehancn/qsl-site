@@ -87,7 +87,7 @@ th,td{padding:7px 9px}pre{font-size:12px}}
 <main class="wrap">
 
 <h1>端侧设备选型先查指令集：缺 i8mm 的机器，int8 量化比 fp32 慢 47 倍</h1>
-<div class="meta"><span>性能 · 4 核 aarch64 / 3.9 GB / 零 swap</span><span><span class="lv lv-L0">L0</span></span><span>整理于 2026-11-01</span>
+<div class="meta"><span>性能 · 4 核 aarch64 / 3.9 GB / 零 swap</span><span><span class="lv lv-none">未标注</span></span><span>整理于 2026-11-01</span>
 <span>有效期 permanent</span></div>
 <p class="lede">一台 4 核 ARM 端侧机（Cortex-A55）实测：int8 512³ 矩阵乘 0.98182 秒，fp32 512³ 只要 0.02090 秒，int8 反而慢 47 倍。根因是 CPU 特性行有 asimd/asimddp/asimdhp 但缺 i8mm，量化推理只能走整数模拟路径。同一句标量循环，同核数跨架构差 2.4 倍。买端侧机器之前，先 cat /proc/cpuinfo 看一眼指令集。</p>
 <span class="tag">端侧部署</span><span class="tag">ARM</span><span class="tag">i8mm</span><span class="tag">量化</span><span class="tag">int8</span><span class="tag">指令集</span><span class="tag">选型</span><span class="tag">Cortex-A55</span><span class="tag">树莓派类设备</span><span class="tag">本地部署</span>

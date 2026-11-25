@@ -87,7 +87,7 @@ th,td{padding:7px 9px}pre{font-size:12px}}
 <main class="wrap">
 
 <h1>显存没释放不是显卡坏了：先分清「真占用」和「残进程虚占」</h1>
-<div class="meta"><span>排障 · 4 条判据 / 5 分钟</span><span><span class="lv lv-L1">L1</span></span><span>整理于 2026-10-06</span>
+<div class="meta"><span>排障 · 4 条判据 / 5 分钟</span><span><span class="lv lv-none">未标注</span></span><span>整理于 2026-10-06</span>
 <span>有效期 180d</span></div>
 <p class="lede">nvidia-smi 显示显存被占了好几 G，但进程列表里看不到程序 —— 这是上个任务异常退出（崩溃或被强杀）后 CUDA context 没归还留下的「虚占」。它和「真显存不足」的处置完全相反：真不足要降负载，虚占要杀残进程或重启服务。判据只有一条：nvidia-smi 的进程列表里那部分占用到底有没有 PID。</p>
 <span class="tag">显存</span><span class="tag">排错</span><span class="tag">多卡</span><span class="tag">GPU</span><span class="tag">性能测试</span>

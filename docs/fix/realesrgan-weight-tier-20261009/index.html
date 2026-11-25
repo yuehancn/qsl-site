@@ -87,7 +87,7 @@ th,td{padding:7px 9px}pre{font-size:12px}}
 <main class="wrap">
 
 <h1>别按文件体积给模型分档：三档差 0.14MB 却差 4 倍输出</h1>
-<div class="meta"><span>工程习惯 · 6 步 / 15 分钟</span><span><span class="lv lv-L0">L0</span></span><span>整理于 2026-10-09</span>
+<div class="meta"><span>工程习惯 · 6 步 / 15 分钟</span><span><span class="lv lv-none">未标注</span></span><span>整理于 2026-10-09</span>
 <span>有效期 180d</span></div>
 <p class="lede">同一套超分模型的三个档位，体积几乎一模一样、参数量差千分之二，输出尺寸却差 4 倍。拆开权重看，全部结构差异只在尾部多一层上采样卷积。文件体积反映的是中间表示层规模，反映不了尾部后处理的行为差异，所以按体积猜档位这类判断从一开始就不成立。</p>
 <span class="tag">超分模型</span><span class="tag">权重拆解</span><span class="tag">模型分档</span><span class="tag">参数量</span><span class="tag">判据修正</span><span class="tag">选型</span>

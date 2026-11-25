@@ -87,7 +87,7 @@ th,td{padding:7px 9px}pre{font-size:12px}}
 <main class="wrap">
 
 <h1>37 份技能说明书 27 万 token：按需加载撕掉七成，常驻描述只占 3.16%</h1>
-<div class="meta"><span>成本账 · 273,324 token · 按需 29.6%</span><span><span class="lv lv-L0">L0</span></span><span>整理于 2026-10-20</span>
+<div class="meta"><span>成本账 · 273,324 token · 按需 29.6%</span><span><span class="lv lv-none">未标注</span></span><span>整理于 2026-10-20</span>
 <span>有效期 30d</span></div>
 <p class="lede">用 Qwen2.5 官方分词器对本机 37 个技能的 SKILL.md 做精确计数（非按字数估算，整库平均 1.92 字符/token）。全量 526,270 字符 / 273,324 token，相当于 219 篇 2000 字公众号稿（单篇约 1,245 token）。结构拆分：frontmatter 共 11,482 token 占 4.20%，其中 description 一项 8,646 token 占 3.16%——这是唯一「每次开新会话都要付」的常驻成本；正文 261,813 token 占 95.77%，是按需加载的。单技能差距悬殊：最大 wxmp-virtualpay-cloud 51,060 token（占全库 19.1%，正文 49,964 token / 99,266 汉字，比 32K 窗口还长三倍），正文 token 中位数仅 2,777，最大是最小侧的 18 倍。模拟 6 个真实任务按 description 路由：平均命中 8.0/37 个，平均载入 77,444 token = 全库正文的 29.6%（省 70.4%），杠杆 3.4 倍。窗口占用：8K 窗口全量需 33.0 倍、按需均值 10.5 倍；32K 窗口全量 8.25 倍、按需 2.63 倍。目录体量 6.18 MB / 266 文件 / 78 个 md，单技能文件数 1–69（中位 3），文件数与 token 量不成正比。</p>
 <span class="tag">技能库</span><span class="tag">SKILL.md</span><span class="tag">上下文工程</span><span class="tag">token</span><span class="tag">按需加载</span><span class="tag">Agent</span><span class="tag">上下文窗口</span><span class="tag">描述</span><span class="tag">分词器</span><span class="tag">成本结构</span>

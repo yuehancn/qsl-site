@@ -87,7 +87,7 @@ th,td{padding:7px 9px}pre{font-size:12px}}
 <main class="wrap">
 
 <h1>Ollama 向量入库静默截断 2048 token：超出部分对检索贡献是精确的零</h1>
-<div class="meta"><span>排障 · 整篇 vs 切块 / 检索命中对照</span><span><span class="lv lv-L1">L1</span></span><span>整理于 2026-10-17</span>
+<div class="meta"><span>排障 · 整篇 vs 切块 / 检索命中对照</span><span><span class="lv lv-none">未标注</span></span><span>整理于 2026-10-17</span>
 <span>有效期 30d</span></div>
 <p class="lede">Ollama /api/embed 在模型上下文上限处静默截断：文档超 2048 token 后接口照返 200、照给 768 维向量，无任何报错。实测 2600 字与 4000 字的文档，向量余弦相似度 1.00000000（完全相同）。严格等长对照（5 份均 3108 字、4 份逐字相同，答案只放第 3 份）：答案放在开头时该文档相似度 0.685300，与其余 0.622509 可区分；答案挪到末尾则 0.622509 与无答案文档差 +0.000000，完全无法区分。改为按 400 字切块后，开头 0.717245 / 末尾 0.682265，均恢复可区分。修法是切块而非换更大的模型。</p>
 <span class="tag">Ollama</span><span class="tag">embedding</span><span class="tag">向量检索</span><span class="tag">知识库</span><span class="tag">RAG</span><span class="tag">本地部署</span><span class="tag">prompt_eval_count</span><span class="tag">截断</span>

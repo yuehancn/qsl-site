@@ -87,7 +87,7 @@ th,td{padding:7px 9px}pre{font-size:12px}}
 <main class="wrap">
 
 <h1>Ollama 默认吃 14.3G 显存，改一个参数降到 9.7G（16GB 卡装不下 14B 的真原因）</h1>
-<div class="meta"><span>性能 · 5 档扫描 / 10 分钟</span><span><span class="lv lv-L0">L0</span></span><span>整理于 2026-10-15</span>
+<div class="meta"><span>性能 · 5 档扫描 / 10 分钟</span><span><span class="lv lv-none">未标注</span></span><span>整理于 2026-10-15</span>
 <span>有效期 30d</span></div>
 <p class="lede">同一台 5090D、同一个 qwen2.5:14b（Q4_K_M，9.0GB），只改上下文长度 num_ctx：2048/4096/8192/16384/32768 → 实际显存 8.45/8.83/9.71/11.23/14.26 GiB。模型本体一直 9.0GB 没变，多出来全是 KV 缓存 —— 2048 拉到 32768 多占 5.80 GiB（约 198 KB/token）。关键陷阱：不指定时 Ollama 0.40.4 默认就是 32768，而 decode 吞吐五档全在 136.4–137.4 tok/s（极差仅 0.7%）。上下文大小不影响速度，只影响你装不装得下。</p>
 <span class="tag">Ollama</span><span class="tag">num_ctx</span><span class="tag">KV缓存</span><span class="tag">显存</span><span class="tag">本地部署</span><span class="tag">qwen2.5</span><span class="tag">显卡选型</span><span class="tag">16GB显卡</span>

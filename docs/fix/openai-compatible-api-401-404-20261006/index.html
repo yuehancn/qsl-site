@@ -87,7 +87,7 @@ th,td{padding:7px 9px}pre{font-size:12px}}
 <main class="wrap">
 
 <h1>本地服务起来了、API 却调不通：先 curl，curl 通就是客户端的事</h1>
-<div class="meta"><span>排障 · 5 步 / 5 分钟</span><span><span class="lv lv-L1">L1</span></span><span>整理于 2026-10-06</span>
+<div class="meta"><span>排障 · 5 步 / 5 分钟</span><span><span class="lv lv-none">未标注</span></span><span>整理于 2026-10-06</span>
 <span>有效期 180d</span></div>
 <p class="lede">本地推理服务明明起来了，OpenAI 客户端却报 401 或 404 —— 九成是路径、鉴权、端口三处里的一处对不上：客户端默认请求 /v1/chat/completions，服务实际可能是别的路径；服务要 API key 而客户端没带；或干脆连错了端口。最快的判据是 curl 直连 /v1/models：curl 通说明服务没问题，问题一定在客户端配置。</p>
 <span class="tag">本地大模型部署</span><span class="tag">排错</span><span class="tag">API</span><span class="tag">vLLM</span><span class="tag">SGLang</span>

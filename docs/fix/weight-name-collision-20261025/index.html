@@ -87,7 +87,7 @@ th,td{padding:7px 9px}pre{font-size:12px}}
 <main class="wrap">
 
 <h1>模型库按文件名去重会删错真模型：40 个文件名里有 17 个重名</h1>
-<div class="meta"><span>环境与安装 · 57 条目 / 40 名称 / 17 重名 / 可删 43.70 GiB / 不可删 45.03 GiB</span><span><span class="lv lv-L1">L1</span></span><span>整理于 2026-10-25</span>
+<div class="meta"><span>环境与安装 · 57 条目 / 40 名称 / 17 重名 / 可删 43.70 GiB / 不可删 45.03 GiB</span><span><span class="lv lv-none">未标注</span></span><span>整理于 2026-10-25</span>
 <span>有效期 180d</span></div>
 <p class="lede">对模型库做「按文件名去重」是危险的：diffusers 目录里每个模型都有一份 unet/diffusion_pytorch_model.safetensors、text_encoder/model.safetensors，压平成一层后槽位名就撞了。本机 57 个条目去重后 40 个文件名、17 个重名，分两类：6 组「同名同字节」可删共 43.70 GiB；4 组「同名异字节」不可删、涉及 45.03 GiB，最坏误删 43.95 GiB。正确判据是「大小 + 至少一个结构指纹」，不是文件名。</p>
 <span class="tag">模型库</span><span class="tag">权重管理</span><span class="tag">去重</span><span class="tag">diffusers</span><span class="tag">同名文件</span><span class="tag">磁盘空间</span><span class="tag">ComfyUI</span><span class="tag">安全删除</span><span class="tag">safetensors</span><span class="tag">文件指纹</span><span class="tag">模型管理</span>

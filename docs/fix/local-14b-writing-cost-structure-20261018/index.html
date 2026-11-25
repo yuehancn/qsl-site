@@ -87,7 +87,7 @@ th,td{padding:7px 9px}pre{font-size:12px}}
 <main class="wrap">
 
 <h1>本地写稿成本分三层：每千字电费 0.0018 元，最贵的是重跑判断时间</h1>
-<div class="meta"><span>成本账 · 每千字 0.0018 元 · 拆轮 vs 单次</span><span><span class="lv lv-L1">L1</span></span><span>整理于 2026-10-18</span>
+<div class="meta"><span>成本账 · 每千字 0.0018 元 · 拆轮 vs 单次</span><span><span class="lv lv-none">未标注</span></span><span>整理于 2026-10-18</span>
 <span>有效期 30d</span></div>
 <p class="lede">本机 5090D + Ollama 0.40.4 + qwen2.5:14b 的写稿成本结构账。单位成本：出字阶段净功耗 353–423 W（实测均值 400–470 W 减空载 47 W），decode 136.34–138.92 token/s，汉字/token 约 1.1，折算每秒约 150 汉字；按 0.55 元/kWh 计，每千字电费 0.0018 元，一篇 1800 字稿电费约三分钱。成本结构分三层：电费可忽略、判断与重跑时间最贵、卡的时间只有长输出才明显。生产方式对照（同一主题 8 小节）：单次调用要求 3000 字，两组出 1508 / 1725 汉字、墙钟 8.04 / 8.73 s、净能耗 0.6995 / 0.8553 Wh、5-gram 重复率 0.0645 / 0.0999；拆 4 轮各 2 小节，两组出 1688 / 1715 汉字、墙钟 8.61 / 8.71 s、净能耗 0.7528 / 0.7906 Wh、5-gram 重复率 0.0392 / 0.0199、段间最大重叠 0.0286 / 0.0163。</p>
 <span class="tag">本地部署</span><span class="tag">写稿成本</span><span class="tag">电费</span><span class="tag">能耗</span><span class="tag">重跑</span><span class="tag">拆轮</span><span class="tag">done_reason</span><span class="tag">算账</span><span class="tag">Ollama</span><span class="tag">14B</span>

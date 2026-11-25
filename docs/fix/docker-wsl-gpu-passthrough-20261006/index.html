@@ -87,7 +87,7 @@ th,td{padding:7px 9px}pre{font-size:12px}}
 <main class="wrap">
 
 <h1>Docker / WSL2 里 GPU 用不了：驱动在宿主机，容器里只装 runtime</h1>
-<div class="meta"><span>环境与安装 · 2 条线 / 8 步 / 10 分钟</span><span><span class="lv lv-L1">L1</span></span><span>整理于 2026-10-06</span>
+<div class="meta"><span>环境与安装 · 2 条线 / 8 步 / 10 分钟</span><span><span class="lv lv-none">未标注</span></span><span>整理于 2026-10-06</span>
 <span>有效期 180d</span></div>
 <p class="lede">宿主机的 nvidia-smi 一切正常，进了容器就报 could not select device driver 或 nvidia-smi 找不到 —— 根因是容器默认不把 GPU 传进去，必须装 nvidia-container-toolkit 且加 --gpus all。最高频的误判是在容器里装显卡驱动：驱动必须装在宿主机，容器里只需要 CUDA runtime。WSL2 则是另一条线，显存与 Windows 共享且有版本门槛。</p>
 <span class="tag">本地大模型部署</span><span class="tag">排错</span><span class="tag">Docker</span><span class="tag">WSL2</span><span class="tag">GPU</span>

@@ -87,7 +87,7 @@ th,td{padding:7px 9px}pre{font-size:12px}}
 <main class="wrap">
 
 <h1>本地 embedding 慢不在显卡：并发 8 拿 7.57 倍，并发 16 零收益还翻倍延迟</h1>
-<div class="meta"><span>性能 · 五档并发 / 拐点 8</span><span><span class="lv lv-L1">L1</span></span><span>整理于 2026-10-17</span>
+<div class="meta"><span>性能 · 五档并发 / 拐点 8</span><span><span class="lv lv-none">未标注</span></span><span>整理于 2026-10-17</span>
 <span>有效期 30d</span></div>
 <p class="lede">同一批 240 份文档（每份 295 字 / 297 token）只改客户端并发数：并发 1 为 42.65 份/秒、GPU 利用率仅 27%、功耗 51.0 W；并发 8 达 322.74 份/秒（7.57 倍）、功耗 162.6 W；并发 16 吞吐 321.90 份/秒（与 8 持平，零收益），延迟中位从 21.4 ms 涨到 45.8 ms（2.14 倍）、功耗再涨到 182.8 W。拐点明确落在 8。能效上电费不是成本：2000 份 @并发8 耗时 6.36 s、负载中位 192.2 W，折算 0.3396 Wh；五万份约 8.49 Wh 约 0.0047 元；一次 SDXL 出图（5 秒 @约400W）的 0.556 Wh 相当于约 3270 份文档 embedding。</p>
 <span class="tag">Ollama</span><span class="tag">embedding</span><span class="tag">并发</span><span class="tag">吞吐</span><span class="tag">延迟</span><span class="tag">功耗</span><span class="tag">能效</span><span class="tag">本地算力实测</span><span class="tag">显存</span>

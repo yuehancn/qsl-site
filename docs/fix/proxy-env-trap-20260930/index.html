@@ -87,7 +87,7 @@ th,td{padding:7px 9px}pre{font-size:12px}}
 <main class="wrap">
 
 <h1>内网推理服务「偶尔连不上」：先查代理环境变量，别查配置</h1>
-<div class="meta"><span>排障 · 8 步 / 10 分钟</span><span><span class="lv lv-L1">L1</span></span><span>整理于 2026-09-30</span>
+<div class="meta"><span>排障 · 8 步 / 10 分钟</span><span><span class="lv lv-none">未标注</span></span><span>整理于 2026-09-30</span>
 <span>有效期 permanent</span></div>
 <p class="lede">推理服务明明 curl 得通、端口在听、机器不忙，客户端却报 Connection error，而且「有时能通、有时不通」。根因是客户端进程继承了 http_proxy，把发往内网集群的请求也塞进了代理 —— 代理回 401 把请求挡在 SGLang 之外。判据不是「查得更细」，而是那个 1.7 毫秒的失败耗时：真正的推理请求不可能这么快返回。</p>
 <span class="tag">本地大模型部署</span><span class="tag">环境变量</span><span class="tag">代理</span><span class="tag">SGLang</span><span class="tag">排错</span>

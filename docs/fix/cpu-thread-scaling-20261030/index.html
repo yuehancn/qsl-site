@@ -87,7 +87,7 @@ th,td{padding:7px 9px}pre{font-size:12px}}
 <main class="wrap">
 
 <h1>CPU 跑本地大模型，线程数配错会让 80 核输给 8 核</h1>
-<div class="meta"><span>性能 · 10 组配置 · 每组 5 次采样 · 80 逻辑核 / 2 NUMA 节点</span><span><span class="lv lv-L1">L1</span></span><span>整理于 2026-10-30</span>
+<div class="meta"><span>性能 · 10 组配置 · 每组 5 次采样 · 80 逻辑核 / 2 NUMA 节点</span><span><span class="lv lv-none">未标注</span></span><span>整理于 2026-10-30</span>
 <span>有效期 180d</span></div>
 <p class="lede">同一台双路 Xeon（80 逻辑核）跑 0.6B 小模型，线程数从 1 扫到 80：峰值出现在 8 线程（36.27 tok/s），16 线程不再涨，20 线程掉 24%，开满 80 线程只剩 11.04 tok/s——几乎退回单线程水平（10.61）。再加一层 NUMA：同样 8 线程，绑在单节点内 36.27，跨节点只有 29.35，白丢 19%。核数不是算力，单条生成流吃不满带宽，多出来的核在互相抢。</p>
 <span class="tag">CPU推理</span><span class="tag">线程数</span><span class="tag">NUMA</span><span class="tag">taskset</span><span class="tag">llama.cpp</span><span class="tag">本地部署</span><span class="tag">性能调优</span><span class="tag">内存带宽</span><span class="tag">核数</span>

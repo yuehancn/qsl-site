@@ -87,7 +87,7 @@ th,td{padding:7px 9px}pre{font-size:12px}}
 <main class="wrap">
 
 <h1>DGX Spark 升级模型没删旧权重：四台白占 1.4TB，其中 616.90 GiB 是硬链接假象</h1>
-<div class="meta"><span>环境与安装 · 四台各 476 GiB / 名义 2,089.92 GiB / 实释放 1,473.02 GiB</span><span><span class="lv lv-L0">L0</span></span><span>整理于 2026-10-24</span>
+<div class="meta"><span>环境与安装 · 四台各 476 GiB / 名义 2,089.92 GiB / 实释放 1,473.02 GiB</span><span><span class="lv lv-none">未标注</span></span><span>整理于 2026-10-24</span>
 <span>有效期 180d</span></div>
 <p class="lede">「删了旧目录却没释放空间」的排查法：先按 inode 去重算真实体积，再看链接计数（%n）。本机四台 DGX Spark 实测：每台旧权重 476 GiB，四台名义合计 2,089.92 GiB，但 Spark #1 的旧目录与 HF 缓存是同一批 inode（links=2），单删一侧零释放 → 真实可释放只有 1,473.02 GiB，差 616.90 GiB 是算重了。跨机器的硬链接不存在，所以 N 台机器就是 N 份，这是集群架构的固有成本。</p>
 <span class="tag">磁盘管理</span><span class="tag">硬链接</span><span class="tag">inode</span><span class="tag">DGX Spark</span><span class="tag">集群</span><span class="tag">模型权重</span><span class="tag">空间释放</span><span class="tag">links</span><span class="tag">df</span><span class="tag">du</span><span class="tag">存储成本</span>

@@ -87,7 +87,7 @@ th,td{padding:7px 9px}pre{font-size:12px}}
 <main class="wrap">
 
 <h1>ffmpeg 字幕每行几个字是算出来的：12 号字 16 字 705px，第 17 个就折行</h1>
-<div class="meta"><span>排障 · 705 px · 16 字 · 28.4%</span><span><span class="lv lv-L0">L0</span></span><span>整理于 2026-10-23</span>
+<div class="meta"><span>排障 · 705 px · 16 字 · 28.4%</span><span><span class="lv lv-none">未标注</span></span><span>整理于 2026-10-23</span>
 <span>有效期 180d</span></div>
 <p class="lede">ASS/SRT 字幕在竖屏 768×1344 里折不折行，由「画面宽 ÷ 字号」决定，不是一个可填的参数。本机实测：微软雅黑 Bold / FontSize=12 / MarginV=80 / 2px 描边下，16 个全角字占满 705 像素、左右各余 31.5 像素，第 17 个字进来整句折成 2 行、最宽行回落 395 像素。字号换算系数不是 FontSize 本身，而是 画面高 ÷ PlayResY = 1344 ÷ 288 = 4.667，所以 12 号字落到像素上是 56px、15 号字是 70px、8 号字是 37px。换 15 号字同法实测，上限变成 13 个字（689 像素），第 14 个字折行。全量账：本机 57 部成片、2925 个显式字幕行里，超 705 像素的有 831 行 = 28.4%，其中 15 号字时代高达 49.0%、现行 12 号字降到 20.9%。关键误区是 max_lines 这个字段——它在 project.json 里写了一个月，但消费侧根本没有：烧字幕的 force_style 参数表只有 FontName/FontSize/BorderStyle/Bold/Outline/Shadow/MarginV，libass 没有「最多几行」这个选项。超宽的行也不会被裁出画面，而是被自动折成 2–3 行，代价是字幕块高度不可控、往上多吃掉画面（实测一条 2531 像素的长句折 3 行后纵向占 192 像素，比单行多 92 像素）。</p>
 <span class="tag">ffmpeg</span><span class="tag">字幕</span><span class="tag">字幕排版</span><span class="tag">行宽</span><span class="tag">折行</span><span class="tag">ASS</span><span class="tag">SRT</span><span class="tag">libass</span><span class="tag">force_style</span><span class="tag">PlayResY</span><span class="tag">竖屏</span><span class="tag">视频号</span><span class="tag">量产</span><span class="tag">本地部署</span>

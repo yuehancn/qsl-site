@@ -87,7 +87,7 @@ th,td{padding:7px 9px}pre{font-size:12px}}
 <main class="wrap">
 
 <h1>CPU 跑 14B 只到 9.5 token/s：核数翻 6 倍只快 1.88 倍，卡的是内存带宽</h1>
-<div class="meta"><span>性能 · 24 核 · 9.5 token/s · 实读 85.3 GB/s</span><span><span class="lv lv-L1">L1</span></span><span>整理于 2026-10-20</span>
+<div class="meta"><span>性能 · 24 核 · 9.5 token/s · 实读 85.3 GB/s</span><span><span class="lv lv-none">未标注</span></span><span>整理于 2026-10-20</span>
 <span>有效期 30d</span></div>
 <p class="lede">本机 24 核 Ultra 7 270K Plus + DDR5-6000 双通道（理论 96 GB/s）上，把 RTX 5090D 摘掉（num_gpu=0，/api/ps 复核 size_vram=0），跑 qwen2.5:14b Q4_K_M（权重 8,988,110,688 字节 = 8.371 GiB）。线程梯度 num_thread=4/8/12/16/24，解码速度 5.047/6.469/8.020/9.027/9.489 token/s，相对 4 线程 1.00/1.28/1.59/1.79/1.88 倍——核数翻 6 倍只换来 1.88 倍。用 numpy 块拷贝实测本机内存带宽（256 MB × N 线程 × 3 轮中位数）：1/2/4/6/8 线程 = 39.98/50.20/61.20/66.73/70.02 GB/s，8 线程后压平，与线程梯度曲线同形状。按「权重体积 × 解码速度」折算解码实读内存 85.3 GB/s，占 96 GB/s 的 89%；反推该模型天花板 = 96 ÷ 8.99 ≈ 10.7 token/s，实测兑现 89%。预填充另测四档（num_ctx=16384）：332/1243/2463/4868 token → 2.95/11.96/24.01/52.18 秒，折 93.3–112.5 token/s 平台期，与解码差 10–11 倍——预填充吃算力、解码吃带宽。</p>
 <span class="tag">CPU推理</span><span class="tag">Ollama</span><span class="tag">内存带宽</span><span class="tag">解码速度</span><span class="tag">token/s</span><span class="tag">本地部署</span><span class="tag">核数</span><span class="tag">带宽瓶颈</span><span class="tag">量化模型</span><span class="tag">选型</span><span class="tag">14B</span><span class="tag">DDR5</span>

@@ -87,7 +87,7 @@ th,td{padding:7px 9px}pre{font-size:12px}}
 <main class="wrap">
 
 <h1>降采样不省体积：24k MP3 降到 16k 存 WAV，反而胖 5.33 倍</h1>
-<div class="meta"><span>成本账 · 5.33× · 154.1 MiB · 7.41×</span><span><span class="lv lv-L0">L0</span></span><span>整理于 2026-10-23</span>
+<div class="meta"><span>成本账 · 5.33× · 154.1 MiB · 7.41×</span><span><span class="lv lv-none">未标注</span></span><span>整理于 2026-10-23</span>
 <span>有效期 180d</span></div>
 <p class="lede">降采样降的是精度，不是体积；体积是容器说了算的。本机 43 部成片的配音从 24 kHz 单声道 MP3 转成 16 kHz 单声道 WAV，体积从 28.9 MiB 涨到 154.1 MiB，每一部都恰好是 5.33 倍。原因不在采样率而在容器：MP3 48 kbps 每秒只写 6000 字节，WAV 的 pcm_s16le 每秒写 16000 × 16 ÷ 8 = 32000 字节。采样率降了 33%，容器却把数据放大了 533%。同一条源文件换容器对照：16k WAV 3,496,078 字节（5.33×）、16k AAC 32k 471,605 字节（0.72×）、16k MP3 32k 437,552 字节（0.67×），WAV 与 AAC 差 7.41 倍。关键判断是这些 WAV 属于中间件而非交付物——它们的用途是两个：给 ffmpeg 烧字幕做音轨输入、给对齐脚本反推时长。前者最终成片还要再压一次 AAC，前面无损那一步白做；后者用 ffprobe 直接读时长即可，不需要靠 文件大小 ÷ 32000 去猜。体积公式：采样率 × 位深 ÷ 8 × 声道数 × 秒数。</p>
 <span class="tag">音频</span><span class="tag">WAV</span><span class="tag">MP3</span><span class="tag">AAC</span><span class="tag">ffmpeg</span><span class="tag">重采样</span><span class="tag">采样率</span><span class="tag">体积</span><span class="tag">中间件</span><span class="tag">成片产线</span><span class="tag">视频号</span><span class="tag">磁盘占用</span><span class="tag">本地部署</span>

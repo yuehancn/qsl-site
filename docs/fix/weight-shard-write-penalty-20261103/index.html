@@ -87,7 +87,7 @@ th,td{padding:7px 9px}pre{font-size:12px}}
 <main class="wrap">
 
 <h1>权重落盘慢 35 倍不是盘坏了，是分片太碎：每文件固定开销 3.7 毫秒</h1>
-<div class="meta"><span>性能 · 约 5 个命令 / 3 分钟自查</span><span><span class="lv lv-L0">L0</span></span><span>整理于 2026-11-03</span>
+<div class="meta"><span>性能 · 约 5 个命令 / 3 分钟自查</span><span><span class="lv lv-none">未标注</span></span><span>整理于 2026-11-03</span>
 <span>有效期 180d</span></div>
 <p class="lede">同一块 NVMe、同一总量 1200MB，只改文件切法：1200 个 1MB 小文件 4.45 秒，3 个 400MB 大文件 0.12 秒，差 35-37 倍。中间两档单调递增（1049 / 3102 MB/s），是台阶不是抖动。每文件固定开销在 1MB 档约 3.7 ms、400MB 档约 0.04 ms，与数据量无关。换到 800GB 权重的场景，这笔固定开销就是 49.4 分钟 vs 1.4 分钟，差 48 分钟纯等，还很容易被误诊成下载坏了或盘坏了。</p>
 <span class="tag">权重</span><span class="tag">分片</span><span class="tag">safetensors</span><span class="tag">写盘</span><span class="tag">NVMe</span><span class="tag">落盘</span><span class="tag">模型下载</span><span class="tag">磁盘</span><span class="tag">O_DIRECT</span><span class="tag">fsync</span><span class="tag">部署</span>

@@ -87,7 +87,7 @@ th,td{padding:7px 9px}pre{font-size:12px}}
 <main class="wrap">
 
 <h1>模型文件先读头再加载：260 KB 看清 1438 个张量，别让加载器替你全读 16 GiB</h1>
-<div class="meta"><span>排障 · 260 KB · 5,671× · 省 36.7%</span><span><span class="lv lv-L0">L0</span></span><span>整理于 2026-10-21</span>
+<div class="meta"><span>排障 · 260 KB · 5,671× · 省 36.7%</span><span><span class="lv lv-none">未标注</span></span><span>整理于 2026-10-21</span>
 <span>有效期 30d</span></div>
 <p class="lede">safetensors 的文件结构是「8 字节头长度 + 一段 JSON + 权重数据」，JSON 里写明每个张量的名字、形状、精度和字节偏移。所以想查清一个模型到底装了什么、精度是不是它标的那样、值不值得重下，只需要读那一段 JSON，不用碰权重。本机实测：FLUX schnell fp8 单文件 16.05 GiB，头仅 260,000 字节（占 0.0015%），读头 0.96 毫秒，读全量 5.46 秒，比值 5,671 倍；最极端的是 minimax_h3 int8（19.53 GiB，头仅 95,416 字节），比值 16,302 倍。反过来，ComfyUI 0.33.0 的 UNETLoader 走 load_diffusion_model → load_torch_file，用 `for k in f.keys()` 无过滤把整个打包文件全读进内存——FLUX 那 1438 个张量里只有 776 个（model.diffusion_model，11.07 GiB）真正参与建模，另外 418 个 text_encoders（4.67 GiB）与 244 个 vae（319.75 MiB）读进来就被前缀过滤扔了。只读 UNet 段 vs 全量：FLUX 省 36.7%、SDXL 省 27.6%；但 Wan2.2 三个纯 UNet 文件为 3.1% / −2.0% / −1.7%（无收益）——读放大只在「把不相干的东西打进同一个文件」时才发生。</p>
 <span class="tag">模型文件</span><span class="tag">safetensors</span><span class="tag">文件头</span><span class="tag">ComfyUI</span><span class="tag">加载器</span><span class="tag">读放大</span><span class="tag">精度分布</span><span class="tag">显存</span><span class="tag">FLUX</span><span class="tag">SDXL</span><span class="tag">Wan2.2</span><span class="tag">本地部署</span><span class="tag">查重</span>

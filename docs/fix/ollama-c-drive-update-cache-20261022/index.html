@@ -87,7 +87,7 @@ th,td{padding:7px 9px}pre{font-size:12px}}
 <main class="wrap">
 
 <h1>改了 OLLAMA_MODELS 也只搬走一半：Ollama 在 C 盘还留 4.35 GiB</h1>
-<div class="meta"><span>环境与安装 · 4.350 GiB · 1.540 GiB 安装包 · 占模型库 50.4%</span><span><span class="lv lv-L0">L0</span></span><span>整理于 2026-10-22</span>
+<div class="meta"><span>环境与安装 · 4.350 GiB · 1.540 GiB 安装包 · 占模型库 50.4%</span><span><span class="lv lv-none">未标注</span></span><span>整理于 2026-10-22</span>
 <span>有效期 30d</span></div>
 <p class="lede">把 OLLAMA_MODELS 指到 D 盘只解决了「模型权重放哪」，解决不了「程序本体放哪」和「安装包放哪」。本机实测（Ollama 0.40.4 / Windows 11）：D:\models\ollama 里是 9,262,433,074 字节 = 8.626 GiB / 13 个文件（两个模型的 9 个 blob）；但 %LOCALAPPDATA%\Programs\Ollama 还有 3,001,340,310 字节 = 2.795 GiB / 996 个文件（Inno Setup 装的程序本体），%LOCALAPPDATA%\ollama 还有 1,668,939,634 字节 = 1.554 GiB / 18 个文件（数据、日志、更新包）。三处 C 盘合计 4,670,279,944 字节 = 4.350 GiB，等于 D 盘模型库的 50.4%。其中最能白拿的一块是 updates_v2\&lt;64位哈希&gt;\OllamaSetup.exe = 1,657,983,656 字节 = 1.540 GiB，修改时间 2026-10-21 15:50——装完了、日志写了 Installation process succeeded.，包还在。这个缓存按内容寻址分目录（每次新版是另一个哈希、另一个目录），设计意图是同一包只存一份，但装完不回收，也永不自动清。upgrade.log 已 426,200 字节 / 5,053 行，摞着 5 次安装记录。可安全清的就是 updates_v2 这一层；Programs\Ollama 那 2.795 GiB 别手搬——Inno Setup 装的，注册表和卸载项都指向原路径，搬了升级会出问题。</p>
 <span class="tag">Ollama</span><span class="tag">本地部署</span><span class="tag">C盘</span><span class="tag">磁盘占用</span><span class="tag">OLLAMA_MODELS</span><span class="tag">updates_v2</span><span class="tag">安装包</span><span class="tag">缓存清理</span><span class="tag">Windows</span><span class="tag">环境变量</span><span class="tag">模型目录</span>

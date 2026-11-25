@@ -87,7 +87,7 @@ th,td{padding:7px 9px}pre{font-size:12px}}
 <main class="wrap">
 
 <h1>Ollama 局域网访问怎么通：三道门 + 2.16 秒启动空窗</h1>
-<div class="meta"><span>环境与安装 · 3 道门 / 17+1 条来源 / 0 条防火墙规则 / 2.16 秒空窗</span><span><span class="lv lv-L0">L0</span></span><span>整理于 2026-10-26</span>
+<div class="meta"><span>环境与安装 · 3 道门 / 17+1 条来源 / 0 条防火墙规则 / 2.16 秒空窗</span><span><span class="lv lv-none">未标注</span></span><span>整理于 2026-10-26</span>
 <span>有效期 180d</span></div>
 <p class="lede">Ollama 从「本机能用」到「别的机器能用」要过三层完全不同的检查：应用层绑定地址（OLLAMA_HOST，默认只听 127.0.0.1）、程序层来源白名单（OLLAMA_ORIGINS，默认 17 条全是本机与编辑器协议，命中时返回 403 且响应体长度为 0）、系统层防火墙程序规则（Windows 上 ollama.exe 入站放行规则 0 条，python.exe 是 4 条）。此外端口 LISTENING 到 HTTP 可用之间有 2.13–2.18 秒空窗，探端口会假失败。判断卡在哪层看报错是 000 还是 403。</p>
 <span class="tag">Ollama</span><span class="tag">本地部署</span><span class="tag">局域网</span><span class="tag">部署排错</span><span class="tag">防火墙</span><span class="tag">CORS</span><span class="tag">OLLAMA_HOST</span><span class="tag">OLLAMA_ORIGINS</span><span class="tag">Windows</span>

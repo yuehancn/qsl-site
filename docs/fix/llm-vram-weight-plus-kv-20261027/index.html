@@ -87,7 +87,7 @@ th,td{padding:7px 9px}pre{font-size:12px}}
 <main class="wrap">
 
 <h1>本地部署大模型要多少显存：权重只是首付，KV 才是月供</h1>
-<div class="meta"><span>环境与安装 · 61.69 GiB bf16 / KV 208 KiB 每token / 七档零差值 / 512K=104 GiB / 16G 卡 6-24 档</span><span><span class="lv lv-L1">L1</span></span><span>整理于 2026-10-27</span>
+<div class="meta"><span>环境与安装 · 61.69 GiB bf16 / KV 208 KiB 每token / 七档零差值 / 512K=104 GiB / 16G 卡 6-24 档</span><span><span class="lv lv-none">未标注</span></span><span>整理于 2026-10-27</span>
 <span>有效期 180d</span></div>
 <p class="lede">算显存只算权重的结果一定会崩。真实账单 = 权重 + KV 缓存 + 固定开销。以 Nanbeige4.3-33B（33B 稠密）为例：bf16 权重 66,238,009,168 B = 61.69 GiB；KV 每 token = 2×52层×8头×128维×2字节 = 212,992 B（208 KiB），512K 满上下文要 106,496 MiB = 104 GiB；再加计算缓冲约 207 MiB。8K 上下文下 16G 卡总账 11,776 MiB、32G 卡占 36.1%，而 16G 卡的天花板是 29.8K token —— 32K 就差 461 MiB 装不下。</p>
 <span class="tag">本地部署</span><span class="tag">显存</span><span class="tag">KV缓存</span><span class="tag">量化</span><span class="tag">选卡</span><span class="tag">大模型</span><span class="tag">16G</span><span class="tag">24G</span><span class="tag">32G</span><span class="tag">GGUF</span>

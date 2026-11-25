@@ -87,7 +87,7 @@ th,td{padding:7px 9px}pre{font-size:12px}}
 <main class="wrap">
 
 <h1>一个 47 MiB 的 LoRA 自带训练账本：7750 步、7412 张图、每张 297.7 毫秒</h1>
-<div class="meta"><span>产出质量 · 2206.63 秒 · 7750 步 · 297.7 ms/张</span><span><span class="lv lv-L0">L0</span></span><span>整理于 2026-10-21</span>
+<div class="meta"><span>产出质量 · 2206.63 秒 · 7750 步 · 297.7 ms/张</span><span><span class="lv lv-none">未标注</span></span><span>整理于 2026-10-21</span>
 <span>有效期 30d</span></div>
 <p class="lede">训练脚本（kohya / 秋叶系）会把整场训练的参数与时间戳写进 safetensors 的 __metadata__。本机一个 SDXL offset 示例 LoRA（47.26 MiB / 2364 张量 / 67 个 meta 键，其中 53 个 ss_*）里就有完整账本：ss_training_started_at 1689970447.43792、finished_at 1689972654.070616 → 训练时长 2206.63 秒 = 36.78 分钟；ss_max_train_steps 7750 → 步速 3.512 步/秒；训练图 7412 张、155 batch/epoch、batch_size 1 → 实耗 7750 图次 = 1.046 个 epoch，平摊每张 297.7 毫秒。配置项一应俱全：learning_rate 0.0009、Adafactor（relative_step=False）、network_dim 8 / alpha 1、fp16、noise_offset 0.2、seed 42、warmup 100、1024×1024、enable_bucket false。文件构成上，header 355.64 KiB 占全文件 0.735%，纯 meta JSON 17,254 字节；2364 个张量中位 20,480 字节、最大 360 KiB，最大 10 个只占 4.87%，而 788 个张量小于 1 KiB、合计仅 1.54 KiB。meta 里最占字节的是 modelspec.thumbnail 13,353 字节（占 meta 77.4%），存的是一张 base64 JPEG 缩略图。LoRA 体积占 SDXL base 的 0.714%（1/140）。</p>
 <span class="tag">LoRA</span><span class="tag">训练账本</span><span class="tag">元数据</span><span class="tag">safetensors</span><span class="tag">ss_字段</span><span class="tag">kohya</span><span class="tag">秋叶</span><span class="tag">SDXL</span><span class="tag">训练时长</span><span class="tag">复现</span><span class="tag">rank</span><span class="tag">学习率</span><span class="tag">本地训练</span>

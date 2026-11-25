@@ -87,7 +87,7 @@ th,td{padding:7px 9px}pre{font-size:12px}}
 <main class="wrap">
 
 <h1>4B 模型显存别只算权重：权重决定装不装得下，KV 决定能挂几路</h1>
-<div class="meta"><span>成本账 · 4B BF16（权重 8.00 GB）/ 每序列 KV 恒定 97.76 MiB</span><span><span class="lv lv-L1">L1</span></span><span>整理于 2026-11-02</span>
+<div class="meta"><span>成本账 · 4B BF16（权重 8.00 GB）/ 每序列 KV 恒定 97.76 MiB</span><span><span class="lv lv-none">未标注</span></span><span>整理于 2026-11-02</span>
 <span>有效期 180d</span></div>
 <p class="lede">EdgeRock-4B（2026-11-01 开源）把 KV 做成常数：每序列 attention KV 恒定 72 MiB、含循环矩阵的持久历史 97.76 MiB，与上下文长度无关。官方称 256K 上下文下比 Qwen3.5-4B 省 99.1%，据此反推对方一条 256K 序列要 10.61 GiB。同为 4B BF16 权重 8GB 的模型，同一张 16G 卡：恒定 KV 能挂 78 路，线性 KV 连 1 路都挂不满（差 3.2GB），比值 111 倍。买卡买的是「能同时服务多少人」，不是「单条有多快」—— 这一条比跑分表更能决定预算。</p>
 <span class="tag">显存</span><span class="tag">KV 缓存</span><span class="tag">并发</span><span class="tag">16G</span><span class="tag">24G</span><span class="tag">EdgeRock</span><span class="tag">恒定内存</span><span class="tag">线性注意力</span><span class="tag">滑动窗口</span><span class="tag">选型</span><span class="tag">买卡</span><span class="tag">长上下文</span>
@@ -103,7 +103,7 @@ th,td{padding:7px 9px}pre{font-size:12px}}
 <p>【不拿厂商自测分当结论】<br>厂商报的 82.9% AIME 2024-2026 mean pass@1 是他们自测的，没有第三方复现，本文不当结论引用。<br>但 KV 是常数这件事是结构事实，不是跑分 —— 数层数、数字段就能验，不需要信任任何自测分数。</p>
 <p>【为什么本文没有运行时实测】<br>四台 DGX Spark 均在跑生产负载，MemAvailable 仅 19-20 GB，腾不出干净环境，<br>EdgeRock-4B 本体未下载、未加载、未跑（19-20 GB 就是当时的真实余量）。<br>不拿扰动生产的数字当实测，所以全部并发数与 KV 体积都标注为「按官方公开参数算术推导」。</p>
 <div class="caveat"><strong>失效边界</strong><br>① 全部并发路数与 KV 体积都是<strong></strong> —— EdgeRock-4B 本体未下载、未加载、未跑（四台 DGX Spark 均在跑生产负载，MemAvailable 仅 19-20 GB，腾不出干净环境）。② 8.00 GB 余量是权重按 BF16 理论值相减，实际还要扣 CUDA context、框架运行时、显存碎片，真实并发一定低于 78。③ 厂商自测 82.9% AIME 2024-2026 mean pass@1 无第三方复现，本文未当结论引用。④ 「省 99.1%」这个相对数取自官方模型卡，其基线具体配置（是否同精度、同上下文）未逐一核验。⑤ 1024 窗口滑窗的实际召回损失未量化，本文只写机制，不替它下性能判断。</div>
-<div class="pager"><a href="/fix/cloud-api-offpeak-pricing-breakeven-20261124/">← 云端 API 分时段定价：三档同 2 倍，月账单 100 元是买硬件的分界线</a><a href="/fix/dsh-plugin-dep-duplicate-20261013/" style="text-align:right">6 个插件依赖文件重复 85.3%：每加一个插件，净花 246MB 公共依赖钱 →</a></div>
+<div class="pager"><a href="/fix/5060ti-cluster-buy-or-not-20261126/">← 买多机集群之前，先算一个比值：机间带宽 ÷ 单卡显存带宽</a><a href="/fix/dsh-plugin-dep-duplicate-20261013/" style="text-align:right">6 个插件依赖文件重复 85.3%：每加一个插件，净花 246MB 公共依赖钱 →</a></div>
 <p style="margin-top:30px"><a href="/fix/">← 返回全部排错方案</a></p>
 
 </main>

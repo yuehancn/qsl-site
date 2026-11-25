@@ -87,7 +87,7 @@ th,td{padding:7px 9px}pre{font-size:12px}}
 <main class="wrap">
 
 <h1>dsh 插件目录的 node_modules 是运行必需品：软链共享会让插件全部不激活</h1>
-<div class="meta"><span>环境与安装 · 6 步 / 20 分钟</span><span><span class="lv lv-L0">L0</span></span><span>整理于 2026-10-13</span>
+<div class="meta"><span>环境与安装 · 6 步 / 20 分钟</span><span><span class="lv lv-none">未标注</span></span><span>整理于 2026-10-13</span>
 <span>有效期 30d</span></div>
 <p class="lede">7 个自建 dsh 插件共 2402MB，其中 6 个 node_modules 各占 247MB（protobuf 19MB）。关键机制：dsh 插件 import 依赖走裸名，ESM 会 realpath 一次 —— 用 junction 把依赖链进插件目录，ESM 会解掉它、顺着插件真实路径向上找，找不到就报 ERR_MODULE_NOT_FOUND，报错里给出的路径正是插件真实目录。所以每个插件的依赖只能实体拷贝，插件目录的 node_modules 是运行必需品、不是缓存。</p>
 <span class="tag">DeepSeek Harness</span><span class="tag">dsh</span><span class="tag">插件</span><span class="tag">依赖</span><span class="tag">node_modules</span><span class="tag">ESM</span><span class="tag">realpath</span><span class="tag">junction</span><span class="tag">本地部署</span><span class="tag">排错</span>

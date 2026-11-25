@@ -87,7 +87,7 @@ th,td{padding:7px 9px}pre{font-size:12px}}
 <main class="wrap">
 
 <h1>并发加到 16 吞吐反而没涨：找到收益天花板与实用拐点</h1>
-<div class="meta"><span>性能 · 5 步 / 30 分钟</span><span><span class="lv lv-L1">L1</span></span><span>整理于 2026-09-30</span>
+<div class="meta"><span>性能 · 5 步 / 30 分钟</span><span><span class="lv lv-none">未标注</span></span><span>整理于 2026-09-30</span>
 <span>有效期 180d</span></div>
 <p class="lede">把并发从 1 一路加到 16，吞吐涨到并发 8 就停住了，16 甚至略降（148.95 → 148.22 tok/s），但单请求等待从 13.13 秒涨到 20.24 秒。结论：并发 4 是实用拐点，8 是收益天花板，16 是纯亏。加并发的真实含义不是「让系统变快」，而是把一个人的等待摊到所有人头上。</p>
 <span class="tag">推理优化</span><span class="tag">并发</span><span class="tag">张量并行</span><span class="tag">SGLang</span><span class="tag">容量规划</span>
@@ -105,7 +105,7 @@ th,td{padding:7px 9px}pre{font-size:12px}}
 <h3>边际账（收益 vs 代价）</h3><p>1 -&gt; 2 : 吞吐 +58%   等待 +1.5 s   赚<br>2 -&gt; 4 : 吞吐 +58%   等待 +1.9 s   赚<br>4 -&gt; 8 : 吞吐 +44%   等待 +3.6 s   勉强划算<br>8 -&gt; 16: 吞吐 +0%    等待 +7.1 s   纯亏</p>
 <h3>判断动作：看到「加并发/加卡/加带宽」这类听着就像解决方案的动作时，先问一句</h3><p>—— 它的代价记在谁的账上？如果代价和收益记的不是同一个账本，就不能只看吞吐那一栏。</p>
 <div class="caveat"><strong>失效边界</strong><br>这堵墙不堵在算力上，堵在通信上：四台机器跑一个实例，权重按张量并行切开，每次前向都要跨机器 all-reduce 同步；batch 越大，要同步的数据越多，到某个点通信吃掉的超过算力赚到的，曲线就平了。实操含义是——加卡解决不了这个问题，卡越多跨机同步的东西越多，墙反而更厚。适用边界：拐点 4 是<strong></strong>，不同模型、不同硬件、不同 SLA 下拐点不同。另外「加速比永远小于并发数」是张量并行的普遍规律，但具体比例随互联带宽变化，不要直接套用上面的数值。</div>
-<div class="pager"><a href="/fix/llamacpp-thread-peak-collapse-20261122/">← llama.cpp 线程数：峰值远小于核数，全开反而崩</a><a href="/fix/ollama-embed-concurrency-knee-20261017/" style="text-align:right">本地 embedding 慢不在显卡：并发 8 拿 7.57 倍，并发 16 零收益还翻倍延迟 →</a></div>
+<div class="pager"><a href="/fix/5060ti-mesh-bandwidth-ceiling-20261126/">← 4 张 5060Ti 拼集群前先测这条网线：3911 倍差距怎么来的</a><a href="/fix/ollama-embed-concurrency-knee-20261017/" style="text-align:right">本地 embedding 慢不在显卡：并发 8 拿 7.57 倍，并发 16 零收益还翻倍延迟 →</a></div>
 <p style="margin-top:30px"><a href="/fix/">← 返回全部排错方案</a></p>
 
 </main>

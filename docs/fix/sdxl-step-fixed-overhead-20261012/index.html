@@ -87,7 +87,7 @@ th,td{padding:7px 9px}pre{font-size:12px}}
 <main class="wrap">
 
 <h1>SDXL 出图时间不过原点：每张先花 0.378 秒固定开销</h1>
-<div class="meta"><span>性能 · 6 步 / 20 分钟</span><span><span class="lv lv-L0">L0</span></span><span>整理于 2026-10-12</span>
+<div class="meta"><span>性能 · 6 步 / 20 分钟</span><span><span class="lv lv-none">未标注</span></span><span>整理于 2026-10-12</span>
 <span>有效期 180d</span></div>
 <p class="lede">把 SDXL 采样步数从 48 压到 1，单张出图时间只从 4.391 秒降到 0.448 秒 —— 步数差 48 倍，时间只差 9.8 倍，说明时间线不过原点。拟合得 T = 0.3776 + 0.083488 × steps：固定开销 0.3776 秒恒定、与步数无关；每步边际 83.49 毫秒。步数=1 时固定开销占 84.3%，48 步时占 8.6%。「每步毫秒」从 448.0 降到 91.5 是摊薄假象，真实边际从头到尾没变。</p>
 <span class="tag">SDXL</span><span class="tag">采样步数</span><span class="tag">固定开销</span><span class="tag">ComfyUI</span><span class="tag">耗时</span><span class="tag">性能分析</span><span class="tag">5090D</span><span class="tag">出图</span>

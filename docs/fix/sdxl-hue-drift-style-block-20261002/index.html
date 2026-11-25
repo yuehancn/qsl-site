@@ -87,7 +87,7 @@ th,td{padding:7px 9px}pre{font-size:12px}}
 <main class="wrap">
 
 <h1>SDXL 批量出图跑色：加一段风格块把色相漂移压掉四成</h1>
-<div class="meta"><span>产出质量 · 4 步 / 10 分钟</span><span><span class="lv lv-L1">L1</span></span><span>整理于 2026-10-02</span>
+<div class="meta"><span>产出质量 · 4 步 / 10 分钟</span><span><span class="lv lv-none">未标注</span></span><span>整理于 2026-10-02</span>
 <span>有效期 180d</span></div>
 <p class="lede">同一提示词只换 seed，SDXL 出的 8 张图跨了 4 个色系（青绿山水/红枫版画/暖米复古/宣纸留白），跨图色相极差 80.35°、圆标准差 23.36°。根因不是模型不稳定，是提示词只写了&quot;平涂/海报风&quot;却没写用什么颜色 —— 模型在没被约束的维度上每次重新抽签。修法：每条提示词开头逐字粘同一段风格块（含锁定色盘），尾部补一条硬命令，负面词扩一轮。实测色相漂移降 41.4%，单张耗时只涨 1.0%。</p>
 <span class="tag">SDXL</span><span class="tag">画风漂移</span><span class="tag">风格锁定</span><span class="tag">批量出图</span><span class="tag">提示词工程</span><span class="tag">ComfyUI</span><span class="tag">色相</span><span class="tag">一致性</span><span class="tag">产线</span>

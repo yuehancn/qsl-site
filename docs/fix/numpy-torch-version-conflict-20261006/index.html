@@ -87,7 +87,7 @@ th,td{padding:7px 9px}pre{font-size:12px}}
 <main class="wrap">
 
 <h1>升级一个包整个环境就崩：numpy 1.x/2.x 断代是最经典的那种</h1>
-<div class="meta"><span>环境与安装 · 5 步 / 10 分钟</span><span><span class="lv lv-L1">L1</span></span><span>整理于 2026-10-06</span>
+<div class="meta"><span>环境与安装 · 5 步 / 10 分钟</span><span><span class="lv lv-none">未标注</span></span><span>整理于 2026-10-06</span>
 <span>有效期 permanent</span></div>
 <p class="lede">pip install -U 随手升一个包，之后程序报 _ARRAY_API not found 或 cannot import name —— 本地 AI 栈依赖极深，torch 钉死了对应的 numpy/CUDA/torchvision 版本，升一个会顶掉另一个。最典型的断代是 numpy 2.x 与用 numpy 1.x 编译的扩展不兼容，报 _ARRAY_API not found，修法就一句：pip install &quot;numpy&lt;2&quot;。判据是 pip check 列出的不兼容依赖对。</p>
 <span class="tag">Python环境</span><span class="tag">排错</span><span class="tag">依赖管理</span><span class="tag">版本冲突</span><span class="tag">PyTorch</span>

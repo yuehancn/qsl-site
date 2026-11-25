@@ -87,7 +87,7 @@ th,td{padding:7px 9px}pre{font-size:12px}}
 <main class="wrap">
 
 <h1>统一内存机器查显存，四个命令给出四个答案，最大差 17.5 倍</h1>
-<div class="meta"><span>排障 · 4 台 × 121.69 GiB 统一内存</span><span><span class="lv lv-L1">L1</span></span><span>整理于 2026-10-31</span>
+<div class="meta"><span>排障 · 4 台 × 121.69 GiB 统一内存</span><span><span class="lv lv-none">未标注</span></span><span>整理于 2026-10-31</span>
 <span>有效期 permanent</span></div>
 <p class="lede">同一台 DGX Spark（GB10，121.7 GiB 统一内存）跑着 DeepSeek-V4.1-Flash，同一时刻四个口径：nvidia-smi 的 used_memory 报 94.43 GiB、docker stats 报 5.405 GiB、进程 RSS 求和 1.12 GiB、整机 /proc/meminfo 算出 105.00 GiB。最大最小差 17.5 倍。再加一个 cgroup 的 memory.current = 12.84 GiB，实际是五个数。四个数都没错，各自只回答一块：sglang 用 --mem-fraction-static 0.80 预留的 97.4 GiB 由设备侧直接持有，不进 cgroup 也不进 RSS。更要命的是 GB10 上 nvidia-smi 的 memory.total / memory.used / utilization.memory 全部返回 N/A。</p>
 <span class="tag">统一内存</span><span class="tag">DGX Spark</span><span class="tag">显存排查</span><span class="tag">nvidia-smi</span><span class="tag">N/A</span><span class="tag">docker stats</span><span class="tag">cgroup</span><span class="tag">MemAvailable</span><span class="tag">sglang</span><span class="tag">本地部署</span>

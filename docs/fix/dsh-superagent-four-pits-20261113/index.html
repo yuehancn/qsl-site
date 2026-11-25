@@ -90,7 +90,7 @@ th,td{padding:7px 9px}pre{font-size:12px}}
 <div class="meta"><span>排障 · 约 3.7 万行 TypeScript（MIT）/ 单工单 50 秒</span><span><span class="lv lv-none">未标注</span></span><span>整理于 2026-11-13</span>
 <span>有效期 180d</span></div>
 <p class="lede">从零把 DeepSeek dsh-superagent（MIT，约 3.7 万行 TypeScript）跑到能自己提 PR，花了约 5 小时，最久的一段卡了 2 小时。四个坑里前三个都有明确报错、照着搜就能解决：面板不能绑 0.0.0.0 也不能绑网卡 IP（必须 loopback + SSH 隧道）、pnpm build 缺 unrun 这个 peerDependency、GitHub 必须两个账号且智能体账号要 watch 仓库。第四个坑报错根本不在日志里——它藏在 zstd 压缩的 Session 事件流中，内容是「No API key for provider」，而前面所有 timeout 记录都是假象。所有健康检查全绿，唯一异常是工单表空的。</p>
-<span class="tag">本地部署</span><span class="tag">智能体</span><span class="tag">DeepSeek</span><span class="tag">GitHub</span><span class="tag">PR</span><span class="tag">排错</span><span class="tag">日志</span><span class="tag">API key</span><span class="tag">SGLang</span><span class="tag">peerDependency</span><span class="tag">部署</span><span class="tag">部署前置</span>
+<span class="tag">本地部署</span><span class="tag">智能体</span><span class="tag">DeepSeek</span><span class="tag">GitHub</span><span class="tag">PR</span><span class="tag">排错</span><span class="tag">日志</span><span class="tag">API key</span><span class="tag">SGLang</span><span class="tag">peerDependency</span><span class="tag">部署前置</span>
 <h2>这条适用于</h2><ul><li>一台 Linux 主机（4C8G 起，本例 80 线程 / 125GiB）</li><li>一个废弃的测试仓库 + 一个专用 GitHub 小号（不可省，省了会卡在坑三）</li><li>一个 OpenAI 兼容的模型服务（本例本地 SGLang 起 deepseek-v4.1-flash）</li></ul>
 <h2>版本指纹</h2><p><code>dsh-superagent-prototype（2026-10-31 开源 / MIT）/ pnpm / Node ESM / Ubuntu 26.04</code></p>
 <h2>具体做法</h2>

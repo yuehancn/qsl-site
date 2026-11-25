@@ -87,7 +87,7 @@ th,td{padding:7px 9px}pre{font-size:12px}}
 <main class="wrap">
 
 <h1>看到「KV 省 75%」别急着信：去 config 数层数，30 秒能验算完</h1>
-<div class="meta"><span>性能 · 27 层 / 7 层全注意力 / 权重 98.25 GB</span><span><span class="lv lv-L1">L1</span></span><span>整理于 2026-11-01</span>
+<div class="meta"><span>性能 · 27 层 / 7 层全注意力 / 权重 98.25 GB</span><span><span class="lv lv-none">未标注</span></span><span>整理于 2026-11-01</span>
 <span>有效期 permanent</span></div>
 <p class="lede">Kimi Linear 48B-A3B 官方称 KV 最多省 75%。翻 config：27 层里 7 层全注意力、20 层是线性注意力，20/27 = 74.07% —— 节省比例恒等于线性层占比，因为线性层状态是固定大小不随序列增长。但省的是 KV 不是权重：1M 上下文仍要 120.28 GB KV，权重仍是 98.25 GB。省 KV 换的是长上下文可行，不是小机器能跑。</p>
 <span class="tag">KV 缓存</span><span class="tag">线性注意力</span><span class="tag">Kimi</span><span class="tag">显存估算</span><span class="tag">上下文长度</span><span class="tag">config</span><span class="tag">本地部署</span><span class="tag">选型</span><span class="tag">模型参数</span>

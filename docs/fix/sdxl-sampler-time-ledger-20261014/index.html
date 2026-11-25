@@ -87,7 +87,7 @@ th,td{padding:7px 9px}pre{font-size:12px}}
 <main class="wrap">
 
 <h1>SDXL 采样器耗时差 64%、画面差与耗时无关：euler 与 ddim 同 seed 出图逐像素一致</h1>
-<div class="meta"><span>性能 · 5 步 / 20 分钟</span><span><span class="lv lv-L1">L1</span></span><span>整理于 2026-10-14</span>
+<div class="meta"><span>性能 · 5 步 / 20 分钟</span><span><span class="lv lv-none">未标注</span></span><span>整理于 2026-10-14</span>
 <span>有效期 30d</span></div>
 <p class="lede">同 seed / 同 20 步 / 同 1024² 下，11 个采样器耗时从 lms 2.186 秒到 dpmpp_2s_ancestral 4.137 秒（差 64%），但画面变化与耗时无关：慢的 heun（3.950s）RMS只有 17.51，快的 dpmpp_2m_sde（2.770s）RMS 反有 39.79。另外 euler 与 ddim 在同 seed 下输出逐像素一致（最大差值 0），ddim 还快 7%。调度器则相反：7 个耗时极差仅 0.23 秒（11%），画面 RMS 最大到 16.24。</p>
 <span class="tag">SDXL</span><span class="tag">采样器</span><span class="tag">调度器</span><span class="tag">ComfyUI</span><span class="tag">出图时间</span><span class="tag">本地部署</span><span class="tag">成本账</span><span class="tag">显卡选型</span>

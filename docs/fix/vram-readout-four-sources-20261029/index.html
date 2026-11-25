@@ -87,7 +87,7 @@ th,td{padding:7px 9px}pre{font-size:12px}}
 <main class="wrap">
 
 <h1>显存到底还剩多少：四种读法差 16GB，面板可能是死的</h1>
-<div class="meta"><span>排障 · 四口径对照 · 差 16.34 GiB</span><span><span class="lv lv-L1">L1</span></span><span>整理于 2026-10-29</span>
+<div class="meta"><span>排障 · 四口径对照 · 差 16.34 GiB</span><span><span class="lv lv-none">未标注</span></span><span>整理于 2026-10-29</span>
 <span>有效期 180d</span></div>
 <p class="lede">同一张 RTX 5090D 32GB，同一时刻四种读法给出不同答案：nvidia-smi 直接 NVML 初始化失败（rc=255）；torch mem_get_info 报空闲 30.26 GiB；ComfyUI /system_stats 报空闲 13.92 GiB；真的去分配 24 GiB 成功。两个都能正常返回数据的接口差了 16.34 GiB。占卡 4 GiB 后连测 8 次，ComfyUI 那个数一个字节都没动 —— 它是启动时的一次性快照，不是实时值。</p>
 <span class="tag">显存</span><span class="tag">NVML</span><span class="tag">nvidia-smi</span><span class="tag">torch</span><span class="tag">ComfyUI</span><span class="tag">排错</span><span class="tag">监控</span><span class="tag">本地部署</span><span class="tag">5090D</span><span class="tag">32G</span>

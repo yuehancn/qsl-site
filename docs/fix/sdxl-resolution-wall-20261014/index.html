@@ -87,7 +87,7 @@ th,td{padding:7px 9px}pre{font-size:12px}}
 <main class="wrap">
 
 <h1>SDXL 出大图的墙不是显存，是训练画布 1024：超过 1536 主体就开始复制</h1>
-<div class="meta"><span>性能 · 6 步 / 25 分钟</span><span><span class="lv lv-L0">L0</span></span><span>整理于 2026-10-14</span>
+<div class="meta"><span>性能 · 6 步 / 25 分钟</span><span><span class="lv lv-none">未标注</span></span><span>整理于 2026-10-14</span>
 <span>有效期 30d</span></div>
 <p class="lede">本机 5090D 把 SDXL 从 512 一路加到 4096²，32GB 显存峰值 32064 MiB 也没 OOM；4096² 单张 72.948 秒，是 1024²（2.259 秒）的 32.3 倍。真正崩的是画面：1024² 是一座灯塔，2048² 变两座，4096² 礁石上站了一排。量化后亮区连通域数 21（1024）→46（2048）→111（4096），主峰占比 2.39%→1.63%→0.43%。显存斜率约 1527 MiB/MP，底座 5.5–6.5GB 与画布无关。</p>
 <span class="tag">SDXL</span><span class="tag">分辨率</span><span class="tag">显存</span><span class="tag">画质</span><span class="tag">ComfyUI</span><span class="tag">本地部署</span><span class="tag">出图</span><span class="tag">显卡选型</span><span class="tag">主体复制</span>

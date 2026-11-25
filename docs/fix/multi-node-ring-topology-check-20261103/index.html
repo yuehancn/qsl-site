@@ -87,7 +87,7 @@ th,td{padding:7px 9px}pre{font-size:12px}}
 <main class="wrap">
 
 <h1>多机推理先认清拓扑：环上 rank 顺序就是物理顺序，加机器不加带宽</h1>
-<div class="meta"><span>排障 · 约 6 个命令 / 10 分钟自查</span><span><span class="lv lv-L0">L0</span></span><span>整理于 2026-11-03</span>
+<div class="meta"><span>排障 · 约 6 个命令 / 10 分钟自查</span><span><span class="lv lv-none">未标注</span></span><span>整理于 2026-11-03</span>
 <span>有效期 180d</span></div>
 <p class="lede">四台机器之间是环还是交换机，决定了多机推理能不能起来、值不值。实测一根 4 节点环：200G 网卡四条边平均只跑 102.8 Gbps（达成率 51.4%），单条 TCP 更是只有 40 Gbps；4 机 all-reduce 是 2 机的 1.004 倍——加机器买到的只有显存。rank 按自然序排会直接起不来（报 ibv_modify_qp 110 超时），rendezvous 写数据面地址会卡 181 秒。三步自查能在上机前把这三件事全部排掉。</p>
 <span class="tag">多机推理</span><span class="tag">环拓扑</span><span class="tag">NCCL</span><span class="tag">all-reduce</span><span class="tag">rank</span><span class="tag">rendezvous</span><span class="tag">RoCE</span><span class="tag">200G</span><span class="tag">集群</span><span class="tag">拓扑</span><span class="tag">DGX Spark</span><span class="tag">分布式</span><span class="tag">选型</span>

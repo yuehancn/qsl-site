@@ -87,7 +87,7 @@ th,td{padding:7px 9px}pre{font-size:12px}}
 <main class="wrap">
 
 <h1>算 tok/s 上限之前先量带宽：标称 273 GB/s 的机器，四台实测只到 233.6</h1>
-<div class="meta"><span>性能 · 4× DGX Spark / 统一内存 121.69 GiB/台</span><span><span class="lv lv-L0">L0</span></span><span>整理于 2026-11-02</span>
+<div class="meta"><span>性能 · 4× DGX Spark / 统一内存 121.69 GiB/台</span><span><span class="lv lv-none">未标注</span></span><span>整理于 2026-11-02</span>
 <span>有效期 180d</span></div>
 <p class="lede">四台 DGX Spark（GB10 统一内存）实测 copy 512MB 分别为 229.6 / 225.9 / 228.3 / 233.6 GB/s，对标称 273 GB/s 的达成率只有 82.7%-85.6%，四台离散度 3.4%。用标称值算 decode 上限会高估 17%（111 vs 93.7 tok/s），进而把回本月数低估 17%。而单条请求因为 batch=1 只能拿到峰值的 72.9%，短输出再掉 27% —— 同一个「能跑多少 tok/s」，三个折扣叠加后差一半。</p>
 <span class="tag">统一内存</span><span class="tag">带宽</span><span class="tag">GB/s</span><span class="tag">tok/s</span><span class="tag">decode</span><span class="tag">DGX Spark</span><span class="tag">GB10</span><span class="tag">内存带宽</span><span class="tag">选型</span><span class="tag">本地部署</span><span class="tag">产能估算</span><span class="tag">GEMV</span>

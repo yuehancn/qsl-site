@@ -87,7 +87,7 @@ th,td{padding:7px 9px}pre{font-size:12px}}
 <main class="wrap">
 
 <h1>SDXL 12 步之后每步只值 15 个 RMS：加步数的收益断崖</h1>
-<div class="meta"><span>产出质量 · 5 步 / 15 分钟</span><span><span class="lv lv-L0">L0</span></span><span>整理于 2026-10-12</span>
+<div class="meta"><span>产出质量 · 5 步 / 15 分钟</span><span><span class="lv lv-none">未标注</span></span><span>整理于 2026-10-12</span>
 <span>有效期 180d</span></div>
 <p class="lede">固定 seed 只改 steps，相邻档两张图做像素 RMS 对比：4→8 步改变 33.75、8→12 改变 27.80、12→16 降到 12.83；20 步之后进入平台 —— 24→32 每步只改 1.01、32→48 每步 1.32。换成「每 1 秒耗时换来多少 RMS」：4→12 步区间是 80-107，20 步之后只剩 15-17。4 个 seed 交叉验证：16→20 步的平均 RMS 只降 0.96（4.1%），且不稳定（seed 777 降 2.5、seed 31415 只降 0.52）。</p>
 <span class="tag">SDXL</span><span class="tag">采样步数</span><span class="tag">边际收益</span><span class="tag">像素差异</span><span class="tag">RMS</span><span class="tag">ComfyUI</span><span class="tag">出图质量</span><span class="tag">收敛</span>

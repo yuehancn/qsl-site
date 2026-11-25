@@ -87,7 +87,7 @@ th,td{padding:7px 9px}pre{font-size:12px}}
 <main class="wrap">
 
 <h1>显卡编码反而更慢更大：nvenc 体积 2.44 倍只换回第五位小数的画质</h1>
-<div class="meta"><span>性能 · 4 档编码器 / 116 秒正片</span><span><span class="lv lv-L1">L1</span></span><span>整理于 2026-10-16</span>
+<div class="meta"><span>性能 · 4 档编码器 / 116 秒正片</span><span><span class="lv lv-none">未标注</span></span><span>整理于 2026-10-16</span>
 <span>有效期 30d</span></div>
 <p class="lede">同一段 116.4 秒正片四种编码参数各跑一遍：libx264 medium 2.40 秒 / 6,922,428 B，fast 2.27 秒 / 6,649,384 B，veryfast 2.16 秒 / 5,514,336 B，h264_nvenc -preset p4 3.47 秒 / 16,875,839 B。走显卡编码单元的 nvenc 同时输了速度和体积 —— 比 medium 慢 1.07 秒、体积 2.44 倍，而 SSIM 只高 0.000437。对照组里最划算的是 veryfast：体积砍 20.34%，代价 0.24 秒。</p>
 <span class="tag">ffmpeg</span><span class="tag">nvenc</span><span class="tag">libx264</span><span class="tag">编码器</span><span class="tag">显卡选型</span><span class="tag">体积</span><span class="tag">本地部署</span><span class="tag">AI音视频</span>

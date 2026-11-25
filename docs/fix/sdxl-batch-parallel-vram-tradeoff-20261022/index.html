@@ -87,7 +87,7 @@ th,td{padding:7px 9px}pre{font-size:12px}}
 <main class="wrap">
 
 <h1>SDXL 开 batch=4 之前先算显存余量：16GB 卡批完只剩 389MB，省不到 3%</h1>
-<div class="meta"><span>成本账 · batch 4 · 省 16.2% vs 2.6% · 剩余 389MB</span><span><span class="lv lv-L0">L0</span></span><span>整理于 2026-10-22</span>
+<div class="meta"><span>成本账 · batch 4 · 省 16.2% vs 2.6% · 剩余 389MB</span><span><span class="lv lv-none">未标注</span></span><span>整理于 2026-10-22</span>
 <span>有效期 30d</span></div>
 <p class="lede">批量出图省下的时间不是算力换来的，是显存余量换来的。同一个 batch=4，本机 RTX 5090D（32GB）4 张总耗时 16.69 秒，比一张张跑（4×4.98=19.92 秒）省 16.2%；RTX 5060Ti（16GB）64.99 秒 vs 4×16.68=66.72 秒，只省 2.6%——收益差 6.2 倍，而两张卡的算力倍数只有 3.35 倍。原因在显存：单张峰值 5090D 15301MB、5060Ti 12471MB；拉到 batch=4 后 5090D 涨到 23507MB（+8206MB），5060Ti 涨到 15922MB（+3451MB），16GB 卡只剩 389MB 余量（占总显存 2.4%），32GB 卡还剩 9100MB（27.9%）。也就是说 5060Ti 不是不想多花显存并行，是它不敢。批 4 之后倍差反而从 3.35× 涨到 3.89×——越想靠批量追，越早撞墙。折算成实活：出 100 张图，5090D 从 8.3 分钟降到 7.0 分钟（省 1.3 分），5060Ti 从 27.8 分钟降到 27.1 分钟（省 0.7 分）。选型判据：要用 batch、要挂多模型、要留余量 → 16GB 是下限不是上限；只单张一张张出 → 16GB 够，别为批量买大卡。</p>
 <span class="tag">SDXL</span><span class="tag">batch</span><span class="tag">批量出图</span><span class="tag">显存</span><span class="tag">显存余量</span><span class="tag">5090D</span><span class="tag">5060Ti</span><span class="tag">显卡选型</span><span class="tag">本地部署</span><span class="tag">OOM</span><span class="tag">ComfyUI</span><span class="tag">出图速度</span><span class="tag">并行</span>

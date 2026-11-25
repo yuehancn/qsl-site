@@ -87,7 +87,7 @@ th,td{padding:7px 9px}pre{font-size:12px}}
 <main class="wrap">
 
 <h1>每个常驻模型都有一笔固定显存起步费：权重 262MB 的模型实占 815MB</h1>
-<div class="meta"><span>成本账 · 3 轮 · 262MB 权重实占 815MB</span><span><span class="lv lv-L0">L0</span></span><span>整理于 2026-10-19</span>
+<div class="meta"><span>成本账 · 3 轮 · 262MB 权重实占 815MB</span><span><span class="lv lv-none">未标注</span></span><span>整理于 2026-10-19</span>
 <span>有效期 30d</span></div>
 <p class="lede">本机 RTX 5090D 32GB 上对「多模型同时常驻」的显存增量做了 3 轮重复测量（基线含其他常驻负载约 15.2 GiB，故全部结论只用增量）。只挂 embedding 模型（权重 261.6 MiB = 274,290,656 B）时，显存增量 811 / 821 / 814 MiB；Ollama 自报 size_vram 为 335,743,549 B（320.2 MiB），与显卡实占之间差 495 MiB 属于账外开销。再叠上 14B 对话模型（权重 8571.6 MiB）时，增量 9159 / 9220 / 9159 MiB；size_vram 9,075,834,223 B（8655.4 MiB），账外差 524 MiB。两个同时常驻时总增量 25176 / 25236 / 25183 MiB，等于两者相加（811+9159=9970），没有共享复用。全部卸载后显存归还 9923 / 10026 / 9974 MiB，无残留。倍数关系：embedding 815/262 = 3.1 倍，14B 9179/8572 = 1.07 倍——同一笔固定成本，摊在小模型上最难看待。</p>
 <span class="tag">Ollama</span><span class="tag">常驻</span><span class="tag">显存</span><span class="tag">起步费</span><span class="tag">多模型</span><span class="tag">size_vram</span><span class="tag">Vram</span><span class="tag">本地部署</span><span class="tag">算账</span><span class="tag">embedding</span>

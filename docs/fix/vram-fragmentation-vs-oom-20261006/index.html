@@ -87,7 +87,7 @@ th,td{padding:7px 9px}pre{font-size:12px}}
 <main class="wrap">
 
 <h1>显存明明够却 OOM：先看报错里 reserved but unallocated 是不是大于 1GB</h1>
-<div class="meta"><span>排障 · 4 步 / 5 分钟</span><span><span class="lv lv-L1">L1</span></span><span>整理于 2026-10-06</span>
+<div class="meta"><span>排障 · 4 步 / 5 分钟</span><span><span class="lv lv-none">未标注</span></span><span>整理于 2026-10-06</span>
 <span>有效期 180d</span></div>
 <p class="lede">按计算显存明明够，还是报 CUDA out of memory —— 但报错里那句「If reserved but unallocated memory is large」暴露了真相：显存被缓存分配器预留成碎片了，空闲总量够、却没有连续的一大块。这和「真显存不足」的处置方向不同：真不足要降负载，碎片要调分配器（expandable_segments）或重启进程。判据是报错里 reserved but unallocated 的数值，大于 1GB 就是碎片。</p>
 <span class="tag">显存</span><span class="tag">排错</span><span class="tag">推理优化</span><span class="tag">长跑服务</span><span class="tag">PyTorch</span>

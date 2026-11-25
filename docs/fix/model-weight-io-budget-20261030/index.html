@@ -87,7 +87,7 @@ th,td{padding:7px 9px}pre{font-size:12px}}
 <main class="wrap">
 
 <h1>本地部署的时间账：加载慢一半不怪硬盘，卡人的是第一次搬权重</h1>
-<div class="meta"><span>环境与安装 · 610 MB / 69 GB 两档 · NVMe 顺序读写四项</span><span><span class="lv lv-L1">L1</span></span><span>整理于 2026-10-30</span>
+<div class="meta"><span>环境与安装 · 610 MB / 69 GB 两档 · NVMe 顺序读写四项</span><span><span class="lv lv-none">未标注</span></span><span>整理于 2026-10-30</span>
 <span>有效期 180d</span></div>
 <p class="lede">同机实测 NVMe 顺序读 2.3 GB/s（绕过 page cache），610 MB 模型纯 IO 只需 0.27 秒，而实测加载要 0.54 秒——差的那一半在解析 GGUF 和建映射，换再贵的盘也省不掉。真正拉开量级的是第一次拿到权重：69 GB 按实测 16.1 MB/s 的公网带宽要 71.4 分钟，从本地盘读只要 30 秒，差 144 倍。本地部署的第一笔账不是显卡钱，是时间钱。</p>
 <span class="tag">本地部署</span><span class="tag">模型下载</span><span class="tag">硬盘速度</span><span class="tag">加载时间</span><span class="tag">NVMe</span><span class="tag">带宽</span><span class="tag">时间成本</span><span class="tag">存储</span>

@@ -87,7 +87,7 @@ th,td{padding:7px 9px}pre{font-size:12px}}
 <main class="wrap">
 
 <h1>删环境前先导记录：环境是三层不是一整块</h1>
-<div class="meta"><span>工程习惯 · 6 步 / 3 分钟</span><span><span class="lv lv-L0">L0</span></span><span>整理于 2026-10-07</span>
+<div class="meta"><span>工程习惯 · 6 步 / 3 分钟</span><span><span class="lv lv-none">未标注</span></span><span>整理于 2026-10-07</span>
 <span>有效期 permanent</span></div>
 <p class="lede">跑不通的 venv 删掉时，删的不只是依赖（torch 一个 4.2 GB），还有「它为什么跑不通」的证据。环境其实三层：依赖层（site-packages，空间大头，可删）、配置层（pyvenv.cfg / pip 配置 / 环境变量，不到 1 KB）、记录层（安装日志 / 报错原文 / 版本快照，几百字节）。删整块＝结果、原因、证据一起没了。</p>
 <span class="tag">Python环境</span><span class="tag">venv</span><span class="tag">排障</span><span class="tag">磁盘空间</span><span class="tag">环境管理</span>
