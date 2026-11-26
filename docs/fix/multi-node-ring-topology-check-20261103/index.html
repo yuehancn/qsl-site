@@ -108,14 +108,14 @@ th,td{padding:7px 9px}pre{font-size:12px}}
 <pre><code>【显存账】每台可用 unified memory 121.7 GiB，四台合计 4 × 121.7 = 487 GiB。800 GB ÷ 121.7 ≈ 6.6，向上取 7 台；若量化没到位，按 GLM-5.2 实测的 2.03 字节每参数（1506.69 GB / 744B）反推，1.6T 总参要约 13 台。800 GB − 487 GiB = 313 GB，这是物理缺口。</code></pre>
 <p>【要不要切分的判据】本机盘顺序读 9.6-9.9 GB/s（三次 9.6 / 9.9 / 9.6）；环上单边 8 流 110.7 Gbps 折 13.8 GB/s，但那是收发两端合计，折成单向约 6.9 GB/s，而环上跨机单向只有约 6.9 GB/s —— 本地盘比跨机取数快。所以在这套拓扑上，「分布式」相对「单机 + 大盘」没有传输优势。切分要解决的是单机显存装不下，不是网络比盘快。</p>
 <div class="caveat"><strong>失效边界</strong><br>200G 只跑到 51.4% 的成因未定位（可能是 RoCE 未调 PFC/ECN、GPUDirect 未生效、队列深度不足），只测到现象。只跑了 dense all-reduce，MoE 的 EP 切分靠 all-to-all，这部分完全未测 —— 所有关于切分代价的判断只覆盖 dense 这一半。TP 通信税 8.2% 为算得（假设每层一次 10KB all-reduce），真实框架可能合并或拆分，只能当量级参考。</div>
-<div class="pager"><a href="/fix/uma-vram-four-gauges-20261031/">← 统一内存机器查显存，四个命令给出四个答案，最大差 17.5 倍</a><a href="/fix/vram-fragmentation-vs-oom-20261006/" style="text-align:right">显存明明够却 OOM：先看报错里 reserved but unallocated 是不是大于 1GB →</a></div>
+<div class="pager"><a href="/fix/uma-vram-four-gauges-20261031/">← 统一内存机器查显存，四个命令给出四个答案，最大差 17.5 倍</a><a href="/fix/nvme-block-size-135x-20261127/" style="text-align:right">同一块盘读速差 135 倍：本地部署前先量这两档块大小 →</a></div>
 <p style="margin-top:30px"><a href="/fix/">← 返回全部排错方案</a></p>
 
 </main>
 <footer><div class="wrap">
 <p>本站数字均为真机实测，逐条标注验证等级（<span class="lv lv-L1">L1</span> 多次复测取中位 /
 <span class="lv lv-L0">L0</span> 单次测量）。查不到的写「未采集」，不估算。</p>
-<p>数据源自丘山录硬件实测库 · 本页生成于 2026-11-25 · <a href="/about/">数据口径与方法</a></p>
+<p>数据源自丘山录硬件实测库 · 本页生成于 2026-11-26 · <a href="/about/">数据口径与方法</a></p>
 <div class="qr-box">
 <div class="qr-item">
 <img decoding="async" src="/assets/gzh-qr.jpg" width="108" height="108" alt="丘山录公众号二维码">

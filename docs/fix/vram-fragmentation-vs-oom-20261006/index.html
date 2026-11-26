@@ -109,14 +109,14 @@ $ export PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True  # Linux/macOS</code><
 # · 避免忽大忽小的 batch（固定 batch 更利于分配器复用）
 $ nvidia-smi -l 1        # 实时观察：Used 是否反复在某个水位抖动</code></pre>
 <div class="caveat"><strong>失效边界</strong><br>适用边界：本机实测多见于长跑推理服务与反复加载/卸载模型的场景；短任务、一次性出图一般不会碎片化。判据（reserved but unallocated 大于 1GB）来自 PyTorch 官方报错提示原文。expandable_segments 需 PyTorch 2.1+ 才支持，老版本设了无效——这种情况下重启进程是更可靠的解法。换环境请以报错原文与 torch.__version__ 为准。</div>
-<div class="pager"><a href="/fix/multi-node-ring-topology-check-20261103/">← 多机推理先认清拓扑：环上 rank 顺序就是物理顺序，加机器不加带宽</a><a href="/fix/openai-compatible-api-401-404-20261006/" style="text-align:right">本地服务起来了、API 却调不通：先 curl，curl 通就是客户端的事 →</a></div>
+<div class="pager"><a href="/fix/nvme-block-size-135x-20261127/">← 同一块盘读速差 135 倍：本地部署前先量这两档块大小</a><a href="/fix/openai-compatible-api-401-404-20261006/" style="text-align:right">本地服务起来了、API 却调不通：先 curl，curl 通就是客户端的事 →</a></div>
 <p style="margin-top:30px"><a href="/fix/">← 返回全部排错方案</a></p>
 
 </main>
 <footer><div class="wrap">
 <p>本站数字均为真机实测，逐条标注验证等级（<span class="lv lv-L1">L1</span> 多次复测取中位 /
 <span class="lv lv-L0">L0</span> 单次测量）。查不到的写「未采集」，不估算。</p>
-<p>数据源自丘山录硬件实测库 · 本页生成于 2026-11-25 · <a href="/about/">数据口径与方法</a></p>
+<p>数据源自丘山录硬件实测库 · 本页生成于 2026-11-26 · <a href="/about/">数据口径与方法</a></p>
 <div class="qr-box">
 <div class="qr-item">
 <img decoding="async" src="/assets/gzh-qr.jpg" width="108" height="108" alt="丘山录公众号二维码">

@@ -93,16 +93,16 @@ th,td{padding:7px 9px}pre{font-size:12px}}
 
 <div class="tw"><div class="tw"><table>
 <tr><th>数据</th><th>条数</th><th>说明</th></tr>
-<tr><td>真机实测跑分</td><td class="num">1550</td><td>其中 265 条直接关系「跑不跑得动」，
-629 条为 L1 级多次复测取中位</td></tr>
-<tr><td>排错方案</td><td class="num">131</td><td>每条含触发条件、版本指纹、失效边界</td></tr>
+<tr><td>真机实测跑分</td><td class="num">1592</td><td>其中 266 条直接关系「跑不跑得动」，
+658 条为 L1 级多次复测取中位</td></tr>
+<tr><td>排错方案</td><td class="num">133</td><td>每条含触发条件、版本指纹、失效边界</td></tr>
 <tr><td>开源仓库许可证核验</td><td class="num">141</td><td>其中 59 条有传染性/受限风险，
 8 条判定为不整改不能商用</td></tr>
 <tr><td>实测机器</td><td class="num">16</td><td>从 4 卡 DGX 集群到端侧 J3455</td></tr>
 </table></div></div>
 
 <h2>先查你的卡能不能跑</h2>
-<p><a href="/bench/">→ 跑分查询</a>：265 条与选型直接相关的实测，按任务和机器列出，
+<p><a href="/bench/">→ 跑分查询</a>：266 条与选型直接相关的实测，按任务和机器列出，
 每条给数值、单位、验证等级。</p>
 
 <h2>许可证风险榜</h2>
@@ -112,7 +112,7 @@ th,td{padding:7px 9px}pre{font-size:12px}}
 
 <h2>最近整理的排错方案</h2>
 <div class="card"><h3><a href="/fix/comfyui-bench-method/">ComfyUI 出图性能测试：如何测出真值而不是缓存</a></h3><p>把 ComfyUI 当性能测试工具时，同 seed 同参数第二次提交根本不进 GPU，直接返回缓存。本方案给出可复现的测量方法。</p><div class="kv">perf · <span class="lv lv-none">未标注</span></div></div><div class="card"><h3><a href="/fix/16gb-vram-strategy/">16GB 显存卡的产线策略：不要试图用小卡追大卡</a></h3><p>实测证明：16GB 卡加大 batch 追 5090D，差距会从 3.35 倍扩大到 3.89 倍。正确做法是降并发、拉长单张、用常驻进程吃掉冷启动。</p><div class="kv">money · <span class="lv lv-none">未标注</span></div></div><div class="card"><h3><a href="/fix/proxy-env-trap-20260930/">内网推理服务「偶尔连不上」：先查代理环境变量，别查配置</a></h3><p>推理服务明明 curl 得通、端口在听、机器不忙，客户端却报 Connection error，而且「有时能通、有时不通」。</p><div class="kv">fix · <span class="lv lv-none">未标注</span></div></div><div class="card"><h3><a href="/fix/llm-concurrency-ceiling-20260930/">并发加到 16 吞吐反而没涨：找到收益天花板与实用拐点</a></h3><p>把并发从 1 一路加到 16，吞吐涨到并发 8 就停住了，16 甚至略降（148.95 → 148.22 tok/s），但单请求等待从 13.13 秒涨到 20.24 秒。</p><div class="kv">perf · <span class="lv lv-none">未标注</span></div></div><div class="card"><h3><a href="/fix/three-kinds-of-slow-20260930/">集群慢不一定是卡不够：三种慢，只有一种值得花钱</a></h3><p>集群慢不一定是卡不够 —— 「慢」有三种，只有一种值得花钱。显存接近 0 是显卡压根没参与计算（配置问题，加卡一分钱作用没有）；只有第一轮慢是预热，属正常开销；并发上去了单请求反而更慢，说明撞的是通信墙（加卡会更糟）。</p><div class="kv">money · <span class="lv lv-none">未标注</span></div></div><div class="card"><h3><a href="/fix/three-snapshots-hidden-cost-20261001/">同一台机器三个 ComfyUI 版本：账面零成本，隐性成本写在排查起点</a></h3><p>同一台机器上养出三个 ComfyUI 前端版本（真跑 1.49.6 / 托管 venv 1.51.9 / 上游要求 1.53.</p><div class="kv">craft · <span class="lv lv-none">未标注</span></div></div>
-<p><a href="/fix/">→ 全部 131 条排错方案</a></p>
+<p><a href="/fix/">→ 全部 133 条排错方案</a></p>
 
 <h2>这个站不做什么</h2>
 <ul>
@@ -125,7 +125,7 @@ th,td{padding:7px 9px}pre{font-size:12px}}
 <footer><div class="wrap">
 <p>本站数字均为真机实测，逐条标注验证等级（<span class="lv lv-L1">L1</span> 多次复测取中位 /
 <span class="lv lv-L0">L0</span> 单次测量）。查不到的写「未采集」，不估算。</p>
-<p>数据源自丘山录硬件实测库 · 本页生成于 2026-11-25 · <a href="/about/">数据口径与方法</a></p>
+<p>数据源自丘山录硬件实测库 · 本页生成于 2026-11-26 · <a href="/about/">数据口径与方法</a></p>
 <div class="qr-box">
 <div class="qr-item">
 <img decoding="async" src="/assets/gzh-qr.jpg" width="108" height="108" alt="丘山录公众号二维码">
