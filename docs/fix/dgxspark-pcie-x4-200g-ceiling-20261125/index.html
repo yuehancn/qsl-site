@@ -142,14 +142,14 @@ th,td{padding:7px 9px}pre{font-size:12px}}
   · 11.6 秒 = 18.475 GB × 1024 ÷ 1,624.7 MB/s，按实测落盘速率反推，非直接计时。
   · 512 MiB 与 128 MiB 两组口径不同，绝对值不可横比，只看各自走势。</code></pre>
 <div class="caveat"><strong>失效边界</strong><br>1. <strong></strong> 两台全程在跑 sglang（GPU 90-91%），所以只能说「两台都在跑推理的 DGX Spark 上 200G 聚合到 11.5–12.4 GB/s」，不能写「DGX Spark 的 200G 上限是 12 GB/s」。空载可能更高，但最高也只能逼近 15.75。<br>2. <strong></strong> 验证「×4 是硬上限」最干净的方法是跑 RDMA 绕开 TCP 栈，本次没做。所以「15.75 GB/s 是物理上限」这个结论建立在 <code></code> 的自证上，而不是「另一条路径也撞同一堵墙」的交叉验证。<br>3. <strong></strong> 只验证了四台机器的 PCIe 配置同为 ×4，没测其他三条链路的实际聚合吞吐，不能假设它们也正好 48-50%。<br>4. <strong></strong> 需要 root，本次只用到 4 MB 这个已有上限，没验证「放开到 16 MB 后单流还能不能再涨」。<br>5. <strong></strong>，未测多流并发落盘与 io_uring。如果你用 io_uring 或双缓冲，1,624.7 MB/s 这个数会变好，具体多少未测。<br>6. <strong></strong>，未与 NVIDIA 官方规格页交叉核对。</div>
-<div class="pager"><a href="/fix/mmap-load-meter-readbytes-zero-20261123/">← mmap 加载计量：扫完 1 GiB，read_bytes 还是 0</a><a href="/fix/bandwidth-before-toks-ceiling-20261102/" style="text-align:right">算 tok/s 上限之前先量带宽：标称 273 GB/s 的机器，四台实测只到 233.6 →</a></div>
+<div class="pager"><a href="/fix/mmap-load-meter-readbytes-zero-20261123/">← mmap 加载计量：扫完 1 GiB，read_bytes 还是 0</a><a href="/fix/mac-16g-thread-ceiling-20261128/" style="text-align:right">Mac 上加线程：大模型给 2 个就到顶，小模型 4 个封顶 →</a></div>
 <p style="margin-top:30px"><a href="/fix/">← 返回全部排错方案</a></p>
 
 </main>
 <footer><div class="wrap">
 <p>本站数字均为真机实测，逐条标注验证等级（<span class="lv lv-L1">L1</span> 多次复测取中位 /
 <span class="lv lv-L0">L0</span> 单次测量）。查不到的写「未采集」，不估算。</p>
-<p>数据源自丘山录硬件实测库 · 本页生成于 2026-11-26 · <a href="/about/">数据口径与方法</a></p>
+<p>数据源自丘山录硬件实测库 · 本页生成于 2026-11-27 · <a href="/about/">数据口径与方法</a></p>
 <div class="qr-box">
 <div class="qr-item">
 <img decoding="async" src="/assets/gzh-qr.jpg" width="108" height="108" alt="丘山录公众号二维码">
