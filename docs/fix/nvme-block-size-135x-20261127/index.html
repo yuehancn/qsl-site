@@ -96,14 +96,14 @@ th,td{padding:7px 9px}pre{font-size:12px}}
 <h2>具体做法</h2>
 <p>Spark 侧单流值受同机 sglang 常驻影响，两轮离差 14.9%，正文已标注；135 倍的比值建立在两台同型机上（135.1 / 133.9），但<strong></strong>，未测 4 MB/16 MB 等更大档，因此不能断言 1 MB 是最优点。Mac mini 侧数字（4 KB 3,999 MB/s / 1 MB 11,199 MB/s）来自另一台不在本机 16 台清单里的机器，只作跨架构对照，未挂跑分表。</p>
 <div class="caveat"><strong>失效边界</strong><br>3 档块大小 / 2 台 / 135.1 倍</div>
-<div class="pager"><a href="/fix/multi-node-ring-topology-check-20261103/">← 多机推理先认清拓扑：环上 rank 顺序就是物理顺序，加机器不加带宽</a><a href="/fix/vram-fragmentation-vs-oom-20261006/" style="text-align:right">显存明明够却 OOM：先看报错里 reserved but unallocated 是不是大于 1GB →</a></div>
+<div class="pager"><a href="/fix/multi-node-ring-topology-check-20261103/">← 多机推理先认清拓扑：环上 rank 顺序就是物理顺序，加机器不加带宽</a><a href="/fix/mac-16g-workset-1184-cliff-20261129/" style="text-align:right">16G Mac 的 11.84G 不是墙：先分清三个数，再按 10G 判够不够用 →</a></div>
 <p style="margin-top:30px"><a href="/fix/">← 返回全部排错方案</a></p>
 
 </main>
 <footer><div class="wrap">
 <p>本站数字均为真机实测，逐条标注验证等级（<span class="lv lv-L1">L1</span> 多次复测取中位 /
 <span class="lv lv-L0">L0</span> 单次测量）。查不到的写「未采集」，不估算。</p>
-<p>数据源自丘山录硬件实测库 · 本页生成于 2026-11-27 · <a href="/about/">数据口径与方法</a></p>
+<p>数据源自丘山录硬件实测库 · 本页生成于 2026-11-28 · <a href="/about/">数据口径与方法</a></p>
 <div class="qr-box">
 <div class="qr-item">
 <img decoding="async" src="/assets/gzh-qr.jpg" width="108" height="108" alt="丘山录公众号二维码">

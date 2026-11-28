@@ -100,14 +100,14 @@ th,td{padding:7px 9px}pre{font-size:12px}}
 <p>拿 27B 级、权重 4.52 GiB 的模型代入：4.520 &gt; 2.079，缺口 2.441 GiB，连权重都放不下。就算换一台 available 6.391 GiB 的 x86 小机，余量 1.871 GiB 也只解决「放得下」——那台的 CPU 缺 AVX2 与 F16C，三值量化的快路径同样不存在，装得下不等于跑得动。</p>
 <p>还有一个反常识：这台 4 核 ARM 盒的顺序读 375.3 MB/s，比同为 4 核的 Celeron J3455 的 98.3 MB/s 快 3.82 倍。慢的从来不是 ARM 指令集，是介质与挂载层。</p>
 <div class="caveat"><strong>失效边界</strong><br>1. <strong></strong> 本文所有结论来自内存边界、CPU 特性与读吞吐实测；「跑不动 27B」是内存减法算出来的，不是运行出来的。<br>2. <strong></strong>，其体积为发布方口径，tok/s 一个都没复现（正文已逐处标注）。<br>3. <strong></strong>，未取多轮中位；先用 mmap 对已缓存文件测出的 188,022 MB/s 属 page cache 假值，整组作废。<br>4. <strong></strong>（trimafs 映射，可能是 eMMC 或 UFS），只知读写约 370-420 MB/s。<br>5. <strong></strong>，未做 RSS 阶梯验证；有 swap 那台机的越界行为也未验证。</div>
-<div class="pager"><a href="/fix/arm-edge-deploy-prereq-20261109/">← ARM 小机跑端侧模型的三个前置门槛：指令集、glibc、cmake</a><a href="/fix/numpy-torch-version-conflict-20261006/" style="text-align:right">升级一个包整个环境就崩：numpy 1.x/2.x 断代是最经典的那种 →</a></div>
+<div class="pager"><a href="/fix/arm-edge-deploy-prereq-20261109/">← ARM 小机跑端侧模型的三个前置门槛：指令集、glibc、cmake</a><a href="/fix/ring-200g-single-stream-39gbps-20261129/" style="text-align:right">200G 环网只跑 19.6%：先用 dd+nc 量单流，再决定装 perftest 还是加网卡 →</a></div>
 <p style="margin-top:30px"><a href="/fix/">← 返回全部排错方案</a></p>
 
 </main>
 <footer><div class="wrap">
 <p>本站数字均为真机实测，逐条标注验证等级（<span class="lv lv-L1">L1</span> 多次复测取中位 /
 <span class="lv lv-L0">L0</span> 单次测量）。查不到的写「未采集」，不估算。</p>
-<p>数据源自丘山录硬件实测库 · 本页生成于 2026-11-27 · <a href="/about/">数据口径与方法</a></p>
+<p>数据源自丘山录硬件实测库 · 本页生成于 2026-11-28 · <a href="/about/">数据口径与方法</a></p>
 <div class="qr-box">
 <div class="qr-item">
 <img decoding="async" src="/assets/gzh-qr.jpg" width="108" height="108" alt="丘山录公众号二维码">
